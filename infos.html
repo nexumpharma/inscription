@@ -5,9 +5,9 @@
   <title>Infos utilisateur</title>
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Charger Supabase en premier -->
+  <!-- Charger Supabase d'abord -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <!-- Puis le script maison -->
+  <!-- Puis ton script -->
   <script src="js/auth.js"></script>
 </head>
 <body>
@@ -19,7 +19,7 @@
     async function showUserMetadata() {
       await checkAndRestoreSessionFromURL();
 
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
       const status = document.getElementById('status');
       const metadataDiv = document.getElementById('metadata');
 
