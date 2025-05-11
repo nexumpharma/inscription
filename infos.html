@@ -4,35 +4,29 @@
   <meta charset="UTF-8">
   <title>Infos utilisateur</title>
   <link rel="stylesheet" href="css/style.css">
-
-  <!-- ✅ Charger d'abord la bibliothèque Supabase -->
+  <!-- Charger Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Script d’authentification -->
+  <script src="js/auth.js"></script>
 </head>
 <body>
   <h1>Bienvenue</h1>
   <div id="status">Chargement...</div>
+  <button onclick="logout()" style="margin: 1rem 0;">Se déconnecter</button>
+  <h2>Données Supabase (user_metadata)</h2>
   <div id="metadata"></div>
 
+  <h2>Paramètres de l’URL</h2>
+  <div id="urlparams"></div>
+
   <script>
-    // ✅ Initialisation correcte de Supabase (la lib est déjà chargée)
-    const SUPABASE_URL = 'https://nywocoxkfdrsscvnvjas.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55d29jb3hrZmRyc3Njdm52amFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4OTA1MDgsImV4cCI6MjA2MjQ2NjUwOH0.Gj2TOFLghSlztKgZiUzrdnntH5oNPKs8RALG8fGvSm4';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    async function showUserDataAndURLParams() {
+      const urlParams = await checkAndRestoreSessionFromURL();
 
-    async function checkAndRestoreSessionFromURL() {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const access_token = params.get("access_token");
-      const refresh_token = params.get("refresh_token");
-
-      if (access_token && refresh_token) {
-        await supabase.auth.setSession({ access_token, refresh_token });
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    }
-
-    async function showUserMetadata() {
-      await checkAndRestoreSessionFromURL();
+      // Affiche les paramètres d'URL
+      const urlDiv = document.getElementById("urlparams");
+      urlDiv.innerHTML = "<ul>" + Array.from(urlParams.entries())
+        .map(([k, v]) => `<li><strong>${k}</strong> : ${v}</li>`).join("") + "</ul>";
 
       const { data: { user } } = await supabase.auth.getUser();
       const status = document.getElementById("status");
@@ -51,13 +45,13 @@
         return;
       }
 
-      metadataDiv.innerHTML = "<h2>Données reçues :</h2><ul>" +
+      metadataDiv.innerHTML = "<ul>" +
         Object.entries(metadata).map(([key, value]) =>
           `<li><strong>${key}</strong> : ${value}</li>`).join("") +
         "</ul>";
     }
 
-    showUserMetadata();
+    showUserDataAndURLParams();
   </script>
 </body>
 </html>
