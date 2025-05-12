@@ -15,7 +15,58 @@
   <h1>Bienvenue</h1>
   <div id="status">Chargement...</div>
   <button id="logoutBtn" style="margin-top: 1rem;">Se déconnecter</button>
-  <form id="pharmacyForm" style="display:none; margin-top:2rem;"></form>
+
+  <form id="pharmacyForm" style="display:none; margin-top:2rem;">
+    <h2>Informations du titulaire</h2>
+    <label>Civilité
+      <select name="Civilité">
+        <option value="Monsieur">Monsieur</option>
+        <option value="Madame">Madame</option>
+      </select>
+    </label>
+    <label>Prénom <input name="Prénom" type="text" /></label>
+    <label>Nom <input name="Nom" type="text" /></label>
+    <label>Mail du titulaire <input name="Mail du titulaire" type="email" /></label>
+    <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /></label>
+
+    <h2>Informations de la pharmacie</h2>
+    <label>Raison sociale <input name="Raison sociale" type="text" /></label>
+    <label>Nom commercial <input name="Nom commercial" type="text" /></label>
+    <label>Mail de la pharmacie <input name="Mail de la pharmacie" type="email" /></label>
+    <label>Téléphone de la pharmacie <input name="Téléphone de la pharmacie" type="tel" /></label>
+    <label>Adresse <input name="Adresse" type="text" /></label>
+    <label>Code postal <input name="Code postal" type="text" /></label>
+    <label>Ville <input name="Ville" type="text" /></label>
+    <label>CIP <input name="CIP" type="text" /></label>
+    <label>FINESS <input name="FINESS" type="text" /></label>
+    <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /></label>
+    <label>Type de pharmacie
+      <select name="Type de pharmacie">
+        <option>Centre-Ville</option>
+        <option>Périphérie et banlieue résidentielle</option>
+        <option>Zone commerciale</option>
+        <option>Pôle touristique</option>
+        <option>Rurale</option>
+      </select>
+    </label>
+    <label>Groupement
+      <select name="Groupement">
+        <option>Elsie</option>
+        <option>Pharmabest</option>
+        <option>Aprium</option>
+        <option>Autre</option>
+      </select>
+    </label>
+    <label>LGO
+      <select name="LGO">
+        <option>Smart RX</option>
+        <option>WinPharma</option>
+        <option>LGPI</option>
+        <option>Autre</option>
+      </select>
+    </label>
+    <button type="submit">Enregistrer</button>
+  </form>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
@@ -30,13 +81,10 @@
         headers: { Authorization: `Bearer ${token}` }
       });
       const json = await res.json();
-      console.log("✅ Données reçues de get-pharmacie:", json);
       return json.records?.[0] || null;
     }
 
     async function savePharmacieData(token, data) {
-      console.log("📤 Données à enregistrer :", data);
-      console.log("🆔 Record ID :", recordId);
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
         headers: {
@@ -45,39 +93,9 @@
         },
         body: JSON.stringify({ id: recordId, fields: data })
       });
-
       const json = await res.json();
-      console.log("📥 Réponse d'Airtable :", json);
-
+      console.log("Réponse Airtable :", json);
       return res.ok;
-    }
-
-    async function buildForm(data, token) {
-      const form = document.getElementById("pharmacyForm");
-      form.innerHTML = "";
-      form.style.display = "block";
-
-      for (const [key, value] of Object.entries(data)) {
-        const label = document.createElement("label");
-        label.textContent = key;
-        const input = document.createElement("input");
-        input.name = key;
-        input.value = value;
-        label.appendChild(input);
-        form.appendChild(label);
-      }
-
-      const submit = document.createElement("button");
-      submit.textContent = "Enregistrer";
-      submit.type = "submit";
-      form.appendChild(submit);
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(form));
-        const ok = await savePharmacieData(token, formData);
-        alert(ok ? "✅ Données enregistrées" : "❌ Erreur à l'enregistrement");
-      });
     }
 
     async function main() {
@@ -101,8 +119,20 @@
       }
 
       recordId = record.id;
-      console.log("🔑 ID du record Airtable :", recordId);
-      await buildForm(record.fields, token);
+
+      const form = document.getElementById("pharmacyForm");
+      form.style.display = "block";
+      for (const [key, value] of Object.entries(record.fields)) {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) input.value = value;
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = Object.fromEntries(new FormData(form));
+        const ok = await savePharmacieData(token, formData);
+        alert(ok ? "✅ Données enregistrées" : "❌ Erreur à l'enregistrement");
+      });
     }
 
     main();
