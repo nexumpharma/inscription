@@ -70,6 +70,7 @@
         reader.onload = async () => {
           const base64File = reader.result.split(",")[1]; // remove base64 prefix
           const filename = file.name;
+          const path = `rib/${Date.now()}-${filename}`;
 
           try {
             const res = await fetch(`${SUPABASE_FUNCTION_BASE}/upload-rib`, {
@@ -84,7 +85,7 @@
             const json = await res.json();
             if (res.ok) {
               console.log("✅ Fichier uploadé avec succès via Edge Function");
-              resolve(filename); // On peut utiliser le nom ensuite
+              resolve(path);
             } else {
               console.error("❌ Erreur côté fonction :", json);
               reject("Erreur upload");
@@ -98,6 +99,31 @@
       });
     }
 
+    async function extractIbanFromFile(path) {
+      try {
+        const res = await fetch(`${SUPABASE_FUNCTION_BASE}/extract-iban`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ path }),
+        });
+
+        const json = await res.json();
+        if (res.ok && json.iban) {
+          console.log("✅ IBAN détecté :", json.iban);
+          return json.iban;
+        } else {
+          console.warn("❌ Aucun IBAN détecté.");
+          return "";
+        }
+      } catch (err) {
+        console.error("❌ Erreur lors de l'appel extract-iban :", err);
+        return "";
+      }
+    }
+
     await getUserAndRecord();
 
     document.getElementById("ribFile").addEventListener("change", async (e) => {
@@ -107,9 +133,14 @@
       document.getElementById("ibanPreview").textContent = "🔁 Upload du fichier...";
 
       try {
-        await uploadFileViaFunction(file);
-        document.getElementById("ibanPreview").textContent = "✅ Fichier envoyé. Détection à venir.";
-        // Tu peux ici appeler extract-iban si souhaité
+        const remotePath = await uploadFileViaFunction(file);
+        document.getElementById("ibanPreview").textContent = "📄 Fichier envoyé. Détection IBAN...";
+
+        const iban = await extractIbanFromFile(remotePath);
+        document.getElementById("iban").value = iban;
+        document.getElementById("ibanPreview").textContent = iban
+          ? `✅ IBAN détecté : ${iban}`
+          : "❌ Aucun IBAN détecté.";
       } catch (err) {
         document.getElementById("ibanPreview").textContent = "❌ Erreur upload";
       }
