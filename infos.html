@@ -9,6 +9,7 @@
     label { font-weight: bold; }
     input, select { padding: 8px; }
     h2 { margin-top: 2rem; color: #333; }
+    .error { border: 2px solid red; }
   </style>
 </head>
 <body>
@@ -16,9 +17,8 @@
   <div id="status">Chargement...</div>
   <button id="logoutBtn" style="margin-top: 1rem;">Se déconnecter</button>
 
-  <form id="pharmacyForm" style="display:none; margin-top:2rem;">
+  <form id="pharmacyForm" style="display:none; margin-top:2rem;" novalidate>
     <h2>Informations du titulaire</h2>
-
     <label>Civilité
       <select name="Civilité" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -26,14 +26,12 @@
         <option value="Madame">Madame</option>
       </select>
     </label>
-
     <label>Prénom <input name="Prénom" type="text" /></label>
     <label>Nom <input name="Nom" type="text" /></label>
     <label>Mail du titulaire <input name="Mail du titulaire" type="email" /></label>
     <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /></label>
 
     <h2>Informations de la pharmacie</h2>
-
     <label>Raison sociale <input name="Raison sociale" type="text" /></label>
     <label>Nom commercial <input name="Nom commercial" type="text" /></label>
     <label>Mail de la pharmacie <input name="Mail de la pharmacie" type="email" /></label>
@@ -44,7 +42,6 @@
     <label>CIP <input name="CIP" type="text" /></label>
     <label>FINESS <input name="FINESS" type="text" /></label>
     <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /></label>
-
     <label>Type de pharmacie
       <select name="Type de pharmacie" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -55,7 +52,6 @@
         <option>Rurale</option>
       </select>
     </label>
-
     <label>Groupement
       <select name="Groupement" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -65,7 +61,6 @@
         <option>Autre</option>
       </select>
     </label>
-
     <label>LGO
       <select name="LGO" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -75,7 +70,6 @@
         <option>Autre</option>
       </select>
     </label>
-
     <button type="submit">Enregistrer</button>
   </form>
 
@@ -130,7 +124,6 @@
       }
 
       recordId = record.id;
-
       const form = document.getElementById("pharmacyForm");
       form.style.display = "block";
 
@@ -142,34 +135,53 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const formData = Object.fromEntries(new FormData(form));
+        let erreurs = [];
 
-        // VALIDATIONS
-        if (!/^0[67]\\d{8}$/.test(formData["Portable du titulaire"])) {
-          alert("📵 Le portable doit commencer par 06 ou 07 et contenir 10 chiffres.");
-          return;
+        const regex = {
+          email: /^[\\w.-]+@[\\w.-]+\\.\\w+$/,
+          telPortable: /^0[67]\\d{8}$/,
+          telPharma: /^0\\d{9}$/,
+          num7: /^\\d{7}$/,
+          finess: /^(\\d{9}|2[abAB]\\d{7})$/,
+          num9: /^\\d{9}$/
+        };
+
+        form.querySelectorAll("input, select").forEach(el => el.classList.remove("error"));
+
+        function invalide(champ, msg) {
+          erreurs.push(msg);
+          const el = form.querySelector(`[name="${champ}"]`);
+          if (el) el.classList.add("error");
         }
-        if (!/^0\\d{9}$/.test(formData["Téléphone de la pharmacie"])) {
-          alert("☎️ Le téléphone de la pharmacie doit commencer par 0 et contenir 10 chiffres.");
-          return;
+
+        if (!regex.email.test(formData["Mail du titulaire"])) {
+          invalide("Mail du titulaire", "Email titulaire invalide");
         }
-        if (!/^\\d{7}$/.test(formData["CIP"])) {
-          alert("❌ Le code CIP doit contenir exactement 7 chiffres.");
-          return;
+        if (!regex.email.test(formData["Mail de la pharmacie"])) {
+          invalide("Mail de la pharmacie", "Email pharmacie invalide");
         }
-        if (!/^\\d{9}$/.test(formData["FINESS"])) {
-          alert("❌ Le code FINESS doit contenir exactement 9 chiffres.");
-          return;
+        if (!regex.telPortable.test(formData["Portable du titulaire"])) {
+          invalide("Portable du titulaire", "Téléphone portable invalide");
         }
-        if (!/^\\d{9}$/.test(formData["RCS (SIREN)"])) {
-          alert("❌ Le SIREN doit contenir exactement 9 chiffres.");
-          return;
+        if (!regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
+          invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
         }
-        if (!/^[\\w.-]+@[\\w.-]+\\.\\w+$/.test(formData["Mail du titulaire"])) {
-          alert("📧 L'adresse mail du titulaire n'est pas valide.");
-          return;
+        if (!regex.num7.test(formData["CIP"])) {
+          invalide("CIP", "CIP invalide (7 chiffres)");
         }
-        if (!/^[\\w.-]+@[\\w.-]+\\.\\w+$/.test(formData["Mail de la pharmacie"])) {
-          alert("📧 L'adresse mail de la pharmacie n'est pas valide.");
+        if (!regex.finess.test(formData["FINESS"])) {
+          invalide("FINESS", "FINESS invalide (9 chiffres ou 2a/2b + 7 chiffres)");
+        }
+        if (!regex.num9.test(formData["RCS (SIREN)"])) {
+          invalide("RCS (SIREN)", "SIREN invalide (9 chiffres)");
+        }
+        if (!formData["Civilité"]) invalide("Civilité", "Champ obligatoire");
+        if (!formData["Type de pharmacie"]) invalide("Type de pharmacie", "Champ obligatoire");
+        if (!formData["Groupement"]) invalide("Groupement", "Champ obligatoire");
+        if (!formData["LGO"]) invalide("LGO", "Champ obligatoire");
+
+        if (erreurs.length > 0) {
+          alert("❌ Merci de corriger les erreurs dans le formulaire.");
           return;
         }
 
