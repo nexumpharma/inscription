@@ -15,8 +15,8 @@
   <div id="status">Chargement...</div>
   <button id="logoutBtn">Se déconnecter</button>
 
-  <form id="ribForm" style="display:none; margin-top:2rem;">
-    <label for="ribFile">Choisissez un fichier RIB :</label>
+  <form id="ribForm" style="display:none; margin-top:2rem;" enctype="multipart/form-data">
+    <label for="ribFile">Choisissez un fichier RIB (PDF ou image) :</label>
     <input type="file" id="ribFile" accept=".pdf,image/*" required />
 
     <div id="ibanPreview"></div>
@@ -77,7 +77,6 @@
         return null;
       }
 
-      // Appel à la function Supabase pour extraire l'IBAN
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/extract-iban`, {
         method: "POST",
         headers: {
