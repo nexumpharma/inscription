@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Envoi du RIB</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; max-width: 600px; }
+    label { display: block; margin-top: 1rem; font-weight: bold; }
+    input, button { margin-top: 0.5rem; padding: 8px; width: 100%; }
+    #ibanPreview { margin-top: 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Transfert de RIB</h1>
+  <div id="status">Chargement...</div>
+  <button id="logoutBtn">Se déconnecter</button>
+
+  <form id="ribForm" style="display:none; margin-top:2rem;">
+    <label for="ribFile">Choisissez un fichier RIB :</label>
+    <input type="file" id="ribFile" accept=".pdf,image/*" required />
+
+    <div id="ibanPreview"></div>
+
+    <label for="iban">IBAN détecté (modifiable) :</label>
+    <input type="text" id="iban" name="iban" required />
+
+    <button type="submit">Enregistrer l'IBAN</button>
+  </form>
+
+  <script type="module">
+    import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
+
+    let recordId = null;
+    const status = document.getElementById("status");
+    const form = document.getElementById("ribForm");
+
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    async function getUserAndRecord() {
+      await checkAndRestoreSessionFromURL();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        status.textContent = "❌ Vous n'êtes pas connecté.";
+        return null;
+      }
+      status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+
+      const session = await supabase.auth.getSession();
+      const token = session.data.session.access_token;
+
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      const record = json.records?.[0];
+      if (!record) {
+        status.textContent = "❌ Aucune fiche pharmacie trouvée.";
+        return null;
+      }
+
+      recordId = record.id;
+      form.style.display = "block";
+      return { token };
+    }
+
+    async function uploadAndExtractIBAN(file, token) {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `rib-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("pharmacie")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        alert("❌ Erreur lors de l'envoi du fichier.");
+        return null;
+      }
+
+      // Appel à la function Supabase pour extraire l'IBAN
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/extract-iban`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ path: filePath })
+      });
+
+      const result = await res.json();
+      return result.iban || "";
+    }
+
+    const { token } = await getUserAndRecord();
+
+    document.getElementById("ribFile").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById("ibanPreview").textContent = "🔍 Analyse du fichier...";
+      const iban = await uploadAndExtractIBAN(file, token);
+      document.getElementById("iban").value = iban;
+      document.getElementById("ibanPreview").textContent = iban
+        ? `✅ IBAN détecté : ${iban}`
+        : "❌ Aucun IBAN détecté.";
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const iban = document.getElementById("iban").value.trim();
+
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: recordId,
+          fields: { IBAN: iban }
+        })
+      });
+
+      const json = await res.json();
+      if (res.ok) {
+        alert("✅ IBAN enregistré !");
+        window.location.href = "merci.html";
+      } else {
+        alert("❌ Erreur lors de l'enregistrement.");
+        console.error(json);
+      }
+    });
+  </script>
+</body>
+</html>
