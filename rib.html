@@ -34,6 +34,7 @@
     let recordId = null;
     const form = document.getElementById("ribForm");
     const status = document.getElementById("status");
+    let token = "";
 
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
@@ -46,7 +47,7 @@
       }
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
       const session = await supabase.auth.getSession();
-      const token = session.data.session.access_token;
+      token = session.data.session.access_token;
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -73,14 +74,17 @@
           try {
             const res = await fetch(`${SUPABASE_FUNCTION_BASE}/upload-rib`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
               body: JSON.stringify({ base64File, filename }),
             });
 
             const json = await res.json();
             if (res.ok) {
               console.log("✅ Fichier uploadé avec succès via Edge Function");
-              resolve(filename); // on peut retourner le nom ou l'URL plus tard
+              resolve(filename); // On peut utiliser le nom ensuite
             } else {
               console.error("❌ Erreur côté fonction :", json);
               reject("Erreur upload");
@@ -94,7 +98,7 @@
       });
     }
 
-    const { token } = await getUserAndRecord();
+    await getUserAndRecord();
 
     document.getElementById("ribFile").addEventListener("change", async (e) => {
       const file = e.target.files[0];
@@ -104,8 +108,8 @@
 
       try {
         await uploadFileViaFunction(file);
-        document.getElementById("ibanPreview").textContent = "✅ Fichier envoyé. Détection en attente (fonction extract à connecter)";
-        // Tu peux ici ensuite appeler extract-iban avec le nom du fichier si tu veux
+        document.getElementById("ibanPreview").textContent = "✅ Fichier envoyé. Détection à venir.";
+        // Tu peux ici appeler extract-iban si souhaité
       } catch (err) {
         document.getElementById("ibanPreview").textContent = "❌ Erreur upload";
       }
