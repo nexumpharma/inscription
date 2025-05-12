@@ -7,7 +7,7 @@
     body { font-family: sans-serif; margin: 2rem; max-width: 600px; }
     label { display: block; margin-top: 1rem; font-weight: bold; }
     input, button { margin-top: 0.5rem; padding: 8px; width: 100%; }
-    #ibanPreview { margin-top: 1rem; font-weight: bold; }
+    #ribPreview { margin-top: 1rem; }
   </style>
 </head>
 <body>
@@ -19,9 +19,9 @@
     <label for="ribFile">Choisissez un fichier RIB (PDF ou image) :</label>
     <input type="file" id="ribFile" accept=".pdf,image/*" required />
 
-    <div id="ibanPreview"></div>
+    <div id="ribPreview"></div>
 
-    <label for="iban">IBAN détecté (modifiable) :</label>
+    <label for="iban">IBAN (à saisir manuellement) :</label>
     <input type="text" id="iban" name="iban" required />
 
     <button type="submit">Enregistrer l'IBAN</button>
@@ -29,14 +29,16 @@
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
-    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
+    import { SUPABASE_FUNCTION_BASE, SUPABASE_URL } from './js/config.js';
 
     let recordId = null;
-    const form = document.getElementById("ribForm");
-    const status = document.getElementById("status");
     let token = "";
+    let ribStoragePath = "";
 
     document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    const status = document.getElementById("status");
+    const form = document.getElementById("ribForm");
 
     async function getUserAndRecord() {
       await checkAndRestoreSessionFromURL();
@@ -61,16 +63,15 @@
 
       recordId = record.id;
       form.style.display = "block";
-      return { token };
     }
 
-    async function uploadFileViaFunction(file) {
+    async function uploadFile(file) {
       const reader = new FileReader();
       return new Promise((resolve, reject) => {
         reader.onload = async () => {
-          const base64File = reader.result.split(",")[1]; // remove base64 prefix
-          const filename = file.name;
-          const path = `rib/${Date.now()}-${filename}`;
+          const base64File = reader.result.split(",")[1];
+          const filename = `${Date.now()}-${file.name}`;
+          ribStoragePath = `rib/${filename}`;
 
           try {
             const res = await fetch(`${SUPABASE_FUNCTION_BASE}/upload-rib`, {
@@ -79,19 +80,19 @@
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
               },
-              body: JSON.stringify({ base64File, filename }),
+              body: JSON.stringify({ base64File, filename })
             });
 
-            const json = await res.json();
             if (res.ok) {
-              console.log("✅ Fichier uploadé avec succès via Edge Function");
-              resolve(path);
+              console.log("✅ Fichier RIB uploadé :", ribStoragePath);
+              resolve(ribStoragePath);
             } else {
-              console.error("❌ Erreur côté fonction :", json);
-              reject("Erreur upload");
+              const err = await res.json();
+              console.error("❌ Erreur upload :", err);
+              reject(err);
             }
           } catch (err) {
-            console.error("❌ Exception fonction upload:", err);
+            console.error("❌ Erreur JS upload :", err);
             reject(err);
           }
         };
@@ -99,50 +100,32 @@
       });
     }
 
-    async function extractIbanFromFile(path) {
-      try {
-        const res = await fetch(`${SUPABASE_FUNCTION_BASE}/extract-iban`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ path }),
-        });
+    function displayPreview(path, type) {
+      const url = `${SUPABASE_URL}/storage/v1/object/public/pharmacie/${path}`;
+      const preview = document.getElementById("ribPreview");
+      preview.innerHTML = "";
 
-        const json = await res.json();
-        if (res.ok && json.iban) {
-          console.log("✅ IBAN détecté :", json.iban);
-          return json.iban;
-        } else {
-          console.warn("❌ Aucun IBAN détecté.");
-          return "";
-        }
-      } catch (err) {
-        console.error("❌ Erreur lors de l'appel extract-iban :", err);
-        return "";
+      if (type === "application/pdf") {
+        preview.innerHTML = `<embed src="${url}" type="application/pdf" width="100%" height="500px" />`;
+      } else {
+        const img = document.createElement("img");
+        img.src = url;
+        img.style.maxWidth = "100%";
+        preview.appendChild(img);
       }
     }
-
-    await getUserAndRecord();
 
     document.getElementById("ribFile").addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      document.getElementById("ibanPreview").textContent = "🔁 Upload du fichier...";
+      const type = file.type;
 
       try {
-        const remotePath = await uploadFileViaFunction(file);
-        document.getElementById("ibanPreview").textContent = "📄 Fichier envoyé. Détection IBAN...";
-
-        const iban = await extractIbanFromFile(remotePath);
-        document.getElementById("iban").value = iban;
-        document.getElementById("ibanPreview").textContent = iban
-          ? `✅ IBAN détecté : ${iban}`
-          : "❌ Aucun IBAN détecté.";
+        await uploadFile(file);
+        displayPreview(ribStoragePath, type);
       } catch (err) {
-        document.getElementById("ibanPreview").textContent = "❌ Erreur upload";
+        alert("❌ Erreur lors de l'envoi du fichier.");
       }
     });
 
@@ -158,19 +141,22 @@
         },
         body: JSON.stringify({
           id: recordId,
-          fields: { IBAN: iban }
+          fields: {
+            IBAN: iban,
+            "Lien RIB": ribStoragePath ? `https://nywocoxkfdrsscvnvjas.supabase.co/storage/v1/object/pharmacie/${ribStoragePath}` : ""
+          }
         })
       });
 
-      const json = await res.json();
       if (res.ok) {
         alert("✅ IBAN enregistré !");
         window.location.href = "merci.html";
       } else {
         alert("❌ Erreur lors de l'enregistrement.");
-        console.error(json);
       }
     });
+
+    await getUserAndRecord();
   </script>
 </body>
 </html>
