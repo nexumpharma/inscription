@@ -32,39 +32,29 @@
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
     let recordId = null;
-    const status = document.getElementById("status");
     const form = document.getElementById("ribForm");
+    const status = document.getElementById("status");
 
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
     async function getUserAndRecord() {
       await checkAndRestoreSessionFromURL();
-
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         status.textContent = "❌ Vous n'êtes pas connecté.";
-        console.warn("Utilisateur non connecté");
         return null;
       }
-
-      console.log("Utilisateur connecté :", user);
-
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
-
       const session = await supabase.auth.getSession();
       const token = session.data.session.access_token;
-
-      console.log("Rôle Supabase :", session.data.session?.user?.role || "aucun rôle détecté");
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const json = await res.json();
       const record = json.records?.[0];
-
       if (!record) {
         status.textContent = "❌ Aucune fiche pharmacie trouvée.";
-        console.warn("Aucune donnée retournée par get-pharmacie");
         return null;
       }
 
@@ -73,37 +63,35 @@
       return { token };
     }
 
-    async function uploadAndExtractIBAN(file, token) {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `rib-${Date.now()}.${fileExt}`;
+    async function uploadFileViaFunction(file) {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async () => {
+          const base64File = reader.result.split(",")[1]; // remove base64 prefix
+          const filename = file.name;
 
-      console.log("Envoi fichier vers Supabase:", filePath);
-      console.log("Fichier sélectionné:", file);
+          try {
+            const res = await fetch(`${SUPABASE_FUNCTION_BASE}/upload-rib`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ base64File, filename }),
+            });
 
-      const { error: uploadError } = await supabase.storage
-        .from("pharmacie")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) {
-        console.error("Erreur Supabase upload:", uploadError);
-        alert("❌ Erreur lors de l'envoi du fichier.");
-        return null;
-      }
-
-      console.log("Fichier uploadé avec succès.");
-
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/extract-iban`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ path: filePath })
+            const json = await res.json();
+            if (res.ok) {
+              console.log("✅ Fichier uploadé avec succès via Edge Function");
+              resolve(filename); // on peut retourner le nom ou l'URL plus tard
+            } else {
+              console.error("❌ Erreur côté fonction :", json);
+              reject("Erreur upload");
+            }
+          } catch (err) {
+            console.error("❌ Exception fonction upload:", err);
+            reject(err);
+          }
+        };
+        reader.readAsDataURL(file);
       });
-
-      const result = await res.json();
-      console.log("Résultat IBAN détecté :", result);
-      return result.iban || "";
     }
 
     const { token } = await getUserAndRecord();
@@ -112,12 +100,15 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      document.getElementById("ibanPreview").textContent = "🔍 Analyse du fichier...";
-      const iban = await uploadAndExtractIBAN(file, token);
-      document.getElementById("iban").value = iban;
-      document.getElementById("ibanPreview").textContent = iban
-        ? `✅ IBAN détecté : ${iban}`
-        : "❌ Aucun IBAN détecté.";
+      document.getElementById("ibanPreview").textContent = "🔁 Upload du fichier...";
+
+      try {
+        await uploadFileViaFunction(file);
+        document.getElementById("ibanPreview").textContent = "✅ Fichier envoyé. Détection en attente (fonction extract à connecter)";
+        // Tu peux ici ensuite appeler extract-iban avec le nom du fichier si tu veux
+      } catch (err) {
+        document.getElementById("ibanPreview").textContent = "❌ Erreur upload";
+      }
     });
 
     form.addEventListener("submit", async (e) => {
