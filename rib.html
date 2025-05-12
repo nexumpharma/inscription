@@ -68,11 +68,15 @@
       const fileExt = file.name.split('.').pop();
       const filePath = `rib-${Date.now()}.${fileExt}`;
 
+      console.log("Envoi fichier vers Supabase:", filePath);
+      console.log("Fichier sélectionné:", file);
+
       const { error: uploadError } = await supabase.storage
         .from("pharmacie")
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
+        console.error("Erreur Supabase upload:", uploadError);
         alert("❌ Erreur lors de l'envoi du fichier.");
         return null;
       }
