@@ -79,128 +79,133 @@
   </form>
 
   <script type="module">
-    import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
-    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
+  import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+  import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-    let recordId = null;
+  let recordId = null;
 
-    document.getElementById("logoutBtn").addEventListener("click", logout);
+  document.getElementById("logoutBtn").addEventListener("click", logout);
 
-    async function fetchPharmacieData(token) {
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const json = await res.json();
-      return json.records?.[0] || null;
+  async function fetchPharmacieData(token) {
+    const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const json = await res.json();
+    return json.records?.[0] || null;
+  }
+
+  async function savePharmacieData(token, data) {
+    const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id: recordId, fields: data })
+    });
+    return res.ok;
+  }
+
+  async function main() {
+    const status = document.getElementById("status");
+    await checkAndRestoreSessionFromURL();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      status.textContent = "❌ Vous n'êtes pas connecté.";
+      return;
     }
 
-    async function savePharmacieData(token, data) {
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ id: recordId, fields: data })
-      });
-      return res.ok;
+    status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+    const session = await supabase.auth.getSession();
+    const token = session.data.session.access_token;
+
+    const record = await fetchPharmacieData(token);
+    if (!record) {
+      status.textContent = "Aucune donnée trouvée.";
+      return;
     }
 
-    async function main() {
-      const status = document.getElementById("status");
-      await checkAndRestoreSessionFromURL();
+    recordId = record.id;
+    const form = document.getElementById("pharmacyForm");
+    form.style.display = "block";
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        status.textContent = "❌ Vous n'êtes pas connecté.";
-        return;
-      }
-
-      status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
-      const session = await supabase.auth.getSession();
-      const token = session.data.session.access_token;
-
-      const record = await fetchPharmacieData(token);
-      if (!record) {
-        status.textContent = "Aucune donnée trouvée.";
-        return;
-      }
-
-      recordId = record.id;
-      const form = document.getElementById("pharmacyForm");
-      form.style.display = "block";
-
-      for (const [key, value] of Object.entries(record.fields)) {
-        const input = form.querySelector(`[name="${key}"]`);
-        if (input) input.value = value;
-      }
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(form));
-        let erreurs = [];
-
-        const regex = {
-          email: /^[\\w.-]+@[\\w.-]+\\.\\w+$/,
-          telPortable: /^0[67]\\d{8}$/,
-          telPharma: /^0\\d{9}$/,
-          cip: /^2\\d{6}$/,
-          finess: /^(\\d{9}|2[abAB]\\d{7})$/,
-          num9: /^\\d{9}$/
-        };
-
-        form.querySelectorAll("input, select").forEach(el => {
-          el.classList.remove("error");
-          const err = el.parentElement.querySelector(".error-message");
-          if (err) err.remove();
-        });
-
-        function invalide(champ, msg) {
-          erreurs.push(msg);
-          const el = form.querySelector(`[name="${champ}"]`);
-          if (el) {
-            el.classList.add("error");
-            const span = document.createElement("span");
-            span.className = "error-message";
-            span.textContent = msg;
-            el.parentElement.appendChild(span);
-          }
-        }
-
-        if (formData["Mail du titulaire"] && !regex.email.test(formData["Mail du titulaire"])) {
-          invalide("Mail du titulaire", "Email titulaire invalide");
-        }
-        if (formData["Mail de la pharmacie"] && !regex.email.test(formData["Mail de la pharmacie"])) {
-          invalide("Mail de la pharmacie", "Email pharmacie invalide");
-        }
-        if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
-          invalide("Portable du titulaire", "Téléphone portable invalide");
-        }
-        if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
-          invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
-        }
-        if (formData["CIP"] && !regex.cip.test(formData["CIP"])) {
-          invalide("CIP", "CIP invalide (7 chiffres, doit commencer par 2)");
-        }
-        if (formData["FINESS"] && !regex.finess.test(formData["FINESS"])) {
-          invalide("FINESS", "FINESS invalide (9 chiffres ou 2A/2B + chiffres)");
-        }
-        if (formData["RCS (SIREN)"] && !regex.num9.test(formData["RCS (SIREN)"])) {
-          invalide("RCS (SIREN)", "SIREN invalide (9 chiffres)");
-        }
-
-        if (erreurs.length > 0) return;
-
-        const ok = await savePharmacieData(token, formData);
-        if (ok) {
-          window.location.href = "rib.html";
-        } else {
-          alert("❌ Erreur lors de l'enregistrement.");
-        }
-      });
+    for (const [key, value] of Object.entries(record.fields)) {
+      const input = form.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
     }
 
-    main();
-  </script>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(form));
+      let erreurs = [];
+
+      const regex = {
+        email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        telPortable: /^0[67]\d{8}$/,
+        telPharma: /^0\d{9}$/,
+        cip: /^2\d{6}$/,
+        finess: /^(\d{9}|2[abAB]\d{7})$/,
+        num9: /^\d{9}$/
+      };
+
+      form.querySelectorAll("input, select").forEach(el => {
+        el.classList.remove("error");
+        const err = el.parentElement.querySelector(".error-message");
+        if (err) err.remove();
+      });
+
+      function invalide(champ, msg) {
+        erreurs.push(msg);
+        const el = form.querySelector(`[name="${champ}"]`);
+        if (el) {
+          el.classList.add("error");
+          const span = document.createElement("span");
+          span.className = "error-message";
+          span.textContent = msg;
+          el.parentElement.appendChild(span);
+        }
+      }
+
+      // Nettoyage des champs à valider
+      const mailTitulaire = formData["Mail du titulaire"]?.trim();
+      const mailPharma = formData["Mail de la pharmacie"]?.trim();
+
+      if (mailTitulaire && !regex.email.test(mailTitulaire)) {
+        invalide("Mail du titulaire", "Email titulaire invalide");
+      }
+      if (mailPharma && !regex.email.test(mailPharma)) {
+        invalide("Mail de la pharmacie", "Email pharmacie invalide");
+      }
+      if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
+        invalide("Portable du titulaire", "Téléphone portable invalide");
+      }
+      if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
+        invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
+      }
+      if (formData["CIP"] && !regex.cip.test(formData["CIP"])) {
+        invalide("CIP", "CIP invalide (7 chiffres, doit commencer par 2)");
+      }
+      if (formData["FINESS"] && !regex.finess.test(formData["FINESS"])) {
+        invalide("FINESS", "FINESS invalide (9 chiffres ou 2A/2B + chiffres)");
+      }
+      if (formData["RCS (SIREN)"] && !regex.num9.test(formData["RCS (SIREN)"])) {
+        invalide("RCS (SIREN)", "SIREN invalide (9 chiffres)");
+      }
+
+      if (erreurs.length > 0) return;
+
+      const ok = await savePharmacieData(token, formData);
+      if (ok) {
+        window.location.href = "rib.html";
+      } else {
+        alert("❌ Erreur lors de l'enregistrement.");
+      }
+    });
+  }
+
+  main();
+</script>
+
 </body>
 </html>
