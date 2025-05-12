@@ -29,7 +29,7 @@
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
-    import { SUPABASE_FUNCTION_BASE, SUPABASE_URL } from './js/config.js';
+    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
     let recordId = null;
     let token = "";
@@ -85,7 +85,7 @@
 
             if (res.ok) {
               console.log("✅ Fichier RIB uploadé :", ribStoragePath);
-              resolve(ribStoragePath);
+              resolve({ path: ribStoragePath, type: file.type });
             } else {
               const err = await res.json();
               console.error("❌ Erreur upload :", err);
@@ -100,8 +100,18 @@
       });
     }
 
-    function displayPreview(path, type) {
-      const url = `${SUPABASE_URL}/storage/v1/object/public/pharmacie/${path}`;
+    async function displayPreview(path, type) {
+      const { data, error } = await supabase
+        .storage
+        .from("pharmacie")
+        .createSignedUrl(path, 3600); // 1h
+
+      if (error || !data?.signedUrl) {
+        console.error("❌ Impossible de générer le lien signé :", error);
+        return;
+      }
+
+      const url = data.signedUrl;
       const preview = document.getElementById("ribPreview");
       preview.innerHTML = "";
 
@@ -119,11 +129,9 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      const type = file.type;
-
       try {
-        await uploadFile(file);
-        displayPreview(ribStoragePath, type);
+        const result = await uploadFile(file);
+        await displayPreview(result.path, result.type);
       } catch (err) {
         alert("❌ Erreur lors de l'envoi du fichier.");
       }
@@ -143,7 +151,9 @@
           id: recordId,
           fields: {
             IBAN: iban,
-            "Lien RIB": ribStoragePath ? `https://nywocoxkfdrsscvnvjas.supabase.co/storage/v1/object/pharmacie/${ribStoragePath}` : ""
+            "Lien RIB": ribStoragePath
+              ? `https://nywocoxkfdrsscvnvjas.supabase.co/storage/v1/object/pharmacie/${ribStoragePath}`
+              : ""
           }
         })
       });
