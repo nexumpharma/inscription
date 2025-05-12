@@ -6,10 +6,11 @@
   <style>
     body { font-family: sans-serif; margin: 2rem; }
     form { display: flex; flex-direction: column; gap: 10px; max-width: 600px; }
-    label { font-weight: bold; }
-    input, select { padding: 8px; }
+    label { font-weight: bold; display: flex; flex-direction: column; }
+    input, select { padding: 8px; margin-bottom: 4px; }
     h2 { margin-top: 2rem; color: #333; }
     .error { border: 2px solid red; }
+    .error-message { color: red; font-weight: normal; font-size: 0.9em; min-height: 1.2em; }
   </style>
 </head>
 <body>
@@ -19,29 +20,34 @@
 
   <form id="pharmacyForm" style="display:none; margin-top:2rem;" novalidate>
     <h2>Informations du titulaire</h2>
+
     <label>Civilité
       <select name="Civilité" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
         <option value="Monsieur">Monsieur</option>
         <option value="Madame">Madame</option>
       </select>
+      <span class="error-message"></span>
     </label>
-    <label>Prénom <input name="Prénom" type="text" /></label>
-    <label>Nom <input name="Nom" type="text" /></label>
-    <label>Mail du titulaire <input name="Mail du titulaire" type="email" /></label>
-    <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /></label>
+
+    <label>Prénom <input name="Prénom" type="text" /><span class="error-message"></span></label>
+    <label>Nom <input name="Nom" type="text" /><span class="error-message"></span></label>
+    <label>Mail du titulaire <input name="Mail du titulaire" type="email" /><span class="error-message"></span></label>
+    <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /><span class="error-message"></span></label>
 
     <h2>Informations de la pharmacie</h2>
-    <label>Raison sociale <input name="Raison sociale" type="text" /></label>
-    <label>Nom commercial <input name="Nom commercial" type="text" /></label>
-    <label>Mail de la pharmacie <input name="Mail de la pharmacie" type="email" /></label>
-    <label>Téléphone de la pharmacie <input name="Téléphone de la pharmacie" type="tel" /></label>
-    <label>Adresse <input name="Adresse" type="text" /></label>
-    <label>Code postal <input name="Code postal" type="text" /></label>
-    <label>Ville <input name="Ville" type="text" /></label>
-    <label>CIP <input name="CIP" type="text" /></label>
-    <label>FINESS <input name="FINESS" type="text" /></label>
-    <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /></label>
+
+    <label>Raison sociale <input name="Raison sociale" type="text" /><span class="error-message"></span></label>
+    <label>Nom commercial <input name="Nom commercial" type="text" /><span class="error-message"></span></label>
+    <label>Mail de la pharmacie <input name="Mail de la pharmacie" type="email" /><span class="error-message"></span></label>
+    <label>Téléphone de la pharmacie <input name="Téléphone de la pharmacie" type="tel" /><span class="error-message"></span></label>
+    <label>Adresse <input name="Adresse" type="text" /><span class="error-message"></span></label>
+    <label>Code postal <input name="Code postal" type="text" /><span class="error-message"></span></label>
+    <label>Ville <input name="Ville" type="text" /><span class="error-message"></span></label>
+    <label>CIP <input name="CIP" type="text" /><span class="error-message"></span></label>
+    <label>FINESS <input name="FINESS" type="text" /><span class="error-message"></span></label>
+    <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /><span class="error-message"></span></label>
+
     <label>Type de pharmacie
       <select name="Type de pharmacie" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -51,7 +57,9 @@
         <option>Pôle touristique</option>
         <option>Rurale</option>
       </select>
+      <span class="error-message"></span>
     </label>
+
     <label>Groupement
       <select name="Groupement" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -60,7 +68,9 @@
         <option>Aprium</option>
         <option>Autre</option>
       </select>
+      <span class="error-message"></span>
     </label>
+
     <label>LGO
       <select name="LGO" required>
         <option value="" disabled selected hidden>— Sélectionnez —</option>
@@ -69,7 +79,9 @@
         <option>LGPI</option>
         <option>Autre</option>
       </select>
+      <span class="error-message"></span>
     </label>
+
     <button type="submit">Enregistrer</button>
   </form>
 
@@ -78,8 +90,21 @@
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
     let recordId = null;
-
     document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    function afficherErreur(champ, message) {
+      const input = document.querySelector(`[name="${champ}"]`);
+      if (!input) return;
+      const container = input.closest("label");
+      const span = container.querySelector(".error-message");
+      span.textContent = message;
+      input.classList.add("error");
+    }
+
+    function clearErreurs() {
+      document.querySelectorAll(".error-message").forEach(s => s.textContent = "");
+      document.querySelectorAll("input, select").forEach(i => i.classList.remove("error"));
+    }
 
     async function fetchPharmacieData(token) {
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
@@ -134,56 +159,48 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const formData = Object.fromEntries(new FormData(form));
-        let erreurs = [];
+        clearErreurs();
 
+        const formData = Object.fromEntries(new FormData(form));
         const regex = {
-          email: /^[\\w.-]+@[\\w.-]+\\.\\w+$/,
-          telPortable: /^0[67]\\d{8}$/,
-          telPharma: /^0\\d{9}$/,
-          num7: /^\\d{7}$/,
-          finess: /^(\\d{9}|2[abAB]\\d{7})$/,
-          num9: /^\\d{9}$/
+          email: /^[\w.-]+@[\w.-]+\.\w+$/,
+          telPortable: /^0[67]\d{8}$/,
+          telPharma: /^0\d{9}$/,
+          num7: /^\d{7}$/,
+          finess: /^(\d{9}|2[abAB]\d{7})$/,
+          num9: /^\d{9}$/
         };
 
-        form.querySelectorAll("input, select").forEach(el => el.classList.remove("error"));
-
-        function invalide(champ, msg) {
-          erreurs.push(msg);
-          const el = form.querySelector(`[name="${champ}"]`);
-          if (el) el.classList.add("error");
-        }
+        let erreurs = false;
 
         if (!regex.email.test(formData["Mail du titulaire"])) {
-          invalide("Mail du titulaire", "Email titulaire invalide");
+          afficherErreur("Mail du titulaire", "Email titulaire invalide"); erreurs = true;
         }
         if (!regex.email.test(formData["Mail de la pharmacie"])) {
-          invalide("Mail de la pharmacie", "Email pharmacie invalide");
+          afficherErreur("Mail de la pharmacie", "Email pharmacie invalide"); erreurs = true;
         }
         if (!regex.telPortable.test(formData["Portable du titulaire"])) {
-          invalide("Portable du titulaire", "Téléphone portable invalide");
+          afficherErreur("Portable du titulaire", "Tél. portable invalide"); erreurs = true;
         }
         if (!regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
-          invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
+          afficherErreur("Téléphone de la pharmacie", "Tél. fixe invalide"); erreurs = true;
         }
         if (!regex.num7.test(formData["CIP"])) {
-          invalide("CIP", "CIP invalide (7 chiffres)");
+          afficherErreur("CIP", "CIP invalide (7 chiffres)"); erreurs = true;
         }
         if (!regex.finess.test(formData["FINESS"])) {
-          invalide("FINESS", "FINESS invalide (9 chiffres ou 2a/2b + 7 chiffres)");
+          afficherErreur("FINESS", "FINESS invalide (9 chiffres ou 2a/2b + 7 chiffres)"); erreurs = true;
         }
         if (!regex.num9.test(formData["RCS (SIREN)"])) {
-          invalide("RCS (SIREN)", "SIREN invalide (9 chiffres)");
+          afficherErreur("RCS (SIREN)", "SIREN invalide (9 chiffres)"); erreurs = true;
         }
-        if (!formData["Civilité"]) invalide("Civilité", "Champ obligatoire");
-        if (!formData["Type de pharmacie"]) invalide("Type de pharmacie", "Champ obligatoire");
-        if (!formData["Groupement"]) invalide("Groupement", "Champ obligatoire");
-        if (!formData["LGO"]) invalide("LGO", "Champ obligatoire");
+        ["Civilité", "Type de pharmacie", "Groupement", "LGO"].forEach(champ => {
+          if (!formData[champ]) {
+            afficherErreur(champ, "Champ obligatoire"); erreurs = true;
+          }
+        });
 
-        if (erreurs.length > 0) {
-          alert("❌ Merci de corriger les erreurs dans le formulaire.");
-          return;
-        }
+        if (erreurs) return;
 
         const ok = await savePharmacieData(token, formData);
         alert(ok ? "✅ Données enregistrées" : "❌ Erreur à l'enregistrement");
