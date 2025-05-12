@@ -30,10 +30,13 @@
         headers: { Authorization: `Bearer ${token}` }
       });
       const json = await res.json();
+      console.log("✅ Données reçues de get-pharmacie:", json);
       return json.records?.[0] || null;
     }
 
     async function savePharmacieData(token, data) {
+      console.log("📤 Données à enregistrer :", data);
+      console.log("🆔 Record ID :", recordId);
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
         headers: {
@@ -42,6 +45,10 @@
         },
         body: JSON.stringify({ id: recordId, fields: data })
       });
+
+      const json = await res.json();
+      console.log("📥 Réponse d'Airtable :", json);
+
       return res.ok;
     }
 
@@ -94,6 +101,7 @@
       }
 
       recordId = record.id;
+      console.log("🔑 ID du record Airtable :", recordId);
       await buildForm(record.fields, token);
     }
 
