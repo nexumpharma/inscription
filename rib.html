@@ -104,7 +104,7 @@
 
     async function waitForSignedUrl(path, maxTries = 10, delayMs = 1000) {
       for (let i = 0; i < maxTries; i++) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .storage
           .from("pharmacie")
           .createSignedUrl(path, 3600);
@@ -162,9 +162,7 @@
           id: recordId,
           fields: {
             IBAN: iban,
-            "Lien RIB": ribStoragePath
-              ? `https://nywocoxkfdrsscvnvjas.supabase.co/storage/v1/object/pharmacie/${ribStoragePath}`
-              : ""
+            "Chemin RIB": ribStoragePath
           }
         })
       });
