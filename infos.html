@@ -22,7 +22,7 @@
     <h2>Informations du titulaire</h2>
 
     <label>Civilité
-      <select name="Civilité" required>
+      <select name="Civilité">
         <option value="" disabled selected hidden>— Sélectionnez —</option>
         <option value="Monsieur">Monsieur</option>
         <option value="Madame">Madame</option>
@@ -49,7 +49,7 @@
     <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /><span class="error-message"></span></label>
 
     <label>Type de pharmacie
-      <select name="Type de pharmacie" required>
+      <select name="Type de pharmacie">
         <option value="" disabled selected hidden>— Sélectionnez —</option>
         <option>Centre-Ville</option>
         <option>Périphérie et banlieue résidentielle</option>
@@ -61,7 +61,7 @@
     </label>
 
     <label>Groupement
-      <select name="Groupement" required>
+      <select name="Groupement">
         <option value="" disabled selected hidden>— Sélectionnez —</option>
         <option>Elsie</option>
         <option>Pharmabest</option>
@@ -72,7 +72,7 @@
     </label>
 
     <label>LGO
-      <select name="LGO" required>
+      <select name="LGO">
         <option value="" disabled selected hidden>— Sélectionnez —</option>
         <option>Smart RX</option>
         <option>WinPharma</option>
@@ -166,39 +166,34 @@
           email: /^[\w.-]+@[\w.-]+\.\w+$/,
           telPortable: /^0[67]\d{8}$/,
           telPharma: /^0\d{9}$/,
-          num7: /^\d{7}$/,
+          cip: /^2\d{6}$/,
           finess: /^(\d{9}|2[abAB]\d{7})$/,
           num9: /^\d{9}$/
         };
 
         let erreurs = false;
 
-        if (!regex.email.test(formData["Mail du titulaire"])) {
+        if (formData["Mail du titulaire"] && !regex.email.test(formData["Mail du titulaire"])) {
           afficherErreur("Mail du titulaire", "Email titulaire invalide"); erreurs = true;
         }
-        if (!regex.email.test(formData["Mail de la pharmacie"])) {
+        if (formData["Mail de la pharmacie"] && !regex.email.test(formData["Mail de la pharmacie"])) {
           afficherErreur("Mail de la pharmacie", "Email pharmacie invalide"); erreurs = true;
         }
-        if (!regex.telPortable.test(formData["Portable du titulaire"])) {
+        if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
           afficherErreur("Portable du titulaire", "Tél. portable invalide"); erreurs = true;
         }
-        if (!regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
+        if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
           afficherErreur("Téléphone de la pharmacie", "Tél. fixe invalide"); erreurs = true;
         }
-        if (!regex.num7.test(formData["CIP"])) {
-          afficherErreur("CIP", "CIP invalide (7 chiffres)"); erreurs = true;
+        if (formData["CIP"] && !regex.cip.test(formData["CIP"])) {
+          afficherErreur("CIP", "CIP invalide (doit commencer par 2 et contenir 7 chiffres)"); erreurs = true;
         }
-        if (!regex.finess.test(formData["FINESS"])) {
-          afficherErreur("FINESS", "FINESS invalide (9 chiffres ou 2a/2b + 7 chiffres)"); erreurs = true;
+        if (formData["FINESS"] && !regex.finess.test(formData["FINESS"])) {
+          afficherErreur("FINESS", "FINESS invalide (9 chiffres ou 2A/2B + chiffres)"); erreurs = true;
         }
-        if (!regex.num9.test(formData["RCS (SIREN)"])) {
+        if (formData["RCS (SIREN)"] && !regex.num9.test(formData["RCS (SIREN)"])) {
           afficherErreur("RCS (SIREN)", "SIREN invalide (9 chiffres)"); erreurs = true;
         }
-        ["Civilité", "Type de pharmacie", "Groupement", "LGO"].forEach(champ => {
-          if (!formData[champ]) {
-            afficherErreur(champ, "Champ obligatoire"); erreurs = true;
-          }
-        });
 
         if (erreurs) return;
 
