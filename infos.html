@@ -2,111 +2,62 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Formulaire Pharmacie</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="js/auth.js"></script>
+  <title>Infos Pharmacie</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    form { display: flex; flex-direction: column; gap: 10px; max-width: 600px; }
+    label { font-weight: bold; }
+    input, select { padding: 8px; }
+    h2 { margin-top: 2rem; color: #333; }
+  </style>
 </head>
 <body>
   <h1>Bienvenue</h1>
   <div id="status">Chargement...</div>
-  <button onclick="logout()">Se déconnecter</button>
+  <button id="logoutBtn" style="margin-top: 1rem;">Se déconnecter</button>
+  <form id="pharmacyForm" style="display:none; margin-top:2rem;"></form>
 
-  <form id="pharmacyForm" style="margin-top: 2rem; display: none;"></form>
+  <script type="module">
+    import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-  <script>
-    const AIRTABLE_API_KEY = '<TA_CLEF_API>';
-    const AIRTABLE_BASE_ID = 'appBiBnA6VMT1UHWl';
-    const AIRTABLE_TABLE = 'Pharmacies';
+    let recordId = null;
 
-    const fields = {
-      "Civilité": ["Monsieur", "Madame"],
-      "Prénom": "text",
-      "Nom": "text",
-      "Mail du titulaire": "email",
-      "Portable du titulaire": "tel",
-      "Raison sociale": "text",
-      "Nom commercial": "text",
-      "Mail de la pharmacie": "email",
-      "Téléphone de la pharmacie": "tel",
-      "Adresse": "text",
-      "Code postal": "text",
-      "Ville": "text",
-      "CIP": "text",
-      "FINESS": "text",
-      "RCS (SIREN)": "text",
-      "Type de pharmacie": ["Centre-Ville", "Périphérie et banlieue résidentielle", "Zone commerciale", "Pôle touristique", "Rurale"],
-      "Groupement": ["Giropharm", "Pharmabest", "Aprium", "Autre"],
-      "LGO": ["Smart RX", "WinPharma", "LGPI", "Autre"]
-    };
+    document.getElementById("logoutBtn").addEventListener("click", logout);
 
-    function isValidPhone(num, start06_07 = false) {
-      return /^\d{10}$/.test(num) && (!start06_07 || num.startsWith('06') || num.startsWith('07'));
+    async function fetchPharmacieData(token) {
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      return json.records?.[0] || null;
     }
 
-    async function buildForm(user) {
-      const status = document.getElementById("status");
+    async function savePharmacieData(token, data) {
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id: recordId, fields: data })
+      });
+      return res.ok;
+    }
+
+    async function buildForm(data, token) {
       const form = document.getElementById("pharmacyForm");
-      const email = user.email;
-
-      const response = await fetch(
-        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}?filterByFormula={Mail du titulaire}='${email}'`,
-        {
-          headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` }
-        }
-      );
-
-      const data = await response.json();
-      const record = data.records[0];
-      if (!record) {
-        status.textContent = "Aucune donnée trouvée dans Airtable.";
-        return;
-      }
-
+      form.innerHTML = "";
       form.style.display = "block";
-      const values = record.fields;
-      const id = record.id;
 
-      const rubrique1 = document.createElement("h2");
-      rubrique1.textContent = "Informations du titulaire";
-      form.appendChild(rubrique1);
-
-      const titulaireFields = [
-        "Civilité", "Prénom", "Nom", "Mail du titulaire", "Portable du titulaire"
-      ];
-      const pharmacieFields = Object.keys(fields).filter(f => !titulaireFields.includes(f));
-
-      for (let section of [titulaireFields, pharmacieFields]) {
-        if (section === pharmacieFields) {
-          const rubrique2 = document.createElement("h2");
-          rubrique2.textContent = "Informations de la pharmacie";
-          form.appendChild(rubrique2);
-        }
-        for (let key of section) {
-          const label = document.createElement("label");
-          label.textContent = key;
-          const value = values[key] || "";
-          let input;
-
-          if (Array.isArray(fields[key])) {
-            input = document.createElement("select");
-            fields[key].forEach(opt => {
-              const option = document.createElement("option");
-              option.value = opt;
-              option.textContent = opt;
-              if (opt === value) option.selected = true;
-              input.appendChild(option);
-            });
-          } else {
-            input = document.createElement("input");
-            input.type = fields[key];
-            input.value = value;
-          }
-
-          input.name = key;
-          label.appendChild(input);
-          form.appendChild(label);
-        }
+      for (const [key, value] of Object.entries(data)) {
+        const label = document.createElement("label");
+        label.textContent = key;
+        const input = document.createElement("input");
+        input.name = key;
+        input.value = value;
+        label.appendChild(input);
+        form.appendChild(label);
       }
 
       const submit = document.createElement("button");
@@ -117,42 +68,36 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const formData = Object.fromEntries(new FormData(form));
-
-        if (!/^\d{7}$/.test(formData["CIP"])) return alert("CIP invalide");
-        if (!/^\d{9}$/.test(formData["FINESS"])) return alert("FINESS invalide");
-        if (!/^\d{9}$/.test(formData["RCS (SIREN)"])) return alert("SIREN invalide");
-        if (!isValidPhone(formData["Portable du titulaire"], true)) return alert("Portable invalide");
-        if (!isValidPhone(formData["Téléphone de la pharmacie"])) return alert("Téléphone pharmacie invalide");
-
-        const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}/${id}`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ fields: formData })
-        });
-
-        if (res.ok) alert("✅ Données enregistrées !");
-        else alert("❌ Erreur à l'enregistrement.");
+        const ok = await savePharmacieData(token, formData);
+        alert(ok ? "✅ Données enregistrées" : "❌ Erreur à l'enregistrement");
       });
     }
 
-    async function init() {
-      const params = await checkAndRestoreSessionFromURL();
-      const { data: { user } } = await supabase.auth.getUser();
+    async function main() {
       const status = document.getElementById("status");
+      await checkAndRestoreSessionFromURL();
 
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         status.textContent = "❌ Vous n'êtes pas connecté.";
         return;
       }
 
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
-      buildForm(user);
+      const session = await supabase.auth.getSession();
+      const token = session.data.session.access_token;
+
+      const record = await fetchPharmacieData(token);
+      if (!record) {
+        status.textContent = "Aucune donnée trouvée.";
+        return;
+      }
+
+      recordId = record.id;
+      await buildForm(record.fields, token);
     }
 
-    init();
+    main();
   </script>
 </body>
 </html>
