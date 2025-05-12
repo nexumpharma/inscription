@@ -1,8 +1,10 @@
-const SUPABASE_URL = 'https://nywocoxkfdrsscvnvjas.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55d29jb3hrZmRyc3Njdm52amFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4OTA1MDgsImV4cCI6MjA2MjQ2NjUwOH0.Gj2TOFLghSlztKgZiUzrdnntH5oNPKs8RALG8fGvSm4';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// js/auth.js
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
-async function checkAndRestoreSessionFromURL() {
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+export async function checkAndRestoreSessionFromURL() {
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
   const access_token = params.get("access_token");
@@ -16,7 +18,7 @@ async function checkAndRestoreSessionFromURL() {
   return params;
 }
 
-async function logout() {
+export async function logout() {
   await supabase.auth.signOut();
   alert("Déconnecté.");
   window.location.href = "infos.html";
