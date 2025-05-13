@@ -8,6 +8,9 @@
     label { display: block; margin-top: 1rem; font-weight: bold; }
     input, button { margin-top: 0.5rem; padding: 8px; width: 100%; }
     #ribPreview { margin-top: 1rem; }
+    .error { color: red; margin-top: 0.5rem; }
+    .nav-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
+    .nav-buttons button { width: 100%; }
   </style>
 </head>
 <body>
@@ -16,15 +19,20 @@
   <button id="logoutBtn">Se déconnecter</button>
 
   <form id="ribForm" style="display:none; margin-top:2rem;" enctype="multipart/form-data">
-    <label for="ribFile">Choisissez un fichier RIB (PDF ou image) :</label>
+    <label for="ribFile">Choisissez un fichier RIB (PDF ou image, max 5Mo) :</label>
     <input type="file" id="ribFile" accept=".pdf,image/*" required />
+    <div id="fileError" class="error"></div>
 
     <div id="ribPreview"></div>
 
     <label for="iban">IBAN (à saisir manuellement) :</label>
     <input type="text" id="iban" name="iban" required />
+    <div id="ibanError" class="error"></div>
 
-    <button type="submit">Enregistrer l'IBAN</button>
+    <div class="nav-buttons">
+      <button type="button" id="prevBtn">⬅ Précédent</button>
+      <button type="button" id="nextBtn">Suivant ➡</button>
+    </div>
   </form>
 
   <script type="module">
@@ -39,6 +47,8 @@
 
     const status = document.getElementById("status");
     const form = document.getElementById("ribForm");
+    const fileError = document.getElementById("fileError");
+    const ibanError = document.getElementById("ibanError");
 
     async function getUserAndRecord() {
       await checkAndRestoreSessionFromURL();
@@ -66,6 +76,12 @@
     }
 
     async function uploadFile(file) {
+      if (file.size > 5 * 1024 * 1024) {
+        fileError.textContent = "❌ Le fichier dépasse 5 Mo.";
+        return null;
+      }
+      fileError.textContent = "";
+
       const reader = new FileReader();
       return new Promise((resolve, reject) => {
         reader.onload = async () => {
@@ -90,11 +106,9 @@
               console.log("✅ Fichier RIB uploadé :", ribStoragePath);
               resolve({ path: ribStoragePath, type });
             } else {
-              console.error("❌ Erreur Supabase upload:", json);
               reject(json);
             }
           } catch (err) {
-            console.error("❌ Erreur JS upload:", err);
             reject(err);
           }
         };
@@ -107,7 +121,7 @@
         const { data } = await supabase
           .storage
           .from("pharmacie")
-          .createSignedUrl(path, 3600);
+          .createSignedUrl(path.replace(/^\/+/, ""), 3600);
 
         if (data?.signedUrl) return data.signedUrl;
         await new Promise((res) => setTimeout(res, delayMs));
@@ -118,8 +132,7 @@
 
     async function displayPreview(path, type) {
       try {
-        const cleanPath = path.replace(/^\/+/, "");
-        const url = await waitForSignedUrl(cleanPath);
+        const url = await waitForSignedUrl(path);
         const preview = document.getElementById("ribPreview");
         preview.innerHTML = "";
 
@@ -142,15 +155,25 @@
 
       try {
         const result = await uploadFile(file);
-        await displayPreview(result.path, result.type);
+        if (result) await displayPreview(result.path, result.type);
       } catch (err) {
         alert("❌ Erreur lors de l'envoi du fichier.");
       }
     });
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    function isValidIBAN(iban) {
+      const cleanIban = iban.replace(/\s+/g, "").toUpperCase();
+      const regex = /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/;
+      return regex.test(cleanIban);
+    }
+
+    async function saveDataAndNavigate(targetPage) {
       const iban = document.getElementById("iban").value.trim();
+      if (!isValidIBAN(iban)) {
+        ibanError.textContent = "❌ IBAN invalide.";
+        return;
+      }
+      ibanError.textContent = "";
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
@@ -168,12 +191,14 @@
       });
 
       if (res.ok) {
-        alert("✅ IBAN enregistré !");
-        window.location.href = "merci.html";
+        window.location.href = targetPage;
       } else {
         alert("❌ Erreur lors de l'enregistrement.");
       }
-    });
+    }
+
+    document.getElementById("prevBtn").addEventListener("click", () => saveDataAndNavigate("infos.html"));
+    document.getElementById("nextBtn").addEventListener("click", () => saveDataAndNavigate("contrat.html"));
 
     await getUserAndRecord();
   </script>
