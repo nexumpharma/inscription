@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Contrat à signer</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; max-width: 800px; }
+    h1 { margin-bottom: 1rem; }
+    .contract { border: 1px solid #ccc; padding: 2rem; border-radius: 8px; background: #f9f9f9; }
+    .signature-block { margin-top: 2rem; }
+    .btn-sign { padding: 10px 20px; font-size: 1rem; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .btn-sign:hover { background: #0056b3; }
+    .info { color: green; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Contrat de collaboration</h1>
+  <div id="status">Chargement des informations...</div>
+
+  <div id="contractContainer" style="display:none;">
+    <div class="contract" id="contractText">
+      <p>Entre les soussignés :</p>
+      <p>
+        <strong><span id="pharmaNom">[Nom]</span></strong>, situé au 
+        <strong><span id="pharmaAdresse">[Adresse]</span></strong>, SIRET 
+        <strong><span id="pharmaSiret">[SIRET]</span></strong>,
+        ci-après désigné “le Pharmacien”.
+      </p>
+
+      <p>Et la société <strong>Nexum Pharma</strong>, dont le siège social est situé à ..., ci-après dénommée “la Société”.</p>
+
+      <p>Les parties conviennent de collaborer selon les termes suivants :</p>
+      <ul>
+        <li>Le Pharmacien s'engage à ...</li>
+        <li>La Société s'engage à ...</li>
+        <li>Durée du contrat : 12 mois renouvelables</li>
+        <li>Conditions financières : ...</li>
+      </ul>
+
+      <p>Fait à Paris, le <span id="dateSignature"></span></p>
+
+      <div class="signature-block">
+        <button class="btn-sign" id="signBtn">Signer électroniquement</button>
+        <div class="info" id="signedInfo" style="display:none;">📄 Le contrat est prêt à être signé.</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
+
+    let token = "";
+    let record = null;
+
+    const status = document.getElementById("status");
+    const container = document.getElementById("contractContainer");
+
+    async function loadPharmacieData() {
+      await checkAndRestoreSessionFromURL();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        status.textContent = "❌ Utilisateur non connecté.";
+        return;
+      }
+
+      const session = await supabase.auth.getSession();
+      token = session.data.session.access_token;
+
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const json = await res.json();
+      record = json.records?.[0];
+      if (!record) {
+        status.textContent = "❌ Aucune fiche pharmacie trouvée.";
+        return;
+      }
+
+      // Injecter les données dans le contrat
+      document.getElementById("pharmaNom").textContent = record.fields["Nom pharmacie"] || "[Nom]";
+      document.getElementById("pharmaAdresse").textContent = record.fields["Adresse complète"] || "[Adresse]";
+      document.getElementById("pharmaSiret").textContent = record.fields["SIRET"] || "[SIRET]";
+      document.getElementById("dateSignature").textContent = new Date().toLocaleDateString("fr-FR");
+
+      status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+      container.style.display = "block";
+    }
+
+    document.getElementById("signBtn").addEventListener("click", async () => {
+      // Exemple simple — en réalité tu appellerais OpenSign ici
+      document.getElementById("signedInfo").style.display = "block";
+
+      // Option : sauvegarder le fait que le contrat a été signé dans Airtable
+      await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: record.id,
+          fields: {
+            "Contrat signé": true,
+            "Date signature": new Date().toISOString()
+          }
+        })
+      });
+    });
+
+    await loadPharmacieData();
+  </script>
+</body>
+</html>
