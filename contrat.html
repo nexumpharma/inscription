@@ -28,6 +28,7 @@
 
     async function getUserAndPharmacie() {
       await checkAndRestoreSessionFromURL();
+
       const { data: authData } = await supabase.auth.getUser();
       user = authData.user;
       if (!user) {
@@ -35,24 +36,34 @@
         return;
       }
 
+      console.log("👤 Utilisateur connecté :", user);
+      console.log("📧 Email utilisateur :", user.email);
+
       statusEl.innerHTML = `✅ Connecté : <strong>${user.email}</strong>`;
+
       const session = await supabase.auth.getSession();
       token = session.data.session.access_token;
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       const json = await res.json();
       record = json.records?.[0];
 
       if (!record) {
         statusEl.textContent = "❌ Aucune pharmacie trouvée.";
         signBtn.disabled = true;
+      } else {
+        console.log("🏥 Fiche pharmacie :", record.fields);
       }
     }
 
     signBtn.addEventListener("click", async () => {
-      if (!record) return;
+      if (!record || !user?.email) {
+        statusEl.textContent = "❌ Informations manquantes pour signer.";
+        return;
+      }
 
       const htmlContent = `
         <h1>Contrat de partenariat</h1>
@@ -65,26 +76,31 @@
         <p>Signature du pharmacien :</p>
       `;
 
+      const payload = {
+        nom: record.fields["Raison sociale"],
+        email: user.email,
+        htmlContent
+      };
+
+      console.log("📤 Envoi à create-signature :", payload);
+
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          nom: record.fields["Raison sociale"],
-          email: user.email,
-          htmlContent
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
+
       if (res.ok && data.iframe_url) {
         statusEl.textContent = "✅ Contrat généré. Vous pouvez signer ci-dessous.";
         iframeContainer.innerHTML = `<iframe src="${data.iframe_url}" allowfullscreen></iframe>`;
       } else {
         statusEl.textContent = "❌ Erreur : " + (data.error || "Inconnue");
-        console.error(data.details || data);
+        console.error("⛔ Détails erreur :", data.details || data);
       }
     });
 
