@@ -79,9 +79,12 @@
       }
 
       // Injecter les données dans le contrat
-      document.getElementById("pharmaNom").textContent = record.fields["Nom pharmacie"] || "[Nom]";
-      document.getElementById("pharmaAdresse").textContent = record.fields["Adresse complète"] || "[Adresse]";
-      document.getElementById("pharmaSiret").textContent = record.fields["SIRET"] || "[SIRET]";
+      document.getElementById("pharmaNom").textContent = record.fields["Raison sociale"] || "[Nom]";
+document.getElementById("pharmaAdresse").textContent =
+  `${record.fields["Adresse"] || ""}, ${record.fields["Code postal"] || ""} ${record.fields["Ville"] || ""}`.trim();
+
+document.getElementById("pharmaSiret").textContent = record.fields["RCS (SIREN)"] || "[SIRET]";
+
       document.getElementById("dateSignature").textContent = new Date().toLocaleDateString("fr-FR");
 
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
