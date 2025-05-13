@@ -87,6 +87,13 @@
       form.style.display = "block";
     }
 
+    function sanitizeFilename(filename) {
+      return filename
+        .normalize("NFD")                     // décompose les caractères accentués
+        .replace(/[\u0300-\u036f]/g, "")     // supprime les accents
+        .replace(/[^\w.\-]/g, "_");          // remplace tout sauf lettres, chiffres, _, - et .
+    }
+
     async function uploadFile(file) {
       if (file.size > 5 * 1024 * 1024) {
         fileError.textContent = "❌ Le fichier dépasse 5 Mo.";
@@ -99,12 +106,9 @@
         reader.onload = async () => {
           const base64File = reader.result.split(",")[1];
 
-          // ✅ Nettoyage du nom + nom unique
           const timestamp = Date.now();
-          const cleanName = file.name
-            .replace(/^.*[\\/]/, '')         // enlève les chemins
-            .replace(/\s+/g, '_')            // remplace espaces
-            .replace(/^rib\//, '');          // évite double "rib/"
+          const originalName = file.name.replace(/^.*[\\/]/, '');
+          const cleanName = sanitizeFilename(originalName);
           const filename = `rib/${timestamp}-${cleanName}`;
           const type = file.type;
 
