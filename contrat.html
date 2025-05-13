@@ -2,44 +2,43 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Signature du contrat</title>
+  <title>Contrat à signer</title>
   <style>
-    body { font-family: sans-serif; margin: 2rem; max-width: 800px; }
-    h1 { margin-bottom: 1rem; }
-    #status { margin-bottom: 1rem; }
-    iframe { width: 100%; height: 700px; border: 1px solid #ccc; border-radius: 8px; }
+    body { font-family: sans-serif; margin: 2rem; }
+    iframe { width: 100%; height: 600px; border: none; margin-top: 2rem; }
   </style>
 </head>
 <body>
-  <h1>Signature du contrat de collaboration</h1>
-  <div id="status">Chargement…</div>
-  <div id="iframeContainer" style="display:none;">
-    <iframe id="signatureFrame" src="" allow="camera; microphone"></iframe>
-  </div>
+  <h1>Signature du contrat</h1>
+  <div id="status">Chargement...</div>
+  <button id="signBtn" style="margin-top:1rem;">Signer le contrat</button>
+  <div id="iframeContainer"></div>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-    const status = document.getElementById("status");
+    const statusEl = document.getElementById("status");
+    const signBtn = document.getElementById("signBtn");
     const iframeContainer = document.getElementById("iframeContainer");
-    const signatureFrame = document.getElementById("signatureFrame");
 
+    let user = null;
     let token = "";
     let record = null;
 
-    async function loadSignatureIframe() {
+    async function getUserAndPharmacie() {
       await checkAndRestoreSessionFromURL();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: authData } = await supabase.auth.getUser();
+      user = authData.user;
       if (!user) {
-        status.textContent = "❌ Non connecté.";
+        statusEl.textContent = "❌ Non connecté.";
         return;
       }
 
+      statusEl.innerHTML = `✅ Connecté : <strong>${user.email}</strong>`;
       const session = await supabase.auth.getSession();
       token = session.data.session.access_token;
 
-      // Récupérer la fiche pharmacie
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -47,12 +46,26 @@
       record = json.records?.[0];
 
       if (!record) {
-        status.textContent = "❌ Aucune fiche pharmacie trouvée.";
-        return;
+        statusEl.textContent = "❌ Aucune pharmacie trouvée.";
+        signBtn.disabled = true;
       }
+    }
 
-      // Appeler ta Supabase Function qui prépare OpenSign
-      const signatureRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature`, {
+    signBtn.addEventListener("click", async () => {
+      if (!record) return;
+
+      const htmlContent = `
+        <h1>Contrat de partenariat</h1>
+        <p>Entre la société <strong>Nexum</strong> et la pharmacie :</p>
+        <p><strong>${record.fields["Raison sociale"]}</strong></p>
+        <p>${record.fields["Adresse"]}, ${record.fields["Code postal"]} ${record.fields["Ville"]}</p>
+        <p>SIREN : ${record.fields["RCS (SIREN)"]}</p>
+        <p>Le présent contrat engage les parties à collaborer dans le cadre du programme de services proposés par Nexum.</p>
+        <p>Fait à Paris, le ${new Date().toLocaleDateString("fr-FR")}</p>
+        <p>Signature du pharmacien :</p>
+      `;
+
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -61,25 +74,21 @@
         body: JSON.stringify({
           nom: record.fields["Raison sociale"],
           email: user.email,
-          adresse: `${record.fields["Adresse"]}, ${record.fields["Code postal"]} ${record.fields["Ville"]}`,
-          siren: record.fields["RCS (SIREN)"]
+          htmlContent
         })
       });
 
-      const signatureJson = await signatureRes.json();
-
-      if (!signatureJson?.iframe_url) {
-        status.textContent = "❌ Impossible de générer le lien de signature.";
-        return;
+      const data = await res.json();
+      if (res.ok && data.iframe_url) {
+        statusEl.textContent = "✅ Contrat généré. Vous pouvez signer ci-dessous.";
+        iframeContainer.innerHTML = `<iframe src="${data.iframe_url}" allowfullscreen></iframe>`;
+      } else {
+        statusEl.textContent = "❌ Erreur : " + (data.error || "Inconnue");
+        console.error(data.details || data);
       }
+    });
 
-      // Affichage de l'iframe
-      signatureFrame.src = signatureJson.iframe_url;
-      status.innerHTML = `✅ Connecté : <strong>${user.email}</strong>`;
-      iframeContainer.style.display = "block";
-    }
-
-    await loadSignatureIframe();
+    await getUserAndPharmacie();
   </script>
 </body>
 </html>
