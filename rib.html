@@ -175,16 +175,27 @@
     }
 
     document.getElementById("ribFile").addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-      try {
-        const result = await uploadFile(file);
-        if (result) await displayPreview(result.path, result.type);
-      } catch (err) {
-        alert("❌ Erreur lors de l'envoi du fichier.");
+  const oldPath = ribStoragePath;
+
+  try {
+    const result = await uploadFile(file);
+    if (result) {
+      await displayPreview(result.path, result.type);
+
+      // 🆕 Si un ancien RIB existait et a été remplacé, vider l'IBAN
+      if (oldPath && result.path !== oldPath) {
+        document.getElementById("iban").value = "";
+        console.log("ℹ️ Nouveau RIB détecté : IBAN vidé.");
       }
-    });
+    }
+  } catch (err) {
+    alert("❌ Erreur lors de l'envoi du fichier.");
+  }
+});
+
 
     function isValidIBAN(iban) {
       const cleanIban = iban.replace(/\s+/g, "").toUpperCase();
