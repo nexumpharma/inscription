@@ -73,13 +73,11 @@
 
       recordId = record.id;
 
-      // Préremplir le champ IBAN
       const ibanField = document.getElementById("iban");
       if (record.fields?.IBAN) {
         ibanField.value = record.fields.IBAN;
       }
 
-      // Prévisualiser le RIB si déjà existant
       if (record.fields?.["Chemin RIB"]) {
         ribStoragePath = record.fields["Chemin RIB"];
         const ribType = ribStoragePath.endsWith(".pdf") ? "application/pdf" : "image/*";
@@ -101,9 +99,12 @@
         reader.onload = async () => {
           const base64File = reader.result.split(",")[1];
 
-          // 🆕 Générer un nom de fichier unique
+          // ✅ Nettoyage du nom + nom unique
           const timestamp = Date.now();
-          const cleanName = file.name.replace(/\s+/g, '_');
+          const cleanName = file.name
+            .replace(/^.*[\\/]/, '')         // enlève les chemins
+            .replace(/\s+/g, '_')            // remplace espaces
+            .replace(/^rib\//, '');          // évite double "rib/"
           const filename = `rib/${timestamp}-${cleanName}`;
           const type = file.type;
 
