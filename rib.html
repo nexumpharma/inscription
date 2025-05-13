@@ -72,6 +72,20 @@
       }
 
       recordId = record.id;
+
+      // Préremplir le champ IBAN
+      const ibanField = document.getElementById("iban");
+      if (record.fields?.IBAN) {
+        ibanField.value = record.fields.IBAN;
+      }
+
+      // Prévisualiser le RIB si déjà existant
+      if (record.fields?.["Chemin RIB"]) {
+        ribStoragePath = record.fields["Chemin RIB"];
+        const ribType = ribStoragePath.endsWith(".pdf") ? "application/pdf" : "image/*";
+        await displayPreview(ribStoragePath, ribType);
+      }
+
       form.style.display = "block";
     }
 
@@ -170,10 +184,10 @@
     async function saveDataAndNavigate(targetPage) {
       const iban = document.getElementById("iban").value.trim();
       if (iban && !isValidIBAN(iban)) {
-  ibanError.textContent = "❌ IBAN invalide.";
-  return;
-}
-ibanError.textContent = "";
+        ibanError.textContent = "❌ IBAN invalide.";
+        return;
+      }
+      ibanError.textContent = "";
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
