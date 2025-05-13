@@ -169,11 +169,11 @@
 
     async function saveDataAndNavigate(targetPage) {
       const iban = document.getElementById("iban").value.trim();
-      if (!isValidIBAN(iban)) {
-        ibanError.textContent = "❌ IBAN invalide.";
-        return;
-      }
-      ibanError.textContent = "";
+      if (iban && !isValidIBAN(iban)) {
+  ibanError.textContent = "❌ IBAN invalide.";
+  return;
+}
+ibanError.textContent = "";
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
