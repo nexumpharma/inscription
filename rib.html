@@ -6,7 +6,7 @@
   <style>
     body { font-family: sans-serif; margin: 2rem; max-width: 600px; }
     label { display: block; margin-top: 1rem; font-weight: bold; }
-    input, button { margin-top: 0.5rem; padding: 8px; width: 100%; }
+    input, button { margin-top: 0.5rem; padding: 8px; width: 100%; box-sizing: border-box; }
     #ribPreview { margin-top: 1rem; }
     .error { color: red; margin-top: 0.5rem; }
     .nav-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
@@ -25,8 +25,8 @@
 
     <div id="ribPreview"></div>
 
-    <label for="iban">IBAN (à saisir manuellement) :</label>
-    <input type="text" id="iban" name="iban" required />
+    <label for="iban">IBAN :</label>
+    <input type="text" id="iban" name="iban" required placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" />
     <div id="ibanError" class="error"></div>
 
     <div class="nav-buttons">
@@ -75,7 +75,7 @@
 
       const ibanField = document.getElementById("iban");
       if (record.fields?.IBAN) {
-        ibanField.value = record.fields.IBAN;
+        ibanField.value = formatIban(record.fields.IBAN);
       }
 
       if (record.fields?.["Chemin RIB"]) {
@@ -89,9 +89,9 @@
 
     function sanitizeFilename(filename) {
       return filename
-        .normalize("NFD")                     // décompose les caractères accentués
-        .replace(/[\u0300-\u036f]/g, "")     // supprime les accents
-        .replace(/[^\w.\-]/g, "_");          // remplace tout sauf lettres, chiffres, _, - et .
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w.\-]/g, "_");
     }
 
     async function uploadFile(file) {
@@ -175,40 +175,55 @@
     }
 
     document.getElementById("ribFile").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+      const file = e.target.files[0];
+      if (!file) return;
 
-  const oldPath = ribStoragePath;
+      const oldPath = ribStoragePath;
 
-  try {
-    const result = await uploadFile(file);
-    if (result) {
-      await displayPreview(result.path, result.type);
+      try {
+        const result = await uploadFile(file);
+        if (result) {
+          await displayPreview(result.path, result.type);
 
-      // 🆕 Si un ancien RIB existait et a été remplacé, vider l'IBAN
-      if (oldPath && result.path !== oldPath) {
-        document.getElementById("iban").value = "";
-        console.log("ℹ️ Nouveau RIB détecté : IBAN vidé.");
+          // Vider IBAN si un nouveau fichier est chargé
+          if (oldPath && result.path !== oldPath) {
+            const ibanInput = document.getElementById("iban");
+            ibanInput.value = "";
+            ibanInput.style.border = "";
+            console.log("ℹ️ Nouveau RIB détecté, IBAN vidé.");
+          }
+        }
+      } catch (err) {
+        alert("❌ Erreur lors de l'envoi du fichier.");
       }
-    }
-  } catch (err) {
-    alert("❌ Erreur lors de l'envoi du fichier.");
-  }
-});
+    });
 
+    function formatIban(value) {
+      return value.replace(/\s+/g, "").toUpperCase().match(/.{1,4}/g)?.join(" ") || "";
+    }
 
     function isValidIBAN(iban) {
-      const cleanIban = iban.replace(/\s+/g, "").toUpperCase();
+      const cleanIban = iban.replace(/\s+/g, '').toUpperCase();
       const regex = /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/;
-      return regex.test(cleanIban);
+      if (!regex.test(cleanIban)) return false;
+
+      const rearranged = cleanIban.slice(4) + cleanIban.slice(0, 4);
+      const numericIban = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55));
+      const mod97 = BigInt(numericIban) % 97n;
+
+      return mod97 === 1n;
     }
 
     async function saveDataAndNavigate(targetPage) {
-      const iban = document.getElementById("iban").value.trim();
+      const ibanInput = document.getElementById("iban");
+      const iban = ibanInput.value.trim();
+      const ibanClean = iban.replace(/\s+/g, '');
+
       if (iban && !isValidIBAN(iban)) {
         ibanError.textContent = "❌ IBAN invalide.";
         return;
       }
+
       ibanError.textContent = "";
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
@@ -220,7 +235,7 @@
         body: JSON.stringify({
           id: recordId,
           fields: {
-            IBAN: iban,
+            IBAN: ibanClean,
             "Chemin RIB": ribStoragePath
           }
         })
@@ -237,6 +252,17 @@
     document.getElementById("nextBtn").addEventListener("click", () => saveDataAndNavigate("contrat.html"));
 
     await getUserAndRecord();
+
+    const ibanInput = document.getElementById("iban");
+    ibanInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/\s+/g, "").toUpperCase();
+      value = value.replace(/[^A-Z0-9]/g, "");
+      const formatted = formatIban(value);
+      e.target.value = formatted;
+
+      const isValid = isValidIBAN(formatted);
+      ibanInput.style.border = isValid ? "2px solid green" : "2px solid red";
+    });
   </script>
 </body>
 </html>
