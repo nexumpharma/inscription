@@ -45,17 +45,16 @@
       log("[🔐] Connexion en cours...");
       await checkAndRestoreSessionFromURL();
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (!user || error) {
         log("[❌] Utilisateur non connecté.");
         return;
       }
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
+      const session = await supabase.auth.getSession();
+      const token = session.data.session.access_token;
       if (!token) {
-        log("[❌] Token Supabase manquant.");
+        log("[❌] Token Supabase introuvable.");
         return;
       }
 
@@ -63,9 +62,7 @@
       log("[📡] Récupération des données pharmacie…");
 
       const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       }).then(r => r.json());
 
       const fields = record?.records?.[0]?.fields;
@@ -74,20 +71,20 @@
         return;
       }
 
-      log("[📤] Envoi des données à la fonction generate-pdf…");
+      log("[📤] Envoi des données à trigger-google-pdf…");
 
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/generate-pdf`, {
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ fields })
       });
 
       const data = await res.json();
 
-      if (res.ok && data?.pdfUrl) {
+      if (res.ok && data?.success) {
         log("[✅] Contrat généré avec succès !");
         log(`[📄] ID PDF : ${data.pdfFileId}`);
         log(`[🔗] URL : ${data.pdfUrl}`);
@@ -96,7 +93,7 @@
         link.style.display = "inline-block";
         link.textContent = "📄 Voir le contrat généré";
       } else {
-        log("[❌] Échec de génération :");
+        log("[❌] Échec :");
         log(JSON.stringify(data, null, 2));
       }
     }
