@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Génération du contrat</title>
+  <meta charset="UTF-8" />
+  <title>Signature du contrat</title>
   <style>
-    body { font-family: monospace; padding: 2rem; }
-    #logs {
-      background: #111; color: #0f0;
-      padding: 1rem; border-radius: 6px;
-      white-space: pre-wrap;
-      height: 70vh; overflow-y: auto;
+    body {
+      font-family: monospace;
+      padding: 2rem;
+      background: #f5f5f5;
     }
-    #pdf-link { margin-top: 1rem; display: block; }
+    #logs {
+      background: #111;
+      color: #0f0;
+      padding: 1rem;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      height: 70vh;
+      overflow-y: auto;
+    }
+    #pdf-link {
+      margin-top: 1rem;
+      display: none;
+    }
   </style>
 </head>
 <body>
-
   <h1>📝 Génération du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
-  <a id="pdf-link" href="#" target="_blank" style="display:none;">📄 Ouvrir le contrat généré</a>
+  <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
@@ -36,25 +45,32 @@
       log("[🔐] Connexion en cours...");
       await checkAndRestoreSessionFromURL();
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        log("[❌] Non connecté.");
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        log("[❌] Utilisateur non connecté.");
         return;
       }
 
-      const session = await supabase.auth.getSession();
-      const token = session.data.session.access_token;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      if (!token) {
+        log("[❌] Token Supabase manquant.");
+        return;
+      }
 
       log(`[👤] Connecté en tant que ${user.email}`);
       log("[📡] Récupération des données pharmacie…");
 
       const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }).then(r => r.json());
 
       const fields = record?.records?.[0]?.fields;
       if (!fields) {
-        log("[❌] Données introuvables.");
+        log("[❌] Données pharmacie introuvables.");
         return;
       }
 
@@ -63,27 +79,29 @@
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/generate-pdf`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ fields })
       });
 
       const data = await res.json();
 
-      if (res.ok) {
+      if (res.ok && data?.pdfUrl) {
         log("[✅] Contrat généré avec succès !");
         log(`[📄] ID PDF : ${data.pdfFileId}`);
-        log(`[🔗] Lien PDF : ${data.pdfUrl}`);
+        log(`[🔗] URL : ${data.pdfUrl}`);
+
         link.href = data.pdfUrl;
         link.style.display = "inline-block";
-        link.textContent = "📄 Ouvrir le contrat généré";
+        link.textContent = "📄 Voir le contrat généré";
       } else {
-        log("[❌] Erreur : " + (data.error || "Erreur inconnue."));
+        log("[❌] Échec de génération :");
+        log(JSON.stringify(data, null, 2));
       }
     }
 
     run();
   </script>
-
 </body>
 </html>
