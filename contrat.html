@@ -1,110 +1,89 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Contrat à signer</title>
+  <meta charset="UTF-8">
+  <title>Génération du contrat</title>
   <style>
-    body { font-family: sans-serif; margin: 2rem; }
-    iframe { width: 100%; height: 600px; border: none; margin-top: 2rem; }
+    body { font-family: monospace; padding: 2rem; }
+    #logs {
+      background: #111; color: #0f0;
+      padding: 1rem; border-radius: 6px;
+      white-space: pre-wrap;
+      height: 70vh; overflow-y: auto;
+    }
+    #pdf-link { margin-top: 1rem; display: block; }
   </style>
 </head>
 <body>
-  <h1>Signature du contrat</h1>
-  <div id="status">Chargement...</div>
-  <button id="signBtn" style="margin-top:1rem;">Signer le contrat</button>
-  <div id="iframeContainer"></div>
+
+  <h1>📝 Génération du contrat</h1>
+  <div id="logs">[🟢] Initialisation…</div>
+  <a id="pdf-link" href="#" target="_blank" style="display:none;">📄 Ouvrir le contrat généré</a>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-    const statusEl = document.getElementById("status");
-    const signBtn = document.getElementById("signBtn");
-    const iframeContainer = document.getElementById("iframeContainer");
+    const logs = document.getElementById("logs");
+    const link = document.getElementById("pdf-link");
 
-    let user = null;
-    let token = "";
-    let record = null;
+    const log = (msg) => {
+      logs.textContent += `\n${msg}`;
+      logs.scrollTop = logs.scrollHeight;
+    };
 
-    async function getUserAndPharmacie() {
+    async function run() {
+      log("[🔐] Connexion en cours...");
       await checkAndRestoreSessionFromURL();
 
-      const { data: authData } = await supabase.auth.getUser();
-      user = authData.user;
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        statusEl.textContent = "❌ Non connecté.";
+        log("[❌] Non connecté.");
         return;
       }
-
-      console.log("👤 Utilisateur connecté :", user);
-      console.log("📧 Email utilisateur :", user.email);
-
-      statusEl.innerHTML = `✅ Connecté : <strong>${user.email}</strong>`;
 
       const session = await supabase.auth.getSession();
-      token = session.data.session.access_token;
+      const token = session.data.session.access_token;
 
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+      log(`[👤] Connecté en tant que ${user.email}`);
+      log("[📡] Récupération des données pharmacie…");
+
+      const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
-      });
+      }).then(r => r.json());
 
-      const json = await res.json();
-      record = json.records?.[0];
-
-      if (!record) {
-        statusEl.textContent = "❌ Aucune pharmacie trouvée.";
-        signBtn.disabled = true;
-      } else {
-        console.log("🏥 Fiche pharmacie :", record.fields);
-      }
-    }
-
-    signBtn.addEventListener("click", async () => {
-      if (!record || !user?.email) {
-        statusEl.textContent = "❌ Informations manquantes pour signer.";
+      const fields = record?.records?.[0]?.fields;
+      if (!fields) {
+        log("[❌] Données introuvables.");
         return;
       }
 
-      const htmlContent = `
-        <h1>Contrat de partenariat</h1>
-        <p>Entre la société <strong>Nexum</strong> et la pharmacie :</p>
-        <p><strong>${record.fields["Raison sociale"]}</strong></p>
-        <p>${record.fields["Adresse"]}, ${record.fields["Code postal"]} ${record.fields["Ville"]}</p>
-        <p>SIREN : ${record.fields["RCS (SIREN)"]}</p>
-        <p>Le présent contrat engage les parties à collaborer dans le cadre du programme de services proposés par Nexum.</p>
-        <p>Fait à Paris, le ${new Date().toLocaleDateString("fr-FR")}</p>
-        <p>Signature du pharmacien :</p>
-      `;
+      log("[📤] Envoi des données à la fonction generate-pdf…");
 
-      const payload = {
-        nom: record.fields["Raison sociale"],
-        email: user.email,
-        htmlContent
-      };
-
-      console.log("📤 Envoi à create-signature :", payload);
-
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature`, {
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/generate-pdf`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ fields })
       });
 
       const data = await res.json();
 
-      if (res.ok && data.iframe_url) {
-        statusEl.textContent = "✅ Contrat généré. Vous pouvez signer ci-dessous.";
-        iframeContainer.innerHTML = `<iframe src="${data.iframe_url}" allowfullscreen></iframe>`;
+      if (res.ok) {
+        log("[✅] Contrat généré avec succès !");
+        log(`[📄] ID PDF : ${data.pdfFileId}`);
+        log(`[🔗] Lien PDF : ${data.pdfUrl}`);
+        link.href = data.pdfUrl;
+        link.style.display = "inline-block";
+        link.textContent = "📄 Ouvrir le contrat généré";
       } else {
-        statusEl.textContent = "❌ Erreur : " + (data.error || "Inconnue");
-        console.error("⛔ Détails erreur :", data.details || data);
+        log("[❌] Erreur : " + (data.error || "Erreur inconnue."));
       }
-    });
+    }
 
-    await getUserAndPharmacie();
+    run();
   </script>
+
 </body>
 </html>
