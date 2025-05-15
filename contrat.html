@@ -65,20 +65,31 @@
         headers: { Authorization: `Bearer ${token}` }
       }).then(r => r.json());
 
-      const baseFields = record?.records?.[0]?.fields;
-      if (!baseFields) {
+      const allFields = record?.records?.[0]?.fields;
+      if (!allFields) {
         log("[❌] Données pharmacie introuvables.");
         return;
       }
 
-      // Ajout des champs attendus par le modèle Google Docs
-      const fields = {
-        ...baseFields,
-        "Prénom": baseFields["Prénom"] || "",
-        "Nom": baseFields["Nom"] || "",
-        "Nom commercial": baseFields["Nom commercial"] || "",
-        "Téléphone de la pharmacie": baseFields["Téléphone de la pharmacie"] || ""
-      };
+      // ✅ Filtrer les champs utiles pour Google Docs
+      const allowedKeys = [
+        "Civilité",
+        "Prénom",
+        "Nom",
+        "Mail du titulaire",
+        "Portable du titulaire",
+        "Raison sociale",
+        "Nom commercial",
+        "Mail de la pharmacie",
+        "Téléphone de la pharmacie",
+        "Adresse",
+        "Code postal",
+        "Ville"
+      ];
+
+      const fields = Object.fromEntries(
+        allowedKeys.map(k => [k, allFields[k] ?? ""])
+      );
 
       log("[📤] Envoi des données à trigger-google-pdf…");
 
