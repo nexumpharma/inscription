@@ -33,7 +33,6 @@
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-    // 🔍 Ajoute supabase au scope global pour devtools
     window.supabase = supabase;
 
     const logs = document.getElementById("logs");
@@ -42,7 +41,6 @@
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
       logs.scrollTop = logs.scrollHeight;
-      console.log(msg); // aussi dans la console
     };
 
     async function run() {
@@ -64,10 +62,7 @@
           return;
         }
 
-        // 🔐 Affiche le token dans la console pour test
-        console.log("🔑 Token Supabase :", token);
-
-        log(`[👤] Connecté en tant que ${user.email}`);
+        log("[👤] Utilisateur connecté.");
         log("[🛰] Récupération des données pharmacie…");
 
         const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
@@ -80,9 +75,9 @@
           return;
         }
 
-        log("[🧪 JSON envoyé] " + JSON.stringify(fields, null, 2));
-
+        // ⚠️ Ne plus logguer les champs en clair
         log("[📤] Envoi des données à trigger-google-pdf…");
+
         const res = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
           method: "POST",
           headers: {
@@ -96,19 +91,15 @@
 
         if (res.ok && data?.success) {
           log("[✅] Contrat généré avec succès !");
-          log(`[📄] ID PDF : ${data.pdfFileId}`);
-          log(`[🔗] URL : ${data.pdfUrl}`);
-
           link.href = data.pdfUrl;
           link.style.display = "inline-block";
           link.textContent = "📄 Voir le contrat généré";
         } else {
-          log("[❌] Échec :");
-          log(JSON.stringify(data, null, 2));
+          log("[❌] Échec de la génération du contrat.");
         }
       } catch (err) {
-        log("[🔥] Exception dans run(): " + err.message);
-        console.error(err);
+        log("[🔥] Erreur inattendue.");
+        console.error(err); // Conservé uniquement côté devtools
       }
     }
 
