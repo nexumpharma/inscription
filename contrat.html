@@ -15,7 +15,7 @@
       padding: 1rem;
       border-radius: 6px;
       white-space: pre-wrap;
-      height: 50vh;
+      height: 60vh;
       overflow-y: auto;
     }
     #pdf-link {
@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <h1>📝 Génération du contrat</h1>
+  <h1>📝 Génération et signature du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
 
@@ -103,8 +103,13 @@
         link.style.display = "inline-block";
         log("[✅] Contrat généré avec succès !");
 
-        // 🖊️ Envoi à OpenSign pour signature
-        log("[✍️] Préparation de la signature électronique…");
+        log("[✍️] Envoi à OpenSign pour signature…");
+
+        const recipient = {
+          email: fields["Mail du titulaire"] || user.email,
+          name: `${fields["Prénom"] || "Titulaire"} ${fields["Nom"] || ""}`.trim(),
+          phone: fields["Portable du titulaire"] || ""
+        };
 
         const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
           method: "POST",
@@ -114,11 +119,7 @@
           },
           body: JSON.stringify({
             pdfUrl: pdfData.pdfUrl,
-            recipient: {
-              email: fields["Mail du titulaire"] || user.email,
-              firstname: fields["Prénom"] || "Titulaire",
-              lastname: fields["Nom"] || "Pharmacie"
-            }
+            recipient
           })
         });
 
@@ -129,12 +130,22 @@
           const iframe = document.createElement("iframe");
           iframe.src = signData.iframeUrl;
           document.body.appendChild(iframe);
+
+          // 📦 Affichage de la requête envoyée à OpenSign
+          if (signData.debugRequest) {
+            log("[📤] Requête envoyée à OpenSign :");
+            log(JSON.stringify(signData.debugRequest, null, 2));
+          }
+
         } else {
-          log("[❌] Erreur lors de l’envoi à OpenSign.");
+          log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
+          if (signData?.openSignResponse) {
+            log(JSON.stringify(signData.openSignResponse, null, 2));
+          }
         }
 
       } catch (err) {
-        log("[🔥] Erreur inattendue.");
+        log("[🔥] Erreur inattendue : " + err.message);
         console.error(err);
       }
     }
