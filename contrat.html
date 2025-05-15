@@ -25,7 +25,7 @@
   </style>
 </head>
 <body>
-  <h1>📝 Génération du contrat</h1>
+  <h1>🗑️ Génération du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
 
@@ -59,17 +59,26 @@
       }
 
       log(`[👤] Connecté en tant que ${user.email}`);
-      log("[📡] Récupération des données pharmacie…");
+      log("[🛰] Récupération des données pharmacie…");
 
       const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(r => r.json());
 
-      const fields = record?.records?.[0]?.fields;
-      if (!fields) {
+      const baseFields = record?.records?.[0]?.fields;
+      if (!baseFields) {
         log("[❌] Données pharmacie introuvables.");
         return;
       }
+
+      // Ajout des champs attendus par le modèle Google Docs
+      const fields = {
+        ...baseFields,
+        "Prénom": baseFields["Prénom"] || "",
+        "Nom": baseFields["Nom"] || "",
+        "Nom commercial": baseFields["Nom commercial"] || "",
+        "Téléphone de la pharmacie": baseFields["Téléphone de la pharmacie"] || ""
+      };
 
       log("[📤] Envoi des données à trigger-google-pdf…");
 
