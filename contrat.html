@@ -71,7 +71,7 @@
         return;
       }
 
-      // ✅ Filtrer les champs utiles pour Google Docs
+      // ✅ Champs requis par le Google Docs
       const allowedKeys = [
         "Civilité",
         "Prénom",
@@ -91,6 +91,7 @@
         allowedKeys.map(k => [k, allFields[k] ?? ""])
       );
 
+      log("[🧪 JSON envoyé] " + JSON.stringify(fields, null, 2));
       log("[📤] Envoi des données à trigger-google-pdf…");
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
