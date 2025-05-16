@@ -15,25 +15,38 @@
       padding: 1rem;
       border-radius: 6px;
       white-space: pre-wrap;
-      height: 60vh;
+      height: 40vh;
       overflow-y: auto;
     }
     #pdf-link, #sign-button {
       margin-top: 1rem;
       display: none;
     }
-    #loading-sign {
+    #loading {
+      font-style: italic;
       margin-top: 1rem;
-      color: #888;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
   <h1>📝 Génération et signature du contrat</h1>
-  <div id="logs">[🟢] Initialisation…</div>
+
+  <div id="loading">⏳ Chargement du lien de signature…</div>
+  <a id="sign-button" href="#" target="_blank">
+    <button>✍️ Signer le contrat</button>
+  </a>
+  <br>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
-  <div id="loading-sign">⏳ Chargement du lien de signature…</div>
-  <a id="sign-button" href="#" target="_blank">🖋️ Signer le contrat</a>
+  <div id="logs">[🟢] Initialisation…</div>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
@@ -44,7 +57,7 @@
     const logs = document.getElementById("logs");
     const pdfLink = document.getElementById("pdf-link");
     const signButton = document.getElementById("sign-button");
-    const loadingSign = document.getElementById("loading-sign");
+    const loadingText = document.getElementById("loading");
 
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
@@ -133,27 +146,31 @@
 
         const signData = await signRes.json();
 
-        console.log("[🧾] Réponse brute d'OpenSign :", signData);
-        log("[🧾] Réponse OpenSign :");
-        log(JSON.stringify(signData, null, 2));
-
-        const openSignUrl = Array.isArray(signData?.signurl) ? signData.signurl[0]?.url : null;
+        const openSignUrl =
+          signData?.iframeUrl ||
+          signData?.openSignResponse?.signurl?.[0]?.url ||
+          null;
 
         if (signRes.ok && openSignUrl) {
           log("[✅] Document prêt à être signé !");
-          log("[🔗] Lien OpenSign : " + openSignUrl);
+          log("[🔗] Lien : " + openSignUrl);
+
           signButton.href = openSignUrl;
           signButton.style.display = "inline-block";
-          loadingSign.style.display = "none";
+          loadingText.style.display = "none";
+
         } else {
           log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
-          loadingSign.textContent = "❌ Erreur de chargement du lien de signature.";
+          if (signData?.openSignResponse) {
+            log(JSON.stringify(signData.openSignResponse, null, 2));
+          }
+          loadingText.textContent = "❌ Erreur de chargement du lien de signature.";
         }
 
       } catch (err) {
         log("[🔥] Erreur inattendue : " + err.message);
         console.error(err);
-        loadingSign.textContent = "❌ Erreur inattendue.";
+        loadingText.textContent = "❌ Erreur inattendue.";
       }
     }
 
