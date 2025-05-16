@@ -9,45 +9,35 @@
       padding: 2rem;
       background: #f5f5f5;
     }
-
-    #loader {
-      padding: 1rem;
-      background: #f0f0f0;
-      border-radius: 8px;
-      display: inline-block;
-      margin-bottom: 1rem;
-    }
-
     #logs {
       background: #111;
       color: #0f0;
       padding: 1rem;
       border-radius: 6px;
       white-space: pre-wrap;
-      height: 50vh;
+      height: 60vh;
       overflow-y: auto;
     }
-
     #pdf-link, #sign-button {
       margin-top: 1rem;
       display: none;
-      text-decoration: none;
-      font-weight: bold;
-      background: #007bff;
+      padding: 10px 15px;
+      background-color: #007bff;
       color: white;
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
-      display: inline-block;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    #loading-sign {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
   <h1>📝 Génération et signature du contrat</h1>
-  <div id="loader">⏳ Chargement du contrat en cours…</div>
   <div id="logs">[🟢] Initialisation…</div>
-
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
-  <a id="sign-button" href="#" target="_blank">🖊️ Signer le contrat</a>
+  <div id="loading-sign">⏳ Préparation de la signature…</div>
+  <a id="sign-button" href="#" target="_blank">✍️ Signer le contrat</a>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
@@ -56,7 +46,7 @@
     const logs = document.getElementById("logs");
     const pdfLink = document.getElementById("pdf-link");
     const signButton = document.getElementById("sign-button");
-    const loader = document.getElementById("loader");
+    const loadingSign = document.getElementById("loading-sign");
 
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
@@ -71,7 +61,6 @@
         const { data: { user }, error } = await supabase.auth.getUser();
         if (!user || error) {
           log("[❌] Utilisateur non connecté.");
-          loader.textContent = "❌ Utilisateur non connecté.";
           return;
         }
 
@@ -79,7 +68,6 @@
         const token = session.data.session.access_token;
         if (!token) {
           log("[❌] Token Supabase introuvable.");
-          loader.textContent = "❌ Token manquant.";
           return;
         }
 
@@ -93,12 +81,10 @@
         const fields = record?.records?.[0]?.fields;
         if (!fields) {
           log("[❌] Données pharmacie introuvables.");
-          loader.textContent = "❌ Données pharmacie introuvables.";
           return;
         }
 
         log("[📤] Génération du contrat PDF…");
-
         const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
           method: "POST",
           headers: {
@@ -109,10 +95,8 @@
         });
 
         const pdfData = await pdfRes.json();
-
         if (!pdfRes.ok || !pdfData?.success) {
           log("[❌] Échec de la génération du PDF.");
-          loader.textContent = "❌ Erreur lors de la génération du contrat.";
           return;
         }
 
@@ -148,25 +132,27 @@
 
         const signData = await signRes.json();
 
-        if (signRes.ok && signData?.signurl?.[0]?.url) {
-          const signUrl = signData.signurl[0].url;
-          log("[✅] Document prêt à être signé !");
-          loader.style.display = "none";
+        const openSignUrl = signData?.signurl?.[0]?.url;
 
-          signButton.href = signUrl;
+        if (signRes.ok && openSignUrl) {
+          log("[✅] Document prêt à être signé !");
+          signButton.href = openSignUrl;
           signButton.style.display = "inline-block";
+          loadingSign.style.display = "none";
+
+          log("[🔗] Lien OpenSign : " + openSignUrl);
 
         } else {
           log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
-          loader.textContent = "❌ Erreur de signature.";
-          if (signData?.openSignResponse) {
-            log(JSON.stringify(signData.openSignResponse, null, 2));
+          loadingSign.textContent = "❌ Erreur de chargement du lien de signature.";
+
+          if (signData?.signurl) {
+            log(JSON.stringify(signData, null, 2));
           }
         }
 
       } catch (err) {
         log("[🔥] Erreur inattendue : " + err.message);
-        loader.textContent = "❌ Une erreur est survenue.";
         console.error(err);
       }
     }
