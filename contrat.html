@@ -18,9 +18,10 @@
       height: 60vh;
       overflow-y: auto;
     }
-    #pdf-link {
+    #pdf-link, #download-link {
       margin-top: 1rem;
       display: none;
+      margin-right: 1rem;
     }
     iframe {
       margin-top: 2rem;
@@ -34,6 +35,7 @@
   <h1>📝 Génération et signature du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
+  <a id="download-link" href="#" download="contrat.pdf">⬇️ Télécharger le contrat en PDF</a>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
@@ -43,6 +45,7 @@
 
     const logs = document.getElementById("logs");
     const link = document.getElementById("pdf-link");
+    const downloadLink = document.getElementById("download-link");
 
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
@@ -103,6 +106,18 @@
         link.style.display = "inline-block";
         log("[✅] Contrat généré avec succès !");
 
+        // 📦 Afficher un extrait du base64
+        if (pdfData.pdfBase64) {
+          log("[📦] PDF en base64 (extrait) :");
+          log(pdfData.pdfBase64.slice(0, 300) + "…");
+
+          // ⬇️ Générer le lien de téléchargement
+          const dataUrl = `data:application/pdf;base64,${pdfData.pdfBase64}`;
+          downloadLink.href = dataUrl;
+          downloadLink.style.display = "inline-block";
+          log("[⬇️] Lien de téléchargement prêt.");
+        }
+
         log("[✍️] Envoi à OpenSign pour signature…");
 
         const recipient = {
@@ -131,7 +146,6 @@
           iframe.src = signData.iframeUrl;
           document.body.appendChild(iframe);
 
-          // 📦 Affichage de la requête envoyée à OpenSign
           if (signData.debugRequest) {
             log("[📤] Requête envoyée à OpenSign :");
             log(JSON.stringify(signData.debugRequest, null, 2));
