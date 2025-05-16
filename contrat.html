@@ -9,30 +9,25 @@
       padding: 2rem;
       background: #f5f5f5;
     }
-    #logs, #text-output {
+    #logs {
       background: #111;
       color: #0f0;
       padding: 1rem;
       border-radius: 6px;
       white-space: pre-wrap;
-      height: auto;
-      max-height: 60vh;
+      height: 60vh;
       overflow-y: auto;
-      margin-top: 1rem;
     }
-    #pdf-link, #download-link {
+    #pdf-link {
       margin-top: 1rem;
       display: none;
-      margin-right: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>📝 Génération et affichage du contrat</h1>
+  <h1>📝 Génération et signature du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
-  <a id="download-link" href="#" download="contrat.pdf">⬇️ Télécharger le contrat en PDF</a>
-  <pre id="text-output">[📄] Le contenu du contrat s’affichera ici…</pre>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
@@ -40,8 +35,6 @@
 
     const logs = document.getElementById("logs");
     const link = document.getElementById("pdf-link");
-    const downloadLink = document.getElementById("download-link");
-    const textOutput = document.getElementById("text-output");
 
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
@@ -102,22 +95,12 @@
         link.style.display = "inline-block";
         log("[✅] Contrat généré avec succès !");
 
+        // Afficher le base64
         if (pdfData.pdfBase64) {
-          const base64 = pdfData.pdfBase64;
-          log("[📦] PDF en base64 (extrait) :");
-          log(base64.slice(0, 300) + "…");
-
-          // 💾 Préparer le téléchargement
-          const dataUrl = `data:application/pdf;base64,${base64}`;
-          downloadLink.href = dataUrl;
-          downloadLink.style.display = "inline-block";
-
-          // 🧾 Essayer d’extraire du texte lisible
-          const decoded = atob(base64);
-          const readableText = decoded.replace(/[^\x20-\x7E\n\r]+/g, ""); // filtre les caractères non imprimables
-          textOutput.textContent = readableText.slice(0, 3000) + (readableText.length > 3000 ? "…" : "");
+          log("[📄] PDF Base64 reçu :");
+          log(pdfData.pdfBase64.slice(0, 300) + "...");
         } else {
-          textOutput.textContent = "[⚠️] Aucune donnée base64 reçue.";
+          log("[⚠️] Aucune donnée base64 reçue.");
         }
 
       } catch (err) {
