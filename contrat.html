@@ -21,14 +21,10 @@
     #pdf-link, #sign-button {
       margin-top: 1rem;
       display: none;
-      padding: 10px 15px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
     }
     #loading-sign {
       margin-top: 1rem;
+      color: #888;
     }
   </style>
 </head>
@@ -36,12 +32,14 @@
   <h1>📝 Génération et signature du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
-  <div id="loading-sign">⏳ Préparation de la signature…</div>
-  <a id="sign-button" href="#" target="_blank">✍️ Signer le contrat</a>
+  <div id="loading-sign">⏳ Chargement du lien de signature…</div>
+  <a id="sign-button" href="#" target="_blank">🖋️ Signer le contrat</a>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
+
+    window.supabase = supabase;
 
     const logs = document.getElementById("logs");
     const pdfLink = document.getElementById("pdf-link");
@@ -66,6 +64,7 @@
 
         const session = await supabase.auth.getSession();
         const token = session.data.session.access_token;
+
         if (!token) {
           log("[❌] Token Supabase introuvable.");
           return;
@@ -85,6 +84,7 @@
         }
 
         log("[📤] Génération du contrat PDF…");
+
         const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
           method: "POST",
           headers: {
@@ -95,6 +95,7 @@
         });
 
         const pdfData = await pdfRes.json();
+
         if (!pdfRes.ok || !pdfData?.success) {
           log("[❌] Échec de la génération du PDF.");
           return;
@@ -132,28 +133,27 @@
 
         const signData = await signRes.json();
 
-        const openSignUrl = signData?.signurl?.[0]?.url;
+        console.log("[🧾] Réponse brute d'OpenSign :", signData);
+        log("[🧾] Réponse OpenSign :");
+        log(JSON.stringify(signData, null, 2));
+
+        const openSignUrl = Array.isArray(signData?.signurl) ? signData.signurl[0]?.url : null;
 
         if (signRes.ok && openSignUrl) {
           log("[✅] Document prêt à être signé !");
+          log("[🔗] Lien OpenSign : " + openSignUrl);
           signButton.href = openSignUrl;
           signButton.style.display = "inline-block";
           loadingSign.style.display = "none";
-
-          log("[🔗] Lien OpenSign : " + openSignUrl);
-
         } else {
           log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
           loadingSign.textContent = "❌ Erreur de chargement du lien de signature.";
-
-          if (signData?.signurl) {
-            log(JSON.stringify(signData, null, 2));
-          }
         }
 
       } catch (err) {
         log("[🔥] Erreur inattendue : " + err.message);
         console.error(err);
+        loadingSign.textContent = "❌ Erreur inattendue.";
       }
     }
 
