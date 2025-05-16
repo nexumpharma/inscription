@@ -9,43 +9,39 @@
       padding: 2rem;
       background: #f5f5f5;
     }
-    #logs {
+    #logs, #text-output {
       background: #111;
       color: #0f0;
       padding: 1rem;
       border-radius: 6px;
       white-space: pre-wrap;
-      height: 60vh;
+      height: auto;
+      max-height: 60vh;
       overflow-y: auto;
+      margin-top: 1rem;
     }
     #pdf-link, #download-link {
       margin-top: 1rem;
       display: none;
       margin-right: 1rem;
     }
-    iframe {
-      margin-top: 2rem;
-      border: 1px solid #ccc;
-      width: 100%;
-      height: 600px;
-    }
   </style>
 </head>
 <body>
-  <h1>📝 Génération et signature du contrat</h1>
+  <h1>📝 Génération et affichage du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
   <a id="download-link" href="#" download="contrat.pdf">⬇️ Télécharger le contrat en PDF</a>
+  <pre id="text-output">[📄] Le contenu du contrat s’affichera ici…</pre>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-    window.supabase = supabase;
-
     const logs = document.getElementById("logs");
     const link = document.getElementById("pdf-link");
     const downloadLink = document.getElementById("download-link");
+    const textOutput = document.getElementById("text-output");
 
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
@@ -106,56 +102,22 @@
         link.style.display = "inline-block";
         log("[✅] Contrat généré avec succès !");
 
-        // 📦 Afficher un extrait du base64
         if (pdfData.pdfBase64) {
+          const base64 = pdfData.pdfBase64;
           log("[📦] PDF en base64 (extrait) :");
-          log(pdfData.pdfBase64.slice(0, 300) + "…");
+          log(base64.slice(0, 300) + "…");
 
-          // ⬇️ Générer le lien de téléchargement
-          const dataUrl = `data:application/pdf;base64,${pdfData.pdfBase64}`;
+          // 💾 Préparer le téléchargement
+          const dataUrl = `data:application/pdf;base64,${base64}`;
           downloadLink.href = dataUrl;
           downloadLink.style.display = "inline-block";
-          log("[⬇️] Lien de téléchargement prêt.");
-        }
 
-        log("[✍️] Envoi à OpenSign pour signature…");
-
-        const recipient = {
-          email: fields["Mail du titulaire"] || user.email,
-          name: `${fields["Prénom"] || "Titulaire"} ${fields["Nom"] || ""}`.trim(),
-          phone: fields["Portable du titulaire"] || ""
-        };
-
-        const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            pdfUrl: pdfData.pdfUrl,
-            recipient
-          })
-        });
-
-        const signData = await signRes.json();
-
-        if (signRes.ok && signData?.iframeUrl) {
-          log("[✅] Document prêt à être signé !");
-          const iframe = document.createElement("iframe");
-          iframe.src = signData.iframeUrl;
-          document.body.appendChild(iframe);
-
-          if (signData.debugRequest) {
-            log("[📤] Requête envoyée à OpenSign :");
-            log(JSON.stringify(signData.debugRequest, null, 2));
-          }
-
+          // 🧾 Essayer d’extraire du texte lisible
+          const decoded = atob(base64);
+          const readableText = decoded.replace(/[^\x20-\x7E\n\r]+/g, ""); // filtre les caractères non imprimables
+          textOutput.textContent = readableText.slice(0, 3000) + (readableText.length > 3000 ? "…" : "");
         } else {
-          log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
-          if (signData?.openSignResponse) {
-            log(JSON.stringify(signData.openSignResponse, null, 2));
-          }
+          textOutput.textContent = "[⚠️] Aucune donnée base64 reçue.";
         }
 
       } catch (err) {
