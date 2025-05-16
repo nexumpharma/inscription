@@ -18,7 +18,7 @@
       height: 60vh;
       overflow-y: auto;
     }
-    #pdf-link, #opensign-link {
+    #pdf-link {
       margin-top: 1rem;
       display: none;
     }
@@ -34,7 +34,7 @@
   <h1>📝 Génération et signature du contrat</h1>
   <div id="logs">[🟢] Initialisation…</div>
   <a id="pdf-link" href="#" target="_blank">📄 Voir le contrat généré</a>
-  <a id="opensign-link" href="#" target="_blank">🔗 Voir le contrat sur OpenSign</a>
+  <div id="iframe-container"></div>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
@@ -43,8 +43,8 @@
     window.supabase = supabase;
 
     const logs = document.getElementById("logs");
-    const pdfLink = document.getElementById("pdf-link");
-    const opensignLink = document.getElementById("opensign-link");
+    const link = document.getElementById("pdf-link");
+    const iframeContainer = document.getElementById("iframe-container");
 
     const log = (msg) => {
       logs.textContent += `\n${msg}`;
@@ -101,15 +101,13 @@
           return;
         }
 
-        pdfLink.href = pdfData.pdfUrl;
-        pdfLink.style.display = "inline-block";
+        link.href = pdfData.pdfUrl;
+        link.style.display = "inline-block";
         log("[✅] Contrat généré avec succès !");
 
-        if (pdfData.pdfBase64) {
-          log("[📄] Données PDF en base64 :");
-          log(pdfData.pdfBase64);
-        } else {
+        if (!pdfData.base64) {
           log("[⚠️] Aucune donnée base64 reçue.");
+          return;
         }
 
         log("[✍️] Envoi à OpenSign pour signature…");
@@ -127,28 +125,18 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            pdfBase64: pdfData.pdfBase64,
+            pdfBase64: pdfData.base64,
             recipient
           })
         });
 
         const signData = await signRes.json();
 
-        if (signRes.ok && signData?.iframeUrl) {
+        if (signRes.ok && signData?.url) {
           log("[✅] Document prêt à être signé !");
-
-          opensignLink.href = signData.iframeUrl;
-          opensignLink.style.display = "inline-block";
-
           const iframe = document.createElement("iframe");
-          iframe.src = signData.iframeUrl;
-          document.body.appendChild(iframe);
-
-          if (signData.debugRequest) {
-            log("[📤] Requête envoyée à OpenSign :");
-            log(JSON.stringify(signData.debugRequest, null, 2));
-          }
-
+          iframe.src = signData.url;
+          iframeContainer.appendChild(iframe);
         } else {
           log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
           if (signData?.openSignResponse) {
