@@ -4,21 +4,91 @@
   <meta charset="UTF-8">
   <title>Infos Pharmacie</title>
   <style>
-    body { font-family: sans-serif; margin: 2rem; }
-    form { display: flex; flex-direction: column; gap: 10px; max-width: 600px; }
-    label { font-weight: bold; }
-    input, select { padding: 8px; }
-    h2 { margin-top: 2rem; color: #333; }
-    .error { border: 2px solid red; }
-    .error-message { color: red; font-size: 0.9em; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      color: #111;
+      margin: 2rem;
+      line-height: 1.6;
+    }
+
+    h1, h2 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: normal;
+    }
+
+    form {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+    }
+
+    input, select {
+      padding: 0.7rem;
+      border: 1px solid #aaa;
+      background: #fff;
+      color: #000;
+      font-size: 1rem;
+      border-radius: 4px;
+      margin-top: 0.3rem;
+    }
+
+    .error {
+      border-color: #c00;
+      background-color: #fff0f0;
+    }
+
+    .error-message {
+      color: #c00;
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    button {
+      align-self: flex-start;
+      padding: 0.7rem 1.5rem;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    #logoutBtn {
+      margin-bottom: 2rem;
+      background: none;
+      color: #000;
+      border: 1px solid #000;
+    }
+
+    #logoutBtn:hover {
+      background: #000;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
   <h1>Bienvenue</h1>
   <div id="status">Chargement...</div>
-  <button id="logoutBtn" style="margin-top: 1rem;">Se déconnecter</button>
+  <button id="logoutBtn">Se déconnecter</button>
 
-  <form id="pharmacyForm" style="display:none; margin-top:2rem;" novalidate>
+  <form id="pharmacyForm" style="display:none;" novalidate>
     <h2>Informations du titulaire</h2>
     <label>Civilité
       <select name="Civilité">
@@ -79,133 +149,175 @@
   </form>
 
   <script type="module">
-  import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
-  import { SUPABASE_FUNCTION_BASE } from './js/config.js';
+    import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+    import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-  let recordId = null;
+    let recordId = null;
+    document.getElementById("logoutBtn").addEventListener("click", logout);
 
-  document.getElementById("logoutBtn").addEventListener("click", logout);
-
-  async function fetchPharmacieData(token) {
-    const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const json = await res.json();
-    return json.records?.[0] || null;
-  }
-
-  async function savePharmacieData(token, data) {
-    const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ id: recordId, fields: data })
-    });
-    return res.ok;
-  }
-
-  async function main() {
-    const status = document.getElementById("status");
-    await checkAndRestoreSessionFromURL();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      status.textContent = "❌ Vous n'êtes pas connecté.";
-      return;
-    }
-
-    status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
-    const session = await supabase.auth.getSession();
-    const token = session.data.session.access_token;
-
-    const record = await fetchPharmacieData(token);
-    if (!record) {
-      status.textContent = "Aucune donnée trouvée.";
-      return;
-    }
-
-    recordId = record.id;
-    const form = document.getElementById("pharmacyForm");
-    form.style.display = "block";
-
-    for (const [key, value] of Object.entries(record.fields)) {
-      const input = form.querySelector(`[name="${key}"]`);
-      if (input) input.value = value;
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = Object.fromEntries(new FormData(form));
-      let erreurs = [];
-
-      const regex = {
-        email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        telPortable: /^0[67]\d{8}$/,
-        telPharma: /^0\d{9}$/,
-        cip: /^2\d{6}$/,
-        finess: /^(\d{9}|2[abAB]\d{7})$/,
-        num9: /^\d{9}$/
-      };
-
-      form.querySelectorAll("input, select").forEach(el => {
-        el.classList.remove("error");
-        const err = el.parentElement.querySelector(".error-message");
-        if (err) err.remove();
-      });
-
-      function invalide(champ, msg) {
-        erreurs.push(msg);
-        const el = form.querySelector(`[name="${champ}"]`);
-        if (el) {
-          el.classList.add("error");
-          const span = document.createElement("span");
-          span.className = "error-message";
-          span.textContent = msg;
-          el.parentElement.appendChild(span);
+    function calculerCleLuhn(numbers) {
+      const digits = numbers.split('').map(Number);
+      let sum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        let d = digits[i];
+        if (i % 2 === 0) {
+          d *= 2;
+          if (d > 9) d -= 9;
         }
+        sum += d;
+      }
+      return (10 - (sum % 10)) % 10;
+    }
+
+    function estCIPValide(cip) {
+      if (!/^\d{7}$/.test(cip) || !cip.startsWith("2")) return false;
+      return parseInt(cip[6]) === calculerCleLuhn(cip.slice(0, 6));
+    }
+
+    function estSIRENValide(siren) {
+      if (!/^\d{9}$/.test(siren)) return false;
+      const digits = siren.split('').map(Number);
+      let sum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        let d = digits[i];
+        if (i % 2 === 1) {
+          d *= 2;
+          if (d > 9) d -= 9;
+        }
+        sum += d;
+      }
+      return sum % 10 === 0;
+    }
+
+    async function fetchPharmacieData(token) {
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      return json.records?.[0] || null;
+    }
+
+    async function savePharmacieData(token, data) {
+      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id: recordId, fields: data })
+      });
+      return res.ok;
+    }
+
+    async function main() {
+      const status = document.getElementById("status");
+      await checkAndRestoreSessionFromURL();
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        status.textContent = "❌ Vous n'êtes pas connecté.";
+        return;
       }
 
-      // Nettoyage des champs à valider
-      const mailTitulaire = formData["Mail du titulaire"]?.trim();
-      const mailPharma = formData["Mail de la pharmacie"]?.trim();
+      status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+      const session = await supabase.auth.getSession();
+      const token = session.data.session.access_token;
 
-      if (mailTitulaire && !regex.email.test(mailTitulaire)) {
-        invalide("Mail du titulaire", "Email titulaire invalide");
-      }
-      if (mailPharma && !regex.email.test(mailPharma)) {
-        invalide("Mail de la pharmacie", "Email pharmacie invalide");
-      }
-      if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
-        invalide("Portable du titulaire", "Téléphone portable invalide");
-      }
-      if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
-        invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
-      }
-      if (formData["CIP"] && !regex.cip.test(formData["CIP"])) {
-        invalide("CIP", "CIP invalide (7 chiffres, doit commencer par 2)");
-      }
-      if (formData["FINESS"] && !regex.finess.test(formData["FINESS"])) {
-        invalide("FINESS", "FINESS invalide (9 chiffres ou 2A/2B + chiffres)");
-      }
-      if (formData["RCS (SIREN)"] && !regex.num9.test(formData["RCS (SIREN)"])) {
-        invalide("RCS (SIREN)", "SIREN invalide (9 chiffres)");
+      const record = await fetchPharmacieData(token);
+      if (!record) {
+        status.textContent = "Aucune donnée trouvée.";
+        return;
       }
 
-      if (erreurs.length > 0) return;
+      recordId = record.id;
+      const form = document.getElementById("pharmacyForm");
+      form.style.display = "block";
 
-      const ok = await savePharmacieData(token, formData);
-      if (ok) {
-        window.location.href = "rib.html";
-      } else {
-        alert("❌ Erreur lors de l'enregistrement.");
+      for (const [key, value] of Object.entries(record.fields)) {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) input.value = value;
       }
-    });
-  }
 
-  main();
-</script>
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = Object.fromEntries(new FormData(form));
+        let erreurs = [];
 
+        const regex = {
+          email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+          telPortable: /^0[67]\d{8}$/,
+          telPharma: /^0\d{9}$/,
+          finess: /^(\d{9}|2[abAB]\d{7})$/
+        };
+
+        form.querySelectorAll("input, select").forEach(el => {
+          el.classList.remove("error");
+          const err = el.parentElement.querySelector(".error-message");
+          if (err) err.remove();
+        });
+
+        function invalide(champ, msg) {
+          erreurs.push(msg);
+          const el = form.querySelector(`[name="${champ}"]`);
+          if (el) {
+            el.classList.add("error");
+            const span = document.createElement("span");
+            span.className = "error-message";
+            span.textContent = msg;
+            el.parentElement.appendChild(span);
+          }
+        }
+
+        const cip = formData["CIP"]?.trim();
+        const siren = formData["RCS (SIREN)"]?.trim();
+        const finess = formData["FINESS"]?.trim();
+        const mailTitulaire = formData["Mail du titulaire"]?.trim();
+        const mailPharma = formData["Mail de la pharmacie"]?.trim();
+
+        if (mailTitulaire && !regex.email.test(mailTitulaire)) {
+          invalide("Mail du titulaire", "Email titulaire invalide");
+        }
+        if (mailPharma && !regex.email.test(mailPharma)) {
+          invalide("Mail de la pharmacie", "Email pharmacie invalide");
+        }
+        if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
+          invalide("Portable du titulaire", "Téléphone portable invalide");
+        }
+        if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
+          invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
+        }
+        if (cip && !estCIPValide(cip)) {
+          invalide("CIP", "CIP invalide (clé ou format incorrect)");
+        }
+        if (finess && !regex.finess.test(finess)) {
+          invalide("FINESS", "FINESS invalide (9 chiffres ou 2A/2B + 7 chiffres)");
+        }
+        if (siren && !estSIRENValide(siren)) {
+          invalide("RCS (SIREN)", "SIREN invalide (clé de contrôle incorrecte)");
+        }
+
+        // 🔒 Pour rendre tous les champs obligatoires, décommente la ligne ci-dessous :
+        /*
+        form.querySelectorAll("input, select").forEach(el => {
+          const nom = el.name;
+          if (!formData[nom] || formData[nom].trim() === "") {
+            invalide(nom, "Ce champ est obligatoire");
+          }
+        });
+        */
+
+        if (erreurs.length > 0) return;
+
+        const ok = await savePharmacieData(token, formData);
+        if (ok) {
+          window.location.href = "rib.html";
+        } else {
+          alert("❌ Erreur lors de l'enregistrement.");
+        }
+      });
+    }
+
+    main();
+  </script>
 </body>
 </html>
