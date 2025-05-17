@@ -1,10 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Infos Pharmacie</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -21,33 +19,14 @@
       font-weight: normal;
     }
 
-    nav.menu-container {
+    #status-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       max-width: 700px;
       margin: 0 auto 1.5rem auto;
       padding-bottom: 1rem;
       border-bottom: 1px solid #ddd;
-    }
-
-    .menu-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #menuToggle {
-      font-size: 1.8rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: none;
-    }
-
-    #menuContent {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 1rem;
-      gap: 1rem;
     }
 
     form {
@@ -119,59 +98,79 @@
       margin-top: 2rem;
       width: fit-content;
     }
-
-    @media (max-width: 768px) {
-      body {
-        margin: 1rem;
-      }
-
-      #menuToggle {
-        display: block;
-      }
-
-      #menuContent {
-        flex-direction: column;
-        align-items: flex-start;
-        display: none;
-      }
-
-      #menuContent.open {
-        display: flex;
-      }
-
-      input, select, button {
-        width: 100%;
-      }
-
-      h1, h2 {
-        font-size: 1.3rem;
-      }
-    }
   </style>
 </head>
 <body>
-  <nav class="menu-container">
-    <div class="menu-header">
-      <h1>Bienvenue</h1>
-      <button id="menuToggle" aria-label="Ouvrir le menu">&#9776;</button>
-    </div>
-    <div id="menuContent">
-      <div id="status">Chargement...</div>
-      <button id="logoutBtn">Se déconnecter</button>
-    </div>
-  </nav>
+  <h1>Bienvenue</h1>
+
+  <div id="status-container">
+    <div id="status">Chargement...</div>
+    <button id="logoutBtn">Se déconnecter</button>
+  </div>
 
   <form id="pharmacyForm" style="display:none;" novalidate>
-    <!-- Formulaire comme précédemment (inchangé) -->
+    <h2>Informations du titulaire</h2>
+    <label>Civilité
+      <select name="Civilité">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option value="Monsieur">Monsieur</option>
+        <option value="Madame">Madame</option>
+      </select>
+    </label>
+    <label>Prénom <input name="Prénom" type="text" /></label>
+    <label>Nom <input name="Nom" type="text" /></label>
+    <label>Mail du titulaire <input name="Mail du titulaire" type="email" /></label>
+    <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /></label>
+
+    <h2>Informations de la pharmacie</h2>
+    <label>Raison sociale <input name="Raison sociale" type="text" /></label>
+    <label>Nom commercial <input name="Nom commercial" type="text" /></label>
+    <label>Mail de la pharmacie <input name="Mail de la pharmacie" type="email" /></label>
+    <label>Téléphone de la pharmacie <input name="Téléphone de la pharmacie" type="tel" /></label>
+    <label>Adresse <input name="Adresse" type="text" /></label>
+    <label>Code postal <input name="Code postal" type="text" /></label>
+    <label>Ville <input name="Ville" type="text" /></label>
+    <label>CIP <input name="CIP" type="text" /></label>
+    <label>FINESS <input name="FINESS" type="text" /></label>
+    <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /></label>
+
+    <label>Type de pharmacie
+      <select name="Type de pharmacie">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option>Centre-Ville</option>
+        <option>Périphérie et banlieue résidentielle</option>
+        <option>Zone commerciale</option>
+        <option>Pôle touristique</option>
+        <option>Rurale</option>
+      </select>
+    </label>
+
+    <label>Groupement
+      <select name="Groupement">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option>Elsie</option>
+        <option>Pharmabest</option>
+        <option>Aprium</option>
+        <option>Autre</option>
+      </select>
+    </label>
+
+    <label>LGO
+      <select name="LGO">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option>Smart RX</option>
+        <option>WinPharma</option>
+        <option>LGPI</option>
+        <option>Autre</option>
+      </select>
+    </label>
+
+    <button type="submit" id="suivantBtn">Suivant</button>
   </form>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
-
-    document.getElementById("menuToggle").addEventListener("click", () => {
-      document.getElementById("menuContent").classList.toggle("open");
-    });
 
     let recordId = null;
     document.getElementById("logoutBtn").addEventListener("click", logout);
