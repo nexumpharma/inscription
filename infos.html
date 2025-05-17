@@ -19,6 +19,16 @@
       font-weight: normal;
     }
 
+    #status-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 700px;
+      margin: 0 auto 1.5rem auto;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+
     form {
       max-width: 700px;
       margin: 0 auto;
@@ -55,7 +65,6 @@
     }
 
     button {
-      align-self: flex-start;
       padding: 0.7rem 1.5rem;
       background: #000;
       color: #fff;
@@ -71,22 +80,33 @@
     }
 
     #logoutBtn {
-      margin-bottom: 2rem;
+      padding: 0.6rem 1rem;
       background: none;
       color: #000;
       border: 1px solid #000;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     #logoutBtn:hover {
       background: #000;
       color: #fff;
     }
+
+    #suivantBtn {
+      margin-top: 2rem;
+      width: fit-content;
+    }
   </style>
 </head>
 <body>
   <h1>Bienvenue</h1>
-  <div id="status">Chargement...</div>
-  <button id="logoutBtn">Se déconnecter</button>
+
+  <div id="status-container">
+    <div id="status">Chargement...</div>
+    <button id="logoutBtn">Se déconnecter</button>
+  </div>
 
   <form id="pharmacyForm" style="display:none;" novalidate>
     <h2>Informations du titulaire</h2>
