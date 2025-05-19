@@ -68,14 +68,15 @@
       border-radius: 4px;
     }
 
-    .nav-buttons {
+    .button-container {
       display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2.5rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
     }
 
-    button {
+    #prevBtn,
+    #nextBtn {
       padding: 0.7rem 1.5rem;
       background: #000;
       color: #fff;
@@ -86,7 +87,8 @@
       transition: background 0.2s ease;
     }
 
-    button:hover {
+    #prevBtn:hover,
+    #nextBtn:hover {
       background: #333;
     }
 
@@ -126,7 +128,7 @@
     <input type="text" id="iban" name="iban" required placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" />
     <div id="ibanError" class="error"></div>
 
-    <div class="nav-buttons">
+    <div class="button-container">
       <button type="button" id="prevBtn">Précédent</button>
       <button type="button" id="nextBtn">Suivant</button>
     </div>
