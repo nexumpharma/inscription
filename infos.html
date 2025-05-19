@@ -95,11 +95,14 @@
       color: #fff;
     }
 
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+    }
+
     #suivantBtn {
-  margin-top: 2rem;
-  margin-left: auto; /* Aligne le bouton à droite */
-  width: fit-content;
-}
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -167,7 +170,9 @@
       </select>
     </label>
 
-    <button type="submit" id="suivantBtn">Suivant</button>
+    <div class="button-container">
+      <button type="submit" id="suivantBtn">Suivant</button>
+    </div>
   </form>
 
   <script type="module">
