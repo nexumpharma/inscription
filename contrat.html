@@ -20,6 +20,9 @@
     }
 
     #status-container {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
       max-width: 700px;
       margin: 0 auto 1.5rem auto;
       padding-bottom: 1rem;
@@ -53,13 +56,7 @@
     }
 
     #logs {
-      white-space: pre-wrap;
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      padding: 1rem;
-      border-radius: 6px;
-      max-width: 700px;
-      margin: 1rem auto;
+      display: none;
     }
 
     .button-container {
@@ -92,12 +89,14 @@
   <h1><strong>NEXUM</strong>PHARMA</h1>
 
   <div id="status-container">
-    <h2>Contrat</h2>
+    <div id="status">Chargement...</div>
+    <button id="logoutBtn">Se déconnecter</button>
   </div>
 
+  <h2>Contrat</h2>
+
   <div id="progress">
-    <div id="step1" class="step pending">Génération du contrat PDF…</div>
-    <div id="step2" class="step">Contrat généré avec succès !</div>
+    <div id="step2" class="step pending">Génération du contrat PDF…</div>
     <div id="step3" class="step">Envoi à OpenSign pour signature…</div>
     <div id="step4" class="step">Document prêt à être signé !</div>
   </div>
@@ -111,58 +110,49 @@
   <div id="logs"></div>
 
   <script type="module">
-    import { supabase, checkAndRestoreSessionFromURL } from './js/auth.js';
+    import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
     const logs = document.getElementById("logs");
     const signButton = document.getElementById("sign-button");
+    const statusContainer = document.getElementById("status-container");
+    const statusText = document.getElementById("status");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-    const step1 = document.getElementById("step1");
     const step2 = document.getElementById("step2");
     const step3 = document.getElementById("step3");
     const step4 = document.getElementById("step4");
 
-    const log = (msg) => {
-      logs.textContent += `\n${msg}`;
-      logs.scrollTop = logs.scrollHeight;
-    };
-
     async function run() {
-      step1.className = "step pending";
-      log("[🔐] Connexion en cours...");
       await checkAndRestoreSessionFromURL();
 
       const { data: { user }, error } = await supabase.auth.getUser();
       if (!user || error) {
-        log("[❌] Utilisateur non connecté.");
-        step1.className = "step error";
+        statusText.textContent = "❌ Vous n'êtes pas connecté.";
+        statusContainer.style.display = "flex";
+        logoutBtn.style.display = "none";
         return;
       }
 
       const session = await supabase.auth.getSession();
       const token = session.data.session.access_token;
 
-      if (!token) {
-        log("[❌] Token Supabase introuvable.");
-        step1.className = "step error";
-        return;
-      }
+      statusText.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+      statusContainer.style.display = "flex";
+      logoutBtn.style.display = "inline-block";
 
-      log("[🛰] Récupération des données pharmacie…");
       const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(r => r.json());
 
       const fields = record?.records?.[0]?.fields;
       if (!fields) {
-        log("[❌] Données pharmacie introuvables.");
-        step1.className = "step error";
+        step2.className = "step error";
         return;
       }
 
-      log("[📤] Génération du contrat PDF…");
-      step1.className = "step done";
-      step2.className = "step pending";
+      step2.className = "step done";
+      step3.className = "step pending";
 
       const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
         method: "POST",
@@ -176,13 +166,10 @@
       const pdfData = await pdfRes.json();
 
       if (!pdfRes.ok || !pdfData?.success) {
-        log("[❌] Échec de la génération du PDF.");
         step2.className = "step error";
         return;
       }
 
-      log("[✅] Contrat généré avec succès !");
-      step2.className = "step done";
       step3.className = "step pending";
 
       const recipient = {
@@ -191,7 +178,6 @@
         phone: fields["Portable du titulaire"] || ""
       };
 
-      log("[✍️] Envoi à OpenSign pour signature…");
       const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
         method: "POST",
         headers: {
@@ -211,18 +197,18 @@
         null;
 
       if (signRes.ok && openSignUrl) {
-        log("[✅] Document prêt à être signé !");
         step3.className = "step done";
         step4.className = "step done";
 
         signButton.href = openSignUrl;
         signButton.style.display = "inline-block";
       } else {
-        log("[❌] Erreur OpenSign : " + (signData?.error || "Erreur inconnue"));
         step3.className = "step error";
         step4.className = "step error";
       }
     }
+
+    logoutBtn.addEventListener("click", logout);
 
     run();
   </script>
