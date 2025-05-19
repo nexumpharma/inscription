@@ -110,7 +110,63 @@
   </div>
 
   <form id="pharmacyForm" style="display:none;" novalidate>
-    <!-- ... Formulaire inchangé ... -->
+    <h2>Informations du titulaire</h2>
+    <label>Civilité
+      <select name="Civilité">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option value="Monsieur">Monsieur</option>
+        <option value="Madame">Madame</option>
+      </select>
+    </label>
+    <label>Prénom <input name="Prénom" type="text" /></label>
+    <label>Nom <input name="Nom" type="text" /></label>
+    <label>Mail du titulaire <input name="Mail du titulaire" type="email" /></label>
+    <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /></label>
+
+    <h2>Informations de la pharmacie</h2>
+    <label>Raison sociale <input name="Raison sociale" type="text" /></label>
+    <label>Nom commercial <input name="Nom commercial" type="text" /></label>
+    <label>Mail de la pharmacie <input name="Mail de la pharmacie" type="email" /></label>
+    <label>Téléphone de la pharmacie <input name="Téléphone de la pharmacie" type="tel" /></label>
+    <label>Adresse <input name="Adresse" type="text" /></label>
+    <label>Code postal <input name="Code postal" type="text" /></label>
+    <label>Ville <input name="Ville" type="text" /></label>
+    <label>CIP <input name="CIP" type="text" /></label>
+    <label>FINESS <input name="FINESS" type="text" /></label>
+    <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /></label>
+
+    <label>Type de pharmacie
+      <select name="Type de pharmacie">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option>Centre-Ville</option>
+        <option>Périphérie et banlieue résidentielle</option>
+        <option>Zone commerciale</option>
+        <option>Pôle touristique</option>
+        <option>Rurale</option>
+      </select>
+    </label>
+
+    <label>Groupement
+      <select name="Groupement">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option>Elsie</option>
+        <option>Pharmabest</option>
+        <option>Aprium</option>
+        <option>Autre</option>
+      </select>
+    </label>
+
+    <label>LGO
+      <select name="LGO">
+        <option value="" disabled selected hidden>— Sélectionnez —</option>
+        <option>Smart RX</option>
+        <option>WinPharma</option>
+        <option>LGPI</option>
+        <option>Autre</option>
+      </select>
+    </label>
+
+    <button type="submit" id="suivantBtn">Suivant</button>
   </form>
 
   <script type="module">
@@ -163,18 +219,18 @@
       const token = session.data.session.access_token;
 
       const record = await fetchPharmacieData(token);
-      if (!record) {
-        status.textContent = "Aucune donnée trouvée.";
-        return;
-      }
-
-      recordId = record.id;
       const form = document.getElementById("pharmacyForm");
       form.style.display = "block";
 
-      for (const [key, value] of Object.entries(record.fields)) {
-        const input = form.querySelector(`[name="${key}"]`);
-        if (input) input.value = value;
+      if (record) {
+        recordId = record.id;
+
+        for (const [key, value] of Object.entries(record.fields)) {
+          const input = form.querySelector(`[name="${key}"]`);
+          if (input) input.value = value;
+        }
+      } else {
+        status.textContent += " | Aucune donnée trouvée. Veuillez remplir le formulaire.";
       }
 
       form.addEventListener("submit", async (e) => {
