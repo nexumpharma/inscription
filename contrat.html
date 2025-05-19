@@ -176,7 +176,14 @@
         return;
       }
 
-      step2.className = "step visible pending";
+      step2.className = "step visible done";
+      step3.className = "step visible pending";
+
+      const recipient = {
+        email: fields["Mail du titulaire"] || user.email,
+        name: `${fields["Prénom"] || "Titulaire"} ${fields["Nom"] || ""}`.trim(),
+        phone: fields["Portable du titulaire"] || ""
+      };
 
       const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
         method: "POST",
@@ -188,20 +195,10 @@
       });
 
       const pdfData = await pdfRes.json();
-
       if (!pdfRes.ok || !pdfData?.success) {
-        step2.className = "step visible error";
+        step3.className = "step visible error";
         return;
       }
-
-      step2.className = "step visible done";
-      step3.className = "step visible pending";
-
-      const recipient = {
-        email: fields["Mail du titulaire"] || user.email,
-        name: `${fields["Prénom"] || "Titulaire"} ${fields["Nom"] || ""}`.trim(),
-        phone: fields["Portable du titulaire"] || ""
-      };
 
       const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
         method: "POST",
