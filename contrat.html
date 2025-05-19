@@ -13,10 +13,22 @@
     }
 
     h1, h2 {
+      font-weight: normal;
+    }
+
+    h1 {
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.5rem;
       margin-bottom: 1rem;
-      font-weight: normal;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.5rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     #status-container {
@@ -27,6 +39,21 @@
       margin: 0 auto 1.5rem auto;
       padding-bottom: 1rem;
       border-bottom: 1px solid #ddd;
+    }
+
+    #logoutBtn {
+      padding: 0.6rem 1rem;
+      background: none;
+      color: #000;
+      border: 1px solid #000;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #logoutBtn:hover {
+      background: #000;
+      color: #fff;
     }
 
     #progress {
@@ -40,6 +67,11 @@
 
     .step {
       margin-bottom: 0.8rem;
+      display: none;
+    }
+
+    .step.visible {
+      display: block;
     }
 
     .done::before {
@@ -53,10 +85,6 @@
     .error::before {
       content: '❌ ';
       color: red;
-    }
-
-    #logs {
-      display: none;
     }
 
     .button-container {
@@ -96,7 +124,7 @@
   <h2>Contrat</h2>
 
   <div id="progress">
-    <div id="step2" class="step pending">Génération du contrat PDF…</div>
+    <div id="step2" class="step">Génération du contrat PDF…</div>
     <div id="step3" class="step">Envoi à OpenSign pour signature…</div>
     <div id="step4" class="step">Document prêt à être signé !</div>
   </div>
@@ -107,13 +135,10 @@
     </a>
   </div>
 
-  <div id="logs"></div>
-
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
     import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
-    const logs = document.getElementById("logs");
     const signButton = document.getElementById("sign-button");
     const statusContainer = document.getElementById("status-container");
     const statusText = document.getElementById("status");
@@ -147,12 +172,11 @@
 
       const fields = record?.records?.[0]?.fields;
       if (!fields) {
-        step2.className = "step error";
+        step2.className = "step visible error";
         return;
       }
 
-      step2.className = "step done";
-      step3.className = "step pending";
+      step2.className = "step visible pending";
 
       const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
         method: "POST",
@@ -166,11 +190,12 @@
       const pdfData = await pdfRes.json();
 
       if (!pdfRes.ok || !pdfData?.success) {
-        step2.className = "step error";
+        step2.className = "step visible error";
         return;
       }
 
-      step3.className = "step pending";
+      step2.className = "step visible done";
+      step3.className = "step visible pending";
 
       const recipient = {
         email: fields["Mail du titulaire"] || user.email,
@@ -197,14 +222,13 @@
         null;
 
       if (signRes.ok && openSignUrl) {
-        step3.className = "step done";
-        step4.className = "step done";
-
+        step3.className = "step visible done";
+        step4.className = "step visible done";
         signButton.href = openSignUrl;
         signButton.style.display = "inline-block";
       } else {
-        step3.className = "step error";
-        step4.className = "step error";
+        step3.className = "step visible error";
+        step4.className = "step visible error";
       }
     }
 
