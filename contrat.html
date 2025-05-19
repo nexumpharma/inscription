@@ -148,6 +148,13 @@
     const step3 = document.getElementById("step3");
     const step4 = document.getElementById("step4");
 
+    function normalizeUrl(url) {
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        return "https://" + url;
+      }
+      return url;
+    }
+
     async function run() {
       await checkAndRestoreSessionFromURL();
 
@@ -171,7 +178,37 @@
       }).then(r => r.json());
 
       const fields = record?.records?.[0]?.fields;
-      if (!fields) {
+      const recordId = record?.records?.[0]?.id;
+
+      if (!fields || !recordId) {
+        step2.className = "step visible error";
+        return;
+      }
+
+      const existingLink = fields["Lien contrat"];
+      if (existingLink && existingLink.trim() !== "") {
+        const finalUrl = normalizeUrl(existingLink);
+        step2.className = "step visible done";
+        step3.className = "step visible done";
+        step4.className = "step visible done";
+        signButton.href = finalUrl;
+        signButton.style.display = "inline-block";
+        return;
+      }
+
+      step2.className = "step visible pending";
+
+      const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ fields })
+      });
+
+      const pdfData = await pdfRes.json();
+      if (!pdfRes.ok || !pdfData?.success) {
         step2.className = "step visible error";
         return;
       }
@@ -185,25 +222,10 @@
         phone: fields["Portable du titulaire"] || ""
       };
 
-      const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ fields })
-      });
-
-      const pdfData = await pdfRes.json();
-      if (!pdfRes.ok || !pdfData?.success) {
-        step3.className = "step visible error";
-        return;
-      }
-
       const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -219,9 +241,24 @@
         null;
 
       if (signRes.ok && openSignUrl) {
+        // Met à jour Airtable avec le lien généré
+        await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id: recordId,
+            fields: {
+              "Lien contrat": openSignUrl
+            }
+          })
+        });
+
         step3.className = "step visible done";
         step4.className = "step visible done";
-        signButton.href = openSignUrl;
+        signButton.href = normalizeUrl(openSignUrl);
         signButton.style.display = "inline-block";
       } else {
         step3.className = "step visible error";
