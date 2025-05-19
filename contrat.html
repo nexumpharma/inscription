@@ -186,16 +186,41 @@
       }
 
       const existingLink = fields["Lien contrat"];
-      if (existingLink && existingLink.trim() !== "") {
-        const finalUrl = normalizeUrl(existingLink);
+      const contratId = fields["Contrat ID"];
+
+      if (existingLink && contratId) {
+        const signUrl = normalizeUrl(existingLink);
+
+        // Appel à la fonction back pour vérifier le statut de signature
+        const statusRes = await fetch(`${SUPABASE_FUNCTION_BASE}/get-signature-status`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ objectId: contratId })
+        });
+
+        const statusData = await statusRes.json();
+
+        if (statusRes.ok && statusData?.status === "completed") {
+          document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
+          signButton.querySelector("button").textContent = "Voir le contrat signé";
+          signButton.href = signUrl;
+          signButton.style.display = "inline-block";
+          return;
+        }
+
+        // Si non signé : afficher normalement
         step2.className = "step visible done";
         step3.className = "step visible done";
         step4.className = "step visible done";
-        signButton.href = finalUrl;
+        signButton.href = signUrl;
         signButton.style.display = "inline-block";
         return;
       }
 
+      // Sinon, génération du contrat
       step2.className = "step visible pending";
 
       const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
@@ -240,8 +265,10 @@
         signData?.openSignResponse?.signurl?.[0]?.url ||
         null;
 
-      if (signRes.ok && openSignUrl) {
-        // Met à jour Airtable avec le lien généré
+      const docId = signData?.documentId || null;
+
+      if (signRes.ok && openSignUrl && docId) {
+        // Mise à jour du lien et ID dans Airtable
         await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
           method: "POST",
           headers: {
@@ -251,7 +278,8 @@
           body: JSON.stringify({
             id: recordId,
             fields: {
-              "Lien contrat": openSignUrl
+              "Lien contrat": openSignUrl,
+              "Contrat ID": docId
             }
           })
         });
