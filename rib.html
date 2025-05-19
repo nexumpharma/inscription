@@ -68,14 +68,11 @@
       border-radius: 4px;
     }
 
-    .button-container-left {
-      margin-top: 1.2rem;
-      text-align: left;
-    }
-
-    .button-container-right {
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 2rem;
-      text-align: right;
     }
 
     #prevBtn,
@@ -131,11 +128,8 @@
     <input type="text" id="iban" name="iban" required placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" />
     <div id="ibanError" class="error"></div>
 
-    <div class="button-container-left">
+    <div class="button-container">
       <button type="button" id="prevBtn">Précédent</button>
-    </div>
-
-    <div class="button-container-right">
       <button type="button" id="nextBtn">Suivant</button>
     </div>
   </form>
