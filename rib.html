@@ -5,52 +5,41 @@
   <title>Envoi du RIB</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fff;
-      color: #111;
-      margin: 2rem;
-      line-height: 1.6;
+      font-family: monospace;
+      padding: 2rem;
+      background: #f5f5f5;
     }
 
     h1 {
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.5rem;
       margin-bottom: 1rem;
-      font-weight: normal;
     }
 
     #status-container {
       display: none;
       justify-content: space-between;
       align-items: center;
-      max-width: 700px;
-      margin: 0 auto 1.5rem auto;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #ddd;
+      margin-bottom: 1rem;
     }
 
     #ribForm {
-      max-width: 700px;
-      margin: 0 auto;
-      display: flex;
+      display: none;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 1rem;
     }
 
     label {
       display: flex;
       flex-direction: column;
-      font-weight: 600;
     }
 
     input[type="text"],
     input[type="file"] {
-      padding: 0.7rem;
-      border: 1px solid #aaa;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
       background: #fff;
       color: #000;
-      font-size: 1rem;
-      border-radius: 4px;
       margin-top: 0.3rem;
     }
 
@@ -68,57 +57,45 @@
       border-radius: 4px;
     }
 
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+
     .button-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 2rem;
-    }
-
-    #prevBtn,
-    #nextBtn {
-      padding: 0.7rem 1.5rem;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    #prevBtn:hover,
-    #nextBtn:hover {
-      background: #333;
+      margin-top: 1rem;
     }
 
     #logoutBtn {
-      padding: 0.6rem 1rem;
       background: none;
-      color: #000;
-      border: 1px solid #000;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-      display: none;
+      color: #007bff;
+      border: 1px solid #007bff;
     }
 
     #logoutBtn:hover {
-      background: #000;
-      color: #fff;
+      background: #007bff;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <h1><strong>NEXUM</strong>PHARMA</h1>
+  <h1>🏦 Téléversement du RIB</h1>
 
   <div id="status-container">
-    <div id="status">Chargement...</div>
+    <div id="status">Chargement…</div>
     <button id="logoutBtn">Se déconnecter</button>
   </div>
 
-  <form id="ribForm" style="display:none;" enctype="multipart/form-data">
-    <label for="ribFile">Choisissez un fichier RIB (PDF ou image, max 5Mo) :</label>
+  <form id="ribForm" enctype="multipart/form-data">
+    <label for="ribFile">📎 Fichier RIB (PDF ou image, max 5 Mo)</label>
     <input type="file" id="ribFile" accept=".pdf,image/*" required />
     <div id="fileError" class="error"></div>
 
@@ -129,8 +106,8 @@
     <div id="ibanError" class="error"></div>
 
     <div class="button-container">
-      <button type="button" id="prevBtn">Précédent</button>
-      <button type="button" id="nextBtn">Suivant</button>
+      <button type="button" id="prevBtn">⬅️ Précédent</button>
+      <button type="button" id="nextBtn">➡️ Suivant</button>
     </div>
   </form>
 
@@ -149,21 +126,19 @@
     const fileError = document.getElementById("fileError");
     const ibanError = document.getElementById("ibanError");
 
-    document.getElementById("logoutBtn").addEventListener("click", logout);
+    logoutBtn.addEventListener("click", logout);
 
-    async function getUserAndRecord() {
+    await (async function init() {
       await checkAndRestoreSessionFromURL();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        status.textContent = "❌ Vous n'êtes pas connecté.";
+        status.textContent = "❌ Non connecté.";
         statusContainer.style.display = "flex";
-        logoutBtn.style.display = "none";
-        return null;
+        return;
       }
 
-      status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+      status.innerHTML = `✅ Connecté : <strong>${user.email}</strong>`;
       statusContainer.style.display = "flex";
-      logoutBtn.style.display = "inline-block";
 
       const session = await supabase.auth.getSession();
       token = session.data.session.access_token;
@@ -174,15 +149,14 @@
       const json = await res.json();
       const record = json.records?.[0];
       if (!record) {
-        status.textContent += " | ❌ Aucune fiche pharmacie trouvée.";
-        return null;
+        status.textContent += " | ❌ Fiche introuvable.";
+        return;
       }
 
       recordId = record.id;
 
-      const ibanField = document.getElementById("iban");
       if (record.fields?.IBAN) {
-        ibanField.value = formatIban(record.fields.IBAN);
+        document.getElementById("iban").value = formatIban(record.fields.IBAN);
       }
 
       if (record.fields?.["Chemin RIB"]) {
@@ -192,162 +166,78 @@
       }
 
       form.style.display = "flex";
-    }
-
-    function sanitizeFilename(filename) {
-      return filename
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^\w.\-]/g, "_");
-    }
-
-    async function uploadFile(file) {
-      if (file.size > 5 * 1024 * 1024) {
-        fileError.textContent = "❌ Le fichier dépasse 5 Mo.";
-        return null;
-      }
-      fileError.textContent = "";
-
-      const reader = new FileReader();
-      return new Promise((resolve, reject) => {
-        reader.onload = async () => {
-          const base64File = reader.result.split(",")[1];
-
-          const timestamp = Date.now();
-          const originalName = file.name.replace(/^.*[\\/]/, '');
-          const cleanName = sanitizeFilename(originalName);
-          const filename = `rib/${timestamp}-${cleanName}`;
-          const type = file.type;
-
-          try {
-            const res = await fetch(`${SUPABASE_FUNCTION_BASE}/upload-rib`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-              },
-              body: JSON.stringify({ base64File, filename })
-            });
-
-            const json = await res.json();
-
-            if (res.ok && json?.path) {
-              ribStoragePath = json.path;
-              await displayPreview(ribStoragePath, type);
-              resolve({ path: ribStoragePath, type });
-            } else {
-              reject(json);
-            }
-          } catch (err) {
-            reject(err);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function waitForSignedUrl(path, maxTries = 10, delayMs = 1000) {
-      for (let i = 0; i < maxTries; i++) {
-        const { data } = await supabase
-          .storage
-          .from("pharmacie")
-          .createSignedUrl(path.replace(/^\/+/, ""), 3600);
-
-        if (data?.signedUrl) return data.signedUrl;
-        await new Promise((res) => setTimeout(res, delayMs));
-      }
-
-      throw new Error("Lien signé indisponible après plusieurs tentatives.");
-    }
-
-    async function displayPreview(path, type) {
-      try {
-        const url = await waitForSignedUrl(path);
-        const preview = document.getElementById("ribPreview");
-        preview.innerHTML = "";
-
-        if (type === "application/pdf") {
-          preview.innerHTML = `<embed src="${url}" type="application/pdf" width="100%" height="500px" />`;
-        } else {
-          const img = document.createElement("img");
-          img.src = url;
-          preview.appendChild(img);
-        }
-      } catch (err) {
-        console.error("Erreur de preview :", err);
-      }
-    }
-
-    document.getElementById("ribFile").addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const oldPath = ribStoragePath;
-
-      try {
-        const result = await uploadFile(file);
-        if (result && oldPath !== result.path) {
-          document.getElementById("iban").value = "";
-        }
-      } catch {
-        alert("❌ Erreur lors de l'envoi du fichier.");
-      }
-    });
+    })();
 
     function formatIban(value) {
       return value.replace(/\s+/g, "").toUpperCase().match(/.{1,4}/g)?.join(" ") || "";
     }
 
     function isValidIBAN(iban) {
-      const cleanIban = iban.replace(/\s+/g, '').toUpperCase();
-      const regex = /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/;
-      if (!regex.test(cleanIban)) return false;
-
-      const rearranged = cleanIban.slice(4) + cleanIban.slice(0, 4);
-      const numericIban = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55));
-      return BigInt(numericIban) % 97n === 1n;
+      const clean = iban.replace(/\s+/g, '').toUpperCase();
+      const rearranged = clean.slice(4) + clean.slice(0, 4);
+      const converted = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55));
+      return /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(clean) && BigInt(converted) % 97n === 1n;
     }
 
-    async function saveDataAndNavigate(targetPage) {
-      const ibanInput = document.getElementById("iban");
-      const iban = ibanInput.value.trim().replace(/\s+/g, '');
+    document.getElementById("ribFile").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        fileError.textContent = "❌ Le fichier dépasse 5 Mo.";
+        return;
+      }
+      fileError.textContent = "";
 
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64File = reader.result.split(",")[1];
+        const filename = `rib/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`;
+        const res = await fetch(`${SUPABASE_FUNCTION_BASE}/upload-rib`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ base64File, filename })
+        });
+        const json = await res.json();
+        if (res.ok && json?.path) {
+          ribStoragePath = json.path;
+          await displayPreview(ribStoragePath, file.type);
+        } else {
+          alert("❌ Échec de l'upload.");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function displayPreview(path, type) {
+      const { data } = await supabase.storage.from("pharmacie").createSignedUrl(path.replace(/^\/+/g, ''), 3600);
+      const preview = document.getElementById("ribPreview");
+      preview.innerHTML = type === "application/pdf"
+        ? `<embed src="${data.signedUrl}" type="application/pdf" width="100%" height="500px" />`
+        : `<img src="${data.signedUrl}" alt="RIB Preview" />`;
+    }
+
+    function saveDataAndNavigate(target) {
+      const iban = document.getElementById("iban").value.replace(/\s+/g, '');
       if (iban && !isValidIBAN(iban)) {
         ibanError.textContent = "❌ IBAN invalide.";
         return;
       }
-
       ibanError.textContent = "";
-
-      const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+      fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          id: recordId,
-          fields: {
-            IBAN: iban,
-            "Chemin RIB": ribStoragePath
-          }
-        })
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ id: recordId, fields: { IBAN: iban, "Chemin RIB": ribStoragePath } })
+      }).then(r => {
+        if (r.ok) window.location.href = target;
+        else alert("❌ Erreur d'enregistrement.");
       });
-
-      if (res.ok) {
-        window.location.href = targetPage;
-      } else {
-        alert("❌ Erreur lors de l'enregistrement.");
-      }
     }
 
     document.getElementById("prevBtn").addEventListener("click", () => saveDataAndNavigate("infos.html"));
     document.getElementById("nextBtn").addEventListener("click", () => saveDataAndNavigate("contrat.html"));
 
-    await getUserAndRecord();
-
     document.getElementById("iban").addEventListener("input", (e) => {
-      let value = e.target.value.replace(/\s+/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const value = e.target.value.replace(/\s+/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
       e.target.value = formatIban(value);
       e.target.style.border = isValidIBAN(value) ? "2px solid green" : "2px solid red";
     });
