@@ -88,7 +88,7 @@
     }
 
     .button-container {
-      display: flex;
+      display: none;
       justify-content: space-between;
       max-width: 700px;
       margin: 2rem auto;
@@ -129,8 +129,8 @@
     <div id="step4" class="step">Document prêt à être signé !</div>
   </div>
 
-  <div class="button-container">
-    <button onclick="window.location.href='rib.html'">Précédent</button>
+  <div class="button-container" id="action-buttons">
+    <button id="prev-button" onclick="window.location.href='rib.html'">Précédent</button>
     <a id="sign-button" href="#" target="_blank" style="display:none;">
       <button>Signer le contrat</button>
     </a>
@@ -144,6 +144,7 @@
     const statusContainer = document.getElementById("status-container");
     const statusText = document.getElementById("status");
     const logoutBtn = document.getElementById("logoutBtn");
+    const actionButtons = document.getElementById("action-buttons");
 
     const step2 = document.getElementById("step2");
     const step3 = document.getElementById("step3");
@@ -208,19 +209,19 @@
           signButton.querySelector("button").textContent = "Voir le contrat signé";
           signButton.href = signUrl;
           signButton.style.display = "inline-block";
+          actionButtons.style.display = "flex";
           return;
         }
 
-        // Affiche uniquement "Document prêt à être signé !"
         step2.style.display = "none";
         step3.style.display = "none";
         step4.className = "step visible done";
         signButton.href = signUrl;
         signButton.style.display = "inline-block";
+        actionButtons.style.display = "flex";
         return;
       }
 
-      // Génération si pas de contrat existant
       step2.className = "step visible pending";
 
       const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
@@ -287,6 +288,7 @@
         step4.className = "step visible done";
         signButton.href = normalizeUrl(openSignUrl);
         signButton.style.display = "inline-block";
+        actionButtons.style.display = "flex";
       } else {
         step3.className = "step visible error";
         step4.className = "step visible error";
