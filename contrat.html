@@ -89,7 +89,7 @@
 
     .button-container {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       max-width: 700px;
       margin: 2rem auto;
     }
@@ -130,6 +130,7 @@
   </div>
 
   <div class="button-container">
+    <button onclick="window.location.href='rib.html'">Précédent</button>
     <a id="sign-button" href="#" target="_blank" style="display:none;">
       <button>Signer le contrat</button>
     </a>
@@ -191,7 +192,6 @@
       if (existingLink && contratId) {
         const signUrl = normalizeUrl(existingLink);
 
-        // Appel à la fonction back pour vérifier le statut de signature
         const statusRes = await fetch(`${SUPABASE_FUNCTION_BASE}/get-signature-status`, {
           method: "POST",
           headers: {
@@ -211,16 +211,16 @@
           return;
         }
 
-        // Si non signé : afficher normalement
-        step2.className = "step visible done";
-        step3.className = "step visible done";
+        // Affiche uniquement "Document prêt à être signé !"
+        step2.style.display = "none";
+        step3.style.display = "none";
         step4.className = "step visible done";
         signButton.href = signUrl;
         signButton.style.display = "inline-block";
         return;
       }
 
-      // Sinon, génération du contrat
+      // Génération si pas de contrat existant
       step2.className = "step visible pending";
 
       const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
@@ -268,7 +268,6 @@
       const docId = signData?.documentId || null;
 
       if (signRes.ok && openSignUrl && docId) {
-        // Mise à jour du lien et ID dans Airtable
         await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
           method: "POST",
           headers: {
