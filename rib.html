@@ -302,10 +302,10 @@
       const ibanEl = document.getElementById("iban");
       const iban = ibanEl.value.trim().replace(/\s+/g, '');
 
-      if (!isValidIBAN(iban)) {
-        invalide("iban", "IBAN invalide.");
-        return;
-      }
+      if (iban && !isValidIBAN(iban)) {
+  invalide("iban", "IBAN invalide.");
+  return;
+}
 
       const res = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
         method: "POST",
