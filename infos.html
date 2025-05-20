@@ -274,25 +274,25 @@
         const mailPharma = formData["Mail de la pharmacie"]?.trim();
 
         if (mailTitulaire && !regex.email.test(mailTitulaire)) {
-          invalide("Mail du titulaire", "Email titulaire invalide");
+          invalide("Mail du titulaire", "Email du titulaire invalide");
         }
         if (mailPharma && !regex.email.test(mailPharma)) {
-          invalide("Mail de la pharmacie", "Email pharmacie invalide");
+          invalide("Mail de la pharmacie", "Email de la pharmacie invalide");
         }
         if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
-          invalide("Portable du titulaire", "Téléphone portable invalide");
+          invalide("Portable du titulaire", "Portable du titulaire invalide");
         }
         if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
-          invalide("Téléphone de la pharmacie", "Téléphone fixe invalide");
+          invalide("Téléphone de la pharmacie", "Téléphone de la pharmacie invalide");
         }
         if (cip && !/^\d{7}$/.test(cip)) {
-          invalide("CIP", "CIP invalide (format incorrect)");
+          invalide("CIP", "CIP invalide");
         }
         if (finess && !regex.finess.test(finess)) {
           invalide("FINESS", "FINESS invalide");
         }
         if (siren && !/^\d{9}$/.test(siren)) {
-          invalide("RCS (SIREN)", "SIREN invalide");
+          invalide("RCS (SIREN)", "RCS (SIREN) invalide");
         }
 
         if (erreurs.length > 0) return;
