@@ -335,8 +335,7 @@ form.addEventListener("submit", async (e) => {
     } else {
       const key = getSirenControlKey(siren);
       if (key !== 0) {
-        const keyAttendue = (10 - key) % 10;
-        invalide("RCS (SIREN)", `SIREN invalide (clé attendue : ${keyAttendue})`);
+        invalide("RCS (SIREN)", "SIREN invalide (échec de la clé de contrôle)");
       }
     }
   }
