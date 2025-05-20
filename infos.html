@@ -290,9 +290,9 @@
         }
 if (cip) {
   if (!/^\d{7}$/.test(cip)) {
-    invalide("CIP", "Le CIP doit comporter exactement 7 chiffres.");
+    invalide("CIP", "Le CIP doit comporter 7 chiffres");
   } else if (!cip.startsWith("2")) {
-    invalide("CIP", "Le CIP doit commencer par 2.");
+    invalide("CIP", "Le CIP doit commencer par 2");
   } else {
     const chiffres = cip.split("").map(Number);
     const base = chiffres.slice(0, 6);
@@ -303,7 +303,7 @@ if (cip) {
     const cleCalculee = somme % 11;
 
     if (cleCalculee === 10) {
-      invalide("CIP", "CIP invalide : la clé de contrôle ne peut être 10.");
+      invalide("CIP", "CIP invalide : la clé de contrôle ne peut être 10");
     } else if (cleCalculee !== clé) {
       invalide("CIP", `Clé CIP invalide (attendue : ${cleCalculee})`);
     }
