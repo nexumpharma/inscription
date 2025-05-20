@@ -314,9 +314,26 @@
   if (finess && !regex.finess.test(finess)) {
     invalide("FINESS", "FINESS invalide");
   }
-  if (siren && !/^\d{9}$/.test(siren)) {
-    invalide("RCS (SIREN)", "RCS (SIREN) invalide");
+  function isValidSIREN(siren) {
+  if (!/^\d{9}$/.test(siren)) return false;
+
+  const digits = siren.split('').map(Number);
+  let sum = 0;
+
+  for (let i = 0; i < digits.length; i++) {
+    let tmp = digits[i];
+    if (i % 2 === 0) tmp *= 2;
+    if (tmp > 9) tmp -= 9;
+    sum += tmp;
   }
+
+  return sum % 10 === 0;
+}
+
+if (siren && !isValidSIREN(siren)) {
+  invalide("RCS (SIREN)", "SIREN invalide (clé de contrôle incorrecte)");
+}
+
   if (codePostal && !regex.codePostal.test(codePostal)) {
     invalide("Code postal", "Code postal invalide (5 chiffres requis)");
   }
