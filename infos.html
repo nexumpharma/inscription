@@ -227,13 +227,25 @@
       form.style.display = "block";
 
       if (record) {
-        recordId = record.id;
+  recordId = record.id;
 
-        for (const [key, value] of Object.entries(record.fields)) {
-          const input = form.querySelector(`[name="${key}"]`);
-          if (input) input.value = value;
-        }
-      } else {
+  for (const [key, value] of Object.entries(record.fields)) {
+    const input = form.querySelector(`[name="${key}"]`);
+    if (input) {
+      input.value = value;
+
+      // 🔒 Désactivation du champ s'il correspond à l'email de connexion
+      if (
+        value?.trim().toLowerCase() === user.email.trim().toLowerCase() &&
+        (key === "Mail du titulaire" || key === "Mail de la pharmacie")
+      ) {
+        input.disabled = true;
+        input.title = "Ce champ ne peut pas être modifié car il correspond à votre email de connexion.";
+      }
+    }
+  }
+}
+ else {
         status.textContent += " | Aucune donnée trouvée. Veuillez remplir le formulaire.";
       }
 
