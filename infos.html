@@ -237,7 +237,21 @@
         status.textContent += " | Aucune donnée trouvée. Veuillez remplir le formulaire.";
       }
 
-      form.addEventListener("submit", async (e) => {
+      function getSirenControlKey(siren) {
+  const digits = siren.split('').map(Number);
+  let sum = 0;
+
+  for (let i = 0; i < digits.length; i++) {
+    let digit = digits[digits.length - 1 - i];
+    if (i % 2 === 1) digit *= 2;
+    if (digit > 9) digit -= 9;
+    sum += digit;
+  }
+
+  return sum % 10;
+}
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const formData = Object.fromEntries(new FormData(form));
   let erreurs = [];
@@ -274,8 +288,8 @@
   const cip = formData["CIP"]?.trim();
   const siren = formData["RCS (SIREN)"]?.trim();
   const finess = formData["FINESS"]?.trim();
-  const mailTitulaire = formData["Mail du titulaire"]?.trim();
-  const mailPharma = formData["Mail de la pharmacie"]?.trim();
+  const mailTitulaire = formData["Mail du titulaire"];
+  const mailPharma = formData["Mail de la pharmacie"];
   const codePostal = formData["Code postal"]?.trim();
 
   if (mailTitulaire && !regex.email.test(mailTitulaire)) {
@@ -314,32 +328,28 @@
   if (finess && !regex.finess.test(finess)) {
     invalide("FINESS", "FINESS invalide");
   }
-  function isValidSIREN(siren) {
-  if (!/^\d{9}$/.test(siren)) return false;
 
-  const digits = siren.split('').map(Number);
-  let sum = 0;
-
-  // Luhn : on traite de droite à gauche
-  for (let i = 0; i < digits.length; i++) {
-    let digit = digits[digits.length - 1 - i];
-    if (i % 2 === 1) digit *= 2;
-    if (digit > 9) digit -= 9;
-    sum += digit;
+  if (siren) {
+    if (!/^\d{9}$/.test(siren)) {
+      invalide("RCS (SIREN)", "Le SIREN doit comporter exactement 9 chiffres");
+    } else {
+      const key = getSirenControlKey(siren);
+      if (key !== 0) {
+        const keyAttendue = (10 - key) % 10;
+        invalide("RCS (SIREN)", `SIREN invalide (clé attendue : ${keyAttendue})`);
+      }
+    }
   }
-
-  return sum % 10 === 0;
-}
-
-if (siren && !isValidSIREN(siren)) {
-  invalide("RCS (SIREN)", "SIREN invalide (clé de contrôle incorrecte)");
-}
 
   if (codePostal && !regex.codePostal.test(codePostal)) {
     invalide("Code postal", "Code postal invalide (5 chiffres requis)");
   }
 
-  if (erreurs.length > 0) return;
+  if (erreurs.length > 0) {
+    const firstErrorEl = form.querySelector(".error");
+    if (firstErrorEl) firstErrorEl.focus();
+    return;
+  }
 
   const ok = await savePharmacieData(token, formData);
   if (ok) {
@@ -348,6 +358,7 @@ if (siren && !isValidSIREN(siren)) {
     alert("❌ Erreur lors de l'enregistrement.");
   }
 });
+
 
     }
 
