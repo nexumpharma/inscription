@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      color: #111;
+      margin: 2rem;
+      line-height: 1.6;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input {
+      padding: 0.7rem;
+      border: 1px solid #aaa;
+      background: #fff;
+      color: #000;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.8rem;
+      background-color: black;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .message {
+      margin-top: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Connexion à votre espace</h1>
+  <form id="login-form">
+    <label for="email">Adresse mail :</label>
+    <input type="email" id="email" name="email" required />
+    <button type="submit">Envoyer le lien de connexion</button>
+  </form>
+  <div class="message" id="message"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import config from './js/config.js';
+
+    const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY);
+    const AIRTABLE_BASE_ID = config.AIRTABLE_BASE_ID;
+    const AIRTABLE_API_KEY = config.AIRTABLE_API_KEY;
+    const AIRTABLE_TABLE = 'Pharmacies';
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = 'Vérification en cours...';
+
+      try {
+        const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}?filterByFormula=OR({Mail du titulaire}='${email}', {Mail de la pharmacie}='${email}')`, {
+          headers: {
+            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+          }
+        });
+
+        const data = await res.json();
+        if (!data.records || data.records.length === 0) {
+          messageEl.textContent = 'Adresse non reconnue, veuillez nous contacter.';
+          return;
+        }
+
+        const recordId = data.records[0].id;
+
+        const linkResponse = await fetch(`${config.SUPABASE_URL}/auth/v1/admin/generate_link`, {
+          method: "POST",
+          headers: {
+            "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": `Bearer ${config.SUPABASE_SERVICE_ROLE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            type: "magiclink",
+            email: email,
+            options: {
+              redirect_to: "https://nexumpharma.github.io/inscription/infos.html"
+            }
+          })
+        });
+
+        const result = await linkResponse.json();
+        const magicLink = result.data?.action_link;
+
+        if (magicLink) {
+          await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}/${recordId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fields: {
+                "Lien magique user": magicLink,
+                "Mail user": email
+              }
+            })
+          });
+
+          messageEl.textContent = 'Consultez votre boîte mail pour vous connecter.';
+        } else {
+          messageEl.textContent = 'Erreur lors de la génération du lien magique.';
+        }
+      } catch (err) {
+        console.error(err);
+        messageEl.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+      }
+    });
+  </script>
+</body>
+</html>
