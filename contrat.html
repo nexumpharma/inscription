@@ -162,9 +162,7 @@
 
       const { data: { user }, error } = await supabase.auth.getUser();
       if (!user || error) {
-        statusText.textContent = "❌ Vous n'êtes pas connecté.";
-        statusContainer.style.display = "flex";
-        logoutBtn.style.display = "none";
+        window.location.href = "connexion.html";
         return;
       }
 
