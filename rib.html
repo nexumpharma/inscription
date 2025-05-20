@@ -169,9 +169,7 @@
       await checkAndRestoreSessionFromURL();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        status.textContent = "❌ Vous n'êtes pas connecté.";
-        statusContainer.style.display = "flex";
-        logoutBtn.style.display = "none";
+        window.location.href = "connexion.html";
         return null;
       }
 
