@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -13,10 +12,18 @@
       line-height: 1.6;
     }
 
-    h1, h2 {
+    h1 {
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.5rem;
       margin-bottom: 1rem;
+      font-weight: normal;
+    }
+
+    h2 {
+      max-width: 700px;
+      margin: 0 auto 1rem auto;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #ddd;
       font-weight: normal;
     }
 
@@ -44,6 +51,11 @@
       margin-top: 0.3rem;
     }
 
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+    }
+
     button {
       padding: 0.7rem 1.5rem;
       background: #000;
@@ -53,7 +65,6 @@
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s ease;
-      width: fit-content;
     }
 
     button:hover {
@@ -70,12 +81,16 @@
 <body>
   <h1><strong>NEXUM</strong>PHARMA</h1>
   <h2>Connexion</h2>
+
   <form id="login-form">
     <label for="email">Adresse mail :
       <input type="email" id="email" name="email" required />
     </label>
-    <button type="submit">Recevoir le lien de connexion</button>
+    <div class="button-container">
+      <button type="submit">Recevoir le lien de connexion</button>
+    </div>
   </form>
+
   <div class="message" id="message"></div>
 
   <script type="module">
@@ -95,9 +110,7 @@
       try {
         const response = await fetch('https://nywocoxkfdrsscvnvjas.functions.supabase.co/generate-magic-link', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email })
         });
 
