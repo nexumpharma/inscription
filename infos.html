@@ -238,95 +238,99 @@
       }
 
       form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(form));
-        let erreurs = [];
+  e.preventDefault();
+  const formData = Object.fromEntries(new FormData(form));
+  let erreurs = [];
 
   formData["Mail du titulaire"] = formData["Mail du titulaire"]?.trim().toLowerCase();
   formData["Mail de la pharmacie"] = formData["Mail de la pharmacie"]?.trim().toLowerCase();
 
-        const regex = {
-          email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-          telPortable: /^0[67]\d{8}$/,
-          telPharma: /^0\d{9}$/,
-          finess: /^(\d{9}|2[abAB]\d{7})$/,
-          codePostal: /^\d{5}$/
-        };
+  const regex = {
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    telPortable: /^0[67]\d{8}$/,
+    telPharma: /^0\d{9}$/,
+    finess: /^(\d{9}|2[abAB]\d{7})$/,
+    codePostal: /^\d{5}$/
+  };
 
-        form.querySelectorAll("input, select").forEach(el => {
-          el.classList.remove("error");
-          const err = el.parentElement.querySelector(".error-message");
-          if (err) err.remove();
-        });
+  form.querySelectorAll("input, select").forEach(el => {
+    el.classList.remove("error");
+    const err = el.parentElement.querySelector(".error-message");
+    if (err) err.remove();
+  });
 
-        function invalide(champ, msg) {
-          erreurs.push(msg);
-          const el = form.querySelector(`[name="${champ}"]`);
-          if (el) {
-            el.classList.add("error");
-            const span = document.createElement("span");
-            span.className = "error-message";
-            span.textContent = msg;
-            el.parentElement.appendChild(span);
-          }
-        }
-
-        const cip = formData["CIP"]?.trim();
-        const siren = formData["RCS (SIREN)"]?.trim();
-        const finess = formData["FINESS"]?.trim();
-        const mailTitulaire = formData["Mail du titulaire"]?.trim();
-        const mailPharma = formData["Mail de la pharmacie"]?.trim();
-
-        if (mailTitulaire && !regex.email.test(mailTitulaire)) {
-          invalide("Mail du titulaire", "Email du titulaire invalide");
-        }
-        if (mailPharma && !regex.email.test(mailPharma)) {
-          invalide("Mail de la pharmacie", "Email de la pharmacie invalide");
-        }
-        if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
-          invalide("Portable du titulaire", "Portable du titulaire invalide");
-        }
-        if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
-          invalide("Téléphone de la pharmacie", "Téléphone de la pharmacie invalide");
-        }
-if (cip) {
-  if (!/^\d{7}$/.test(cip)) {
-    invalide("CIP", "Le CIP doit comporter 7 chiffres");
-  } else if (!cip.startsWith("2")) {
-    invalide("CIP", "Le CIP doit commencer par 2");
-  } else {
-    const chiffres = cip.split("").map(Number);
-    const base = chiffres.slice(0, 6);
-    const clé = chiffres[6];
-    const poids = [6, 5, 4, 3, 2, 1];
-
-    const somme = base.reduce((acc, chiffre, i) => acc + chiffre * poids[i], 0);
-    const cleCalculee = somme % 11;
-
-    if (cleCalculee === 10) {
-      invalide("CIP", "CIP invalide : la clé de contrôle ne peut être 10");
-    } else if (cleCalculee !== clé) {
-      invalide("CIP", `Clé CIP invalide (attendue : ${cleCalculee})`);
+  function invalide(champ, msg) {
+    erreurs.push(msg);
+    const el = form.querySelector(`[name="${champ}"]`);
+    if (el) {
+      el.classList.add("error");
+      const span = document.createElement("span");
+      span.className = "error-message";
+      span.textContent = msg;
+      el.parentElement.appendChild(span);
     }
   }
-}
 
-        if (finess && !regex.finess.test(finess)) {
-          invalide("FINESS", "FINESS invalide");
-        }
-        if (siren && !/^\d{9}$/.test(siren)) {
-          invalide("RCS (SIREN)", "RCS (SIREN) invalide");
-        }
+  const cip = formData["CIP"]?.trim();
+  const siren = formData["RCS (SIREN)"]?.trim();
+  const finess = formData["FINESS"]?.trim();
+  const mailTitulaire = formData["Mail du titulaire"]?.trim();
+  const mailPharma = formData["Mail de la pharmacie"]?.trim();
+  const codePostal = formData["Code postal"]?.trim();
 
-        if (erreurs.length > 0) return;
+  if (mailTitulaire && !regex.email.test(mailTitulaire)) {
+    invalide("Mail du titulaire", "Email du titulaire invalide");
+  }
+  if (mailPharma && !regex.email.test(mailPharma)) {
+    invalide("Mail de la pharmacie", "Email de la pharmacie invalide");
+  }
+  if (formData["Portable du titulaire"] && !regex.telPortable.test(formData["Portable du titulaire"])) {
+    invalide("Portable du titulaire", "Portable du titulaire invalide");
+  }
+  if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
+    invalide("Téléphone de la pharmacie", "Téléphone de la pharmacie invalide");
+  }
 
-        const ok = await savePharmacieData(token, formData);
-        if (ok) {
-          window.location.href = "rib.html";
-        } else {
-          alert("❌ Erreur lors de l'enregistrement.");
-        }
-      });
+  if (cip) {
+    if (!/^\d{7}$/.test(cip)) {
+      invalide("CIP", "Le CIP doit comporter 7 chiffres");
+    } else if (!cip.startsWith("2")) {
+      invalide("CIP", "Le CIP doit commencer par 2");
+    } else {
+      const chiffres = cip.split("").map(Number);
+      const base = chiffres.slice(0, 6);
+      const clé = chiffres[6];
+      const poids = [6, 5, 4, 3, 2, 1];
+      const somme = base.reduce((acc, chiffre, i) => acc + chiffre * poids[i], 0);
+      const cleCalculee = somme % 11;
+      if (cleCalculee === 10) {
+        invalide("CIP", "CIP invalide : la clé de contrôle ne peut être 10");
+      } else if (cleCalculee !== clé) {
+        invalide("CIP", `Clé CIP invalide (attendue : ${cleCalculee})`);
+      }
+    }
+  }
+
+  if (finess && !regex.finess.test(finess)) {
+    invalide("FINESS", "FINESS invalide");
+  }
+  if (siren && !/^\d{9}$/.test(siren)) {
+    invalide("RCS (SIREN)", "RCS (SIREN) invalide");
+  }
+  if (codePostal && !regex.codePostal.test(codePostal)) {
+    invalide("Code postal", "Code postal invalide (5 chiffres requis)");
+  }
+
+  if (erreurs.length > 0) return;
+
+  const ok = await savePharmacieData(token, formData);
+  if (ok) {
+    window.location.href = "rib.html";
+  } else {
+    alert("❌ Erreur lors de l'enregistrement.");
+  }
+});
+
     }
 
     main();
