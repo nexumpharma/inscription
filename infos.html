@@ -249,7 +249,8 @@
           email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
           telPortable: /^0[67]\d{8}$/,
           telPharma: /^0\d{9}$/,
-          finess: /^(\d{9}|2[abAB]\d{7})$/
+          finess: /^(\d{9}|2[abAB]\d{7})$/,
+          codePostal: /^\d{5}$/
         };
 
         form.querySelectorAll("input, select").forEach(el => {
