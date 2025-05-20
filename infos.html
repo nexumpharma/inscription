@@ -320,11 +320,12 @@
   const digits = siren.split('').map(Number);
   let sum = 0;
 
+  // Luhn : on traite de droite à gauche
   for (let i = 0; i < digits.length; i++) {
-    let tmp = digits[i];
-    if (i % 2 === 0) tmp *= 2;
-    if (tmp > 9) tmp -= 9;
-    sum += tmp;
+    let digit = digits[digits.length - 1 - i];
+    if (i % 2 === 1) digit *= 2;
+    if (digit > 9) digit -= 9;
+    sum += digit;
   }
 
   return sum % 10 === 0;
