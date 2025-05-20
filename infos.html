@@ -294,15 +294,19 @@ if (cip) {
   } else if (!cip.startsWith("2")) {
     invalide("CIP", "Le CIP doit commencer par 2.");
   } else {
-    const base = cip.substring(0, 6);
-    const clé = parseInt(cip[6], 10);
-    const calculée = (97 - (parseInt(base, 10) % 97)) % 10;
+    const chiffres = cip.split("").map(Number);
+    const poids = [7, 6, 5, 4, 3, 2];
+    const somme = poids.reduce((acc, p, i) => acc + p * chiffres[i], 0);
+    const cleCalculee = somme % 11;
 
-    if (clé !== calculée) {
-      invalide("CIP", `Clé CIP invalide (attendue : ${calculée})`);
+    if (cleCalculee === 10) {
+      invalide("CIP", "CIP invalide : la clé de contrôle ne peut être 10.");
+    } else if (cleCalculee !== chiffres[6]) {
+      invalide("CIP", `Clé CIP invalide (attendue : ${cleCalculee})`);
     }
   }
 }
+
         if (finess && !regex.finess.test(finess)) {
           invalide("FINESS", "FINESS invalide");
         }
