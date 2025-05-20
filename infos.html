@@ -242,6 +242,9 @@
         const formData = Object.fromEntries(new FormData(form));
         let erreurs = [];
 
+  formData["Mail du titulaire"] = formData["Mail du titulaire"]?.trim().toLowerCase();
+  formData["Mail de la pharmacie"] = formData["Mail de la pharmacie"]?.trim().toLowerCase();
+
         const regex = {
           email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
           telPortable: /^0[67]\d{8}$/,
