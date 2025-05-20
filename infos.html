@@ -288,9 +288,21 @@
         if (formData["Téléphone de la pharmacie"] && !regex.telPharma.test(formData["Téléphone de la pharmacie"])) {
           invalide("Téléphone de la pharmacie", "Téléphone de la pharmacie invalide");
         }
-        if (cip && !/^\d{7}$/.test(cip)) {
-          invalide("CIP", "CIP invalide");
-        }
+if (cip) {
+  if (!/^\d{7}$/.test(cip)) {
+    invalide("CIP", "Le CIP doit comporter exactement 7 chiffres.");
+  } else if (!cip.startsWith("2")) {
+    invalide("CIP", "Le CIP doit commencer par 2.");
+  } else {
+    const base = cip.substring(0, 6);
+    const clé = parseInt(cip[6], 10);
+    const calculée = (97 - (parseInt(base, 10) % 97)) % 10;
+
+    if (clé !== calculée) {
+      invalide("CIP", `Clé CIP invalide (attendue : ${calculée})`);
+    }
+  }
+}
         if (finess && !regex.finess.test(finess)) {
           invalide("FINESS", "FINESS invalide");
         }
