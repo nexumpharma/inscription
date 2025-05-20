@@ -81,8 +81,15 @@
   <script type="module">
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value.trim().toLowerCase();
+      const emailInput = document.getElementById('email');
+      const email = emailInput.value.trim().toLowerCase();
       const messageEl = document.getElementById('message');
+
+      if (!email) {
+        messageEl.textContent = 'Veuillez entrer une adresse email.';
+        return;
+      }
+
       messageEl.textContent = 'Vérification en cours...';
 
       try {
@@ -91,10 +98,11 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email: email })
         });
 
         const result = await response.json();
+        console.log('Réponse backend:', result);
 
         if (response.ok) {
           messageEl.textContent = 'Consultez votre boîte mail pour vous connecter.';
@@ -102,7 +110,7 @@
           messageEl.textContent = result.error || 'Une erreur est survenue.';
         }
       } catch (err) {
-        console.error(err);
+        console.error('Erreur réseau:', err);
         messageEl.textContent = 'Erreur réseau. Veuillez réessayer.';
       }
     });
