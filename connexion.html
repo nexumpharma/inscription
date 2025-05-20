@@ -13,13 +13,15 @@
       line-height: 1.6;
     }
 
-    h1 {
-      font-size: 1.8rem;
+    h1, h2 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.5rem;
       margin-bottom: 1rem;
+      font-weight: normal;
     }
 
     form {
-      max-width: 500px;
+      max-width: 700px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -27,6 +29,8 @@
     }
 
     label {
+      display: flex;
+      flex-direction: column;
       font-weight: 600;
     }
 
@@ -36,15 +40,24 @@
       background: #fff;
       color: #000;
       font-size: 1rem;
+      border-radius: 4px;
+      margin-top: 0.3rem;
     }
 
     button {
-      padding: 0.8rem;
-      background-color: black;
-      color: white;
+      padding: 0.7rem 1.5rem;
+      background: #000;
+      color: #fff;
       border: none;
-      font-size: 1rem;
+      border-radius: 4px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.2s ease;
+      width: fit-content;
+    }
+
+    button:hover {
+      background: #333;
     }
 
     .message {
@@ -55,23 +68,17 @@
   </style>
 </head>
 <body>
-  <h1>Connexion à votre espace</h1>
+  <h1><strong>NEXUM</strong>PHARMA</h1>
+  <h2>Connexion</h2>
   <form id="login-form">
-    <label for="email">Adresse mail :</label>
-    <input type="email" id="email" name="email" required />
-    <button type="submit">Envoyer le lien de connexion</button>
+    <label for="email">Adresse mail :
+      <input type="email" id="email" name="email" required />
+    </label>
+    <button type="submit">Recevoir le lien de connexion</button>
   </form>
   <div class="message" id="message"></div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    import config from './js/config.js';
-
-    const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY);
-    const AIRTABLE_BASE_ID = config.AIRTABLE_BASE_ID;
-    const AIRTABLE_API_KEY = config.AIRTABLE_API_KEY;
-    const AIRTABLE_TABLE = 'Pharmacies';
-
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim().toLowerCase();
@@ -79,61 +86,24 @@
       messageEl.textContent = 'Vérification en cours...';
 
       try {
-        const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}?filterByFormula=OR({Mail du titulaire}='${email}', {Mail de la pharmacie}='${email}')`, {
+        const response = await fetch('https://nywocoxkfdrsscvnvjas.functions.supabase.co/generate-magic-link', {
+          method: 'POST',
           headers: {
-            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-          }
-        });
-
-        const data = await res.json();
-        if (!data.records || data.records.length === 0) {
-          messageEl.textContent = 'Adresse non reconnue, veuillez nous contacter.';
-          return;
-        }
-
-        const recordId = data.records[0].id;
-
-        const linkResponse = await fetch(`${config.SUPABASE_URL}/auth/v1/admin/generate_link`, {
-          method: "POST",
-          headers: {
-            "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
-            "Authorization": `Bearer ${config.SUPABASE_SERVICE_ROLE_KEY}`,
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            type: "magiclink",
-            email: email,
-            options: {
-              redirect_to: "https://nexumpharma.github.io/inscription/infos.html"
-            }
-          })
+          body: JSON.stringify({ email })
         });
 
-        const result = await linkResponse.json();
-        const magicLink = result.data?.action_link;
+        const result = await response.json();
 
-        if (magicLink) {
-          await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}/${recordId}`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              fields: {
-                "Lien magique user": magicLink,
-                "Mail user": email
-              }
-            })
-          });
-
+        if (response.ok) {
           messageEl.textContent = 'Consultez votre boîte mail pour vous connecter.';
         } else {
-          messageEl.textContent = 'Erreur lors de la génération du lien magique.';
+          messageEl.textContent = result.error || 'Une erreur est survenue.';
         }
       } catch (err) {
         console.error(err);
-        messageEl.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+        messageEl.textContent = 'Erreur réseau. Veuillez réessayer.';
       }
     });
   </script>
