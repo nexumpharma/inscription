@@ -1,35 +1,58 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formation - Nexum Pharma</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-100 text-gray-900">
-    <main class="max-w-md mx-auto p-6">
-      <h1 class="text-3xl font-bold text-center mb-6">Nexum Pharma</h1>
+<head>
+  <meta charset="UTF-8">
+  <title>Vidéo de formation</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      color: #111;
+      margin: 2rem;
+      line-height: 1.6;
+    }
 
-      <h2 class="text-xl font-semibold mb-4">Vidéo de formation</h2>
-      <p class="mb-4">
-        Voici une vidéo de démonstration pour comprendre comment utiliser la plateforme Nexum Pharma.
-      </p>
+    h1, h2 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: normal;
+    }
 
-      <div class="mb-6">
-        <iframe
-          class="w-full h-64 rounded shadow"
-          src="https://www.youtube.com/embed/UKtPbLi0x9E?rel=0"
-          title="Vidéo de formation Nexum Pharma"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen>
-        </iframe>
-      </div>
+    iframe {
+      width: 100%;
+      height: 360px;
+      border: none;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
 
-      <a href="index.html" class="text-blue-600 hover:underline">
-        ← Retour à l’accueil
-      </a>
-    </main>
-  </body>
+    a {
+      display: inline-block;
+      margin-top: 2rem;
+      color: #0070f3;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1><strong>NEXUM</strong>PHARMA</h1>
+
+  <h2>Vidéo de formation</h2>
+  <p>Voici une vidéo de démonstration pour comprendre comment utiliser la plateforme Nexum Pharma.</p>
+
+  <iframe
+    src="https://www.youtube.com/embed/UKtPbLi0x9E?rel=0"
+    title="Vidéo de formation Nexum Pharma"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen>
+  </iframe>
+
+  <a href="index.html">← Retour à l’accueil</a>
+</body>
 </html>
