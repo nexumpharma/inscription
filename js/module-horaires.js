@@ -35,11 +35,17 @@ style.textContent = `
 .plage input.heure { width: 120px; }
 .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
 .ferme { color: #999; font-style: italic; margin: 0.5rem 0; }
-button {
-  cursor: pointer; padding: 0.4rem 0.8rem;
-  border: 1px solid #333; background: #fff; border-radius: 4px;
+#module-horaires button {
+  background: #fff;
+  color: #000;
+  border: 1px solid #333;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
 }
-button:hover { background: #f0f0f0; }
+#module-horaires button:hover {
+  background: #f0f0f0;
+}
 label.toggle {
   display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
 }
