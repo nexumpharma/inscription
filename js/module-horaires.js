@@ -54,7 +54,7 @@ document.head.appendChild(style);
 
 // === Inject HTML content ===
 const container = document.getElementById('module-horaires');
-container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
+container.innerHTML = `<div class="tabs">
 <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
 <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
 </div><div class="tab-content active" id="tab-habituels">
