@@ -76,15 +76,14 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       allowInput: true,
       defaultDate: null, // pas de date par défaut
       onOpen: function(selectedDates, dateStr, instance) {
-        if (!instance.input.value) {
-          // Remplit le champ avec la date du module au focus si vide, ici on met la date actuelle du jour (module) formatée
-          const now = new Date();
-          const day = String(now.getDate()).padStart(2, "0");
-          const month = String(now.getMonth() + 1).padStart(2, "0");
-          const year = now.getFullYear();
-          instance.setDate(\`${day}/${month}/${year}\`, true, "d/m/Y");
-        }
-      }
+  if (!instance.input.value) {
+    const now = new Date();
+    const jour = String(now.getDate()).padStart(2, "0");
+    const mois = String(now.getMonth() + 1).padStart(2, "0");
+    const annee = now.getFullYear();
+    instance.setDate(`${jour}/${mois}/${annee}`, true, "d/m/Y");
+  }
+}
     });
 
     const fpEnd = flatpickr("#date-exception-end", {
@@ -93,14 +92,14 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       allowInput: true,
       defaultDate: null,
       onOpen: function(selectedDates, dateStr, instance) {
-        if (!instance.input.value) {
-          const now = new Date();
-          const day = String(now.getDate()).padStart(2, "0");
-          const month = String(now.getMonth() + 1).padStart(2, "0");
-          const year = now.getFullYear();
-          instance.setDate(\`${day}/${month}/${year}\`, true, "d/m/Y");
-        }
-      }
+  if (!instance.input.value) {
+    const now = new Date();
+    const jour = String(now.getDate()).padStart(2, "0");
+    const mois = String(now.getMonth() + 1).padStart(2, "0");
+    const annee = now.getFullYear();
+    instance.setDate(`${jour}/${mois}/${annee}`, true, "d/m/Y");
+  }
+}
     });
 
     // Flatpickr pour heures habituels (sera aussi utilisé pour les nouvelles plages)
