@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -16,25 +15,29 @@
       margin: 2rem;
       line-height: 1.6;
     }
+
     h1, h2 {
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.5rem;
       margin-bottom: 1rem;
       font-weight: normal;
     }
+
     #status-container {
       display: none;
       justify-content: space-between;
       align-items: center;
-      max-width: 700px;
+      max-width: 1000px;
       margin: 0 auto 1.5rem auto;
       padding-bottom: 1rem;
       border-bottom: 1px solid #ddd;
     }
+
     .content {
-      max-width: 700px;
+      max-width: 1000px;
       margin: 0 auto;
     }
+
     #logoutBtn {
       padding: 0.6rem 1rem;
       background: none;
@@ -44,29 +47,19 @@
       font-weight: 600;
       cursor: pointer;
     }
+
     #logoutBtn:hover {
       background: #000;
       color: #fff;
     }
-    .tab-wrapper {
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .tabs {
-      display: flex;
-      gap: 1rem;
-      border-bottom: 1px solid #ccc;
-      background: #f9f9f9;
-      padding: 0.5rem;
-    }
+
+    .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
     .tab-button {
       padding: 0.5rem 1rem;
       border: 1px solid #ccc;
       background: #eee;
       cursor: pointer;
       border-radius: 6px 6px 0 0;
-      margin-bottom: -1px;
     }
     .tab-button.active {
       background: #fff;
@@ -75,51 +68,24 @@
     }
     .tab-content {
       display: none;
+      border: 1px solid #ccc;
+      border-top: none;
       padding: 1rem;
+      border-radius: 0 0 6px 6px;
     }
-    .tab-content.active {
-      display: block;
-    }
-    .jour-container {
-      border: 1px solid #eee;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .plage {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-    }
-    .plage input.heure {
-      width: 120px;
-    }
-    .actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-top: 0.5rem;
-    }
-    .ferme {
-      color: #999;
-      font-style: italic;
-      margin: 0.5rem 0;
-    }
+    .tab-content.active { display: block; }
+    .jour-container { border: 1px solid #eee; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; }
+    .plage { display: flex; gap: 1rem; margin-bottom: 0.5rem; }
+    .plage input.heure { width: 120px; }
+    .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .ferme { color: #999; font-style: italic; margin: 0.5rem 0; }
     button {
-      cursor: pointer;
-      padding: 0.4rem 0.8rem;
-      border: 1px solid #333;
-      background: #fff;
-      border-radius: 4px;
+      cursor: pointer; padding: 0.4rem 0.8rem;
+      border: 1px solid #333; background: #fff; border-radius: 4px;
     }
-    button:hover {
-      background: #f0f0f0;
-    }
+    button:hover { background: #f0f0f0; }
     label.toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
+      display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
     }
     .exception-container {
       border: 1px solid #ccc;
@@ -129,6 +95,10 @@
     }
     .exception-controls {
       margin-bottom: 1rem;
+    }
+    .exception-container input[type="date"],
+    .exception-container input[type="text"].date {
+      margin-right: 0.5rem;
     }
   </style>
 </head>
@@ -142,25 +112,24 @@
 
   <div class="content">
     <h2>Horaires d'ouverture</h2>
-    <div class="tab-wrapper">
-      <div class="tabs">
-        <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
-        <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
-      </div>
 
-      <div class="tab-content active" id="tab-habituels">
-        <div id="horaires-habituels"></div>
-      </div>
+    <div class="tabs">
+      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
+      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
+    </div>
 
-      <div class="tab-content" id="tab-exceptionnels">
-        <div class="exception-controls">
-          <strong>Plage de dates :</strong>
-          <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au 
-          <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
-          <button onclick="ajouterException()">+ Ajouter une exception</button>
-        </div>
-        <div id="exceptions-list"></div>
+    <div class="tab-content active" id="tab-habituels">
+      <div id="horaires-habituels"></div>
+    </div>
+
+    <div class="tab-content" id="tab-exceptionnels">
+      <div class="exception-controls">
+        <strong>Plage de dates :</strong>
+        <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au 
+        <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
+        <button onclick="ajouterException()">+ Ajouter une exception</button>
       </div>
+      <div id="exceptions-list"></div>
     </div>
   </div>
 
@@ -169,80 +138,119 @@
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
 
-    const logoutBtn = document.getElementById("logoutBtn");
-    logoutBtn.addEventListener("click", logout);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
 
-    function setFlatpickrWithToday(id) {
-      flatpickr(id, {
-        dateFormat: "d/m/Y",
+    function initFlatpickrHeure(input) {
+      return flatpickr(input, {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
         locale: "fr",
         allowInput: true,
         defaultDate: null,
         onOpen: function(selectedDates, dateStr, instance) {
           if (!instance.input.value) {
-            const now = new Date();
-            const day = String(now.getDate()).padStart(2, "0");
-            const month = String(now.getMonth() + 1).padStart(2, "0");
-            const year = now.getFullYear();
-            instance.setDate(`${day}/${month}/${year}`, true, "d/m/Y");
+            instance.setDate("12:00", true, "H:i");
           }
         }
       });
     }
+
+    function makePlage(container, debut = "", fin = "") {
+      const div = document.createElement("div");
+      div.className = "plage";
+      div.innerHTML = `
+        <input type='text' class='heure' value='${debut}' placeholder="HH:MM"> 
+        <span>à</span> 
+        <input type='text' class='heure' value='${fin}' placeholder="HH:MM"> 
+        <button type='button'>❌</button>
+      `;
+      div.querySelector("button").onclick = () => div.remove();
+      div.querySelectorAll(".heure").forEach(initFlatpickrHeure);
+      return div;
+    }
+
+    function creerBlocJour(jour, container, isException = false) {
+      const div = document.createElement("div");
+      div.className = "jour-container";
+      const h3 = document.createElement("h3");
+      h3.textContent = jour;
+      const status = document.createElement("div");
+      status.className = "ferme";
+      status.textContent = "Fermé";
+      const plages = document.createElement("div");
+      plages.className = "plages";
+      plages.style.display = "none";
+      const actions = document.createElement("div");
+      actions.className = "actions";
+      actions.style.display = "none";
+      const btn = document.createElement("button");
+      btn.textContent = "+ Ajouter une plage";
+      btn.onclick = () => {
+        plages.appendChild(makePlage(div));
+        plages.style.display = "block";
+        actions.style.display = "flex";
+      };
+      actions.appendChild(btn);
+      const initBtn = document.createElement("button");
+      initBtn.textContent = "+ Ajouter une plage";
+      initBtn.onclick = () => {
+        initBtn.remove();
+        status.remove();
+        plages.appendChild(makePlage(div));
+        plages.style.display = "block";
+        actions.style.display = "flex";
+      };
+      div.append(h3, status, initBtn, plages, actions);
+      container.appendChild(div);
+    }
+
+    window.ajouterException = function () {
+      const startInput = document.getElementById("date-exception-start");
+      const endInput = document.getElementById("date-exception-end");
+      const start = flatpickr.parseDate(startInput.value, "d/m/Y");
+      const end = flatpickr.parseDate(endInput.value, "d/m/Y");
+      if (!start || !end || start > end) return alert("Plage de dates invalide");
+      const container = document.createElement("div");
+      container.className = "exception-container";
+      const range = document.createElement("div");
+      range.innerHTML = `<strong>Exception du ${startInput.value} au ${endInput.value}</strong> <button onclick='this.parentNode.parentNode.remove()'>Supprimer</button>`;
+      container.appendChild(range);
+      const horaires = document.createElement("div");
+      let current = new Date(start);
+      while (current <= end) {
+        const jour = current.toLocaleDateString("fr-FR", {
+          weekday: "long", day: "2-digit", month: "2-digit", year: "numeric"
+        });
+        creerBlocJour(jour, horaires, true);
+        current.setDate(current.getDate() + 1);
+      }
+      container.appendChild(horaires);
+      document.getElementById("exceptions-list").appendChild(container);
+      startInput.value = "";
+      endInput.value = "";
+    };
 
     async function main() {
       const statusContainer = document.getElementById("status-container");
       const status = document.getElementById("status");
       await checkAndRestoreSessionFromURL();
       const { data: { user } } = await supabase.auth.getUser();
-
       if (!user) {
         window.location.href = "connexion.html";
         return;
       }
-
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
       statusContainer.style.display = "flex";
 
-      setFlatpickrWithToday("#date-exception-start");
-      setFlatpickrWithToday("#date-exception-end");
+      flatpickr.localize(flatpickr.l10ns.fr);
+      flatpickr("#date-exception-start", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
+      flatpickr("#date-exception-end", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
 
       const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
       const horairesContainer = document.getElementById("horaires-habituels");
-      jours.forEach(jour => {
-        const div = document.createElement("div");
-        div.className = "jour-container";
-        const h3 = document.createElement("h3");
-        h3.textContent = jour;
-        const status = document.createElement("div");
-        status.className = "ferme";
-        status.textContent = "Fermé";
-        const plages = document.createElement("div");
-        plages.className = "plages";
-        plages.style.display = "none";
-        const actions = document.createElement("div");
-        actions.className = "actions";
-        actions.style.display = "none";
-        const btn = document.createElement("button");
-        btn.textContent = "+ Ajouter une plage";
-        btn.onclick = () => {
-          plages.appendChild(document.createElement("div"));
-          plages.style.display = "block";
-          actions.style.display = "flex";
-        };
-        actions.appendChild(btn);
-        const initBtn = document.createElement("button");
-        initBtn.textContent = "+ Ajouter une plage";
-        initBtn.onclick = () => {
-          initBtn.remove();
-          status.remove();
-          plages.appendChild(document.createElement("div"));
-          plages.style.display = "block";
-          actions.style.display = "flex";
-        };
-        div.append(h3, status, initBtn, plages, actions);
-        horairesContainer.appendChild(div);
-      });
+      jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
       document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => {
