@@ -13,14 +13,12 @@
       margin: 2rem;
       line-height: 1.6;
     }
-
     h1, h2 {
       border-bottom: 1px solid #ddd;
       padding-bottom: 0.5rem;
       margin-bottom: 1rem;
       font-weight: normal;
     }
-
     #status-container {
       display: none;
       justify-content: space-between;
@@ -30,12 +28,10 @@
       padding-bottom: 1rem;
       border-bottom: 1px solid #ddd;
     }
-
     .content {
       max-width: 1000px;
       margin: 0 auto;
     }
-
     #logoutBtn {
       padding: 0.6rem 1rem;
       background: none;
@@ -45,12 +41,10 @@
       font-weight: 600;
       cursor: pointer;
     }
-
     #logoutBtn:hover {
       background: #000;
       color: #fff;
     }
-
     .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
     .tab-button {
       padding: 0.5rem 1rem;
@@ -110,12 +104,31 @@
 
   <div class="content">
     <h2>Horaires d'ouverture</h2>
-    <div id="module-horaires"></div>
+    <div class="tabs">
+      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
+      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
+    </div>
+
+    <div class="tab-content active" id="tab-habituels">
+      <div id="horaires-habituels"></div>
+    </div>
+
+    <div class="tab-content" id="tab-exceptionnels">
+      <div class="exception-controls">
+        <strong>Plage de dates :</strong>
+        <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au 
+        <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
+        <button onclick="ajouterException()">+ Ajouter une exception</button>
+      </div>
+      <div id="exceptions-list"></div>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+  <script type="module" src="./js/module_horaires_inpage.js"></script>
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
-    import { initialiserModuleHoraires } from './js/module_horaires.js';
 
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
@@ -133,15 +146,9 @@
 
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
       statusContainer.style.display = "flex";
-
-      // Initialiser le module des horaires dans la div prévue
-      const container = document.getElementById("module-horaires");
-      initialiserModuleHoraires(container);
     }
 
     main();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 </body>
 </html>
