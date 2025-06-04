@@ -1,7 +1,8 @@
 
 // === Inject styles ===
 const style = document.createElement('style');
-style.textContent = `body { font-family: 'Segoe UI', sans-serif; margin: 2rem; max-width: 1000px; }
+style.textContent = `body { font-family: 'Segoe UI', sans-serif; margin: 0; }
+#module-horaires { max-width: 700px; margin: 2rem auto; }
     .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
     .tab-button {
       padding: 0.5rem 1rem;
