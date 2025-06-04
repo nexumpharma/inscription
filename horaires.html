@@ -79,19 +79,6 @@
     label.toggle {
       display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
     }
-    .exception-container {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 6px;
-    }
-    .exception-controls {
-      margin-bottom: 1rem;
-    }
-    .exception-container input[type="date"],
-    .exception-container input[type="text"].date {
-      margin-right: 0.5rem;
-    }
   </style>
 </head>
 <body>
@@ -126,16 +113,53 @@
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
 
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
+    function creerBlocJour(jour, container) {
+      const div = document.createElement("div");
+      div.className = "jour-container";
+
+      const h3 = document.createElement("h3");
+      h3.textContent = jour;
+
+      const btn = document.createElement("button");
+      btn.textContent = "+ Ajouter une plage";
+      btn.onclick = () => {
+        const plage = document.createElement("div");
+        plage.className = "plage";
+        plage.innerHTML = `
+          <input type="text" class="heure" placeholder="HH:MM">
+          <span>à</span>
+          <input type="text" class="heure" placeholder="HH:MM">
+          <button type="button">❌</button>
+        `;
+        plage.querySelector("button").onclick = () => plage.remove();
+        div.appendChild(plage);
+        flatpickr(plage.querySelectorAll(".heure"), {
+          enableTime: true,
+          noCalendar: true,
+          dateFormat: "H:i",
+          time_24hr: true,
+          locale: "fr",
+          allowInput: true,
+          defaultDate: null,
+          onOpen: (selectedDates, dateStr, instance) => {
+            if (!instance.input.value) instance.setDate("12:00", true);
+          }
+        });
+      };
+
+      div.appendChild(h3);
+      div.appendChild(btn);
+      container.appendChild(div);
+    }
+
     async function main() {
       const statusContainer = document.getElementById("status-container");
       const status = document.getElementById("status");
-
       await checkAndRestoreSessionFromURL();
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -146,6 +170,21 @@
 
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
       statusContainer.style.display = "flex";
+
+      // Affiche les jours
+      const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+      const horairesContainer = document.getElementById("horaires-habituels");
+      jours.forEach(jour => creerBlocJour(jour, horairesContainer));
+
+      // Tabs
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+          button.classList.add('active');
+          document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+        });
+      });
     }
 
     main();
