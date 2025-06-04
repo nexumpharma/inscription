@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Horaires - Nexum Pharma</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -23,14 +25,14 @@
       display: none;
       justify-content: space-between;
       align-items: center;
-      max-width: 700px;
+      max-width: 1000px;
       margin: 0 auto 1.5rem auto;
       padding-bottom: 1rem;
       border-bottom: 1px solid #ddd;
     }
 
     .content {
-      max-width: 700px;
+      max-width: 1000px;
       margin: 0 auto;
     }
 
@@ -48,6 +50,54 @@
       background: #000;
       color: #fff;
     }
+
+    .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .tab-button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      background: #eee;
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-button.active {
+      background: #fff;
+      border-bottom: none;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+      border: 1px solid #ccc;
+      border-top: none;
+      padding: 1rem;
+      border-radius: 0 0 6px 6px;
+    }
+    .tab-content.active { display: block; }
+    .jour-container { border: 1px solid #eee; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; }
+    .plage { display: flex; gap: 1rem; margin-bottom: 0.5rem; }
+    .plage input.heure { width: 120px; }
+    .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .ferme { color: #999; font-style: italic; margin: 0.5rem 0; }
+    button {
+      cursor: pointer; padding: 0.4rem 0.8rem;
+      border: 1px solid #333; background: #fff; border-radius: 4px;
+    }
+    button:hover { background: #f0f0f0; }
+    label.toggle {
+      display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
+    }
+    .exception-container {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+    }
+    .exception-controls {
+      margin-bottom: 1rem;
+    }
+    .exception-container input[type="date"],
+    .exception-container input[type="text"].date {
+      margin-right: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -60,16 +110,12 @@
 
   <div class="content">
     <h2>Horaires d'ouverture</h2>
-    <p>Consultez ici les horaires d’ouverture de votre pharmacie :</p>
-    <ul>
-      <li><strong>Lundi - Vendredi :</strong> 9h - 12h30 / 14h - 19h</li>
-      <li><strong>Samedi :</strong> 9h - 12h30</li>
-      <li><strong>Dimanche :</strong> Fermé</li>
-    </ul>
+    <div id="module-horaires"></div>
   </div>
 
   <script type="module">
     import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+    import { initialiserModuleHoraires } from './js/module_horaires.js';
 
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
@@ -87,9 +133,15 @@
 
       status.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
       statusContainer.style.display = "flex";
+
+      // Initialiser le module des horaires dans la div prévue
+      const container = document.getElementById("module-horaires");
+      initialiserModuleHoraires(container);
     }
 
     main();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 </body>
 </html>
