@@ -193,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const addBtn = document.createElement("button");
+    addBtn.type = "button";
     addBtn.textContent = "+ Ajouter une plage";
     addBtn.onclick = () => {
       plages.appendChild(makePlage(container));
@@ -206,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     actions.appendChild(addBtn);
 
     const initBtn = document.createElement("button");
+    initBtn.type = "button";
     initBtn.textContent = "+ Ajouter une plage";
     initBtn.onclick = () => {
       initBtn.remove();
