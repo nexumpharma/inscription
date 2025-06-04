@@ -1,3 +1,4 @@
+
 // === Inject styles ===
 const style = document.createElement('style');
 style.textContent = `body { font-family: 'Segoe UI', sans-serif; margin: 2rem; max-width: 1000px; }
@@ -65,8 +66,10 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
 <button onclick="ajouterException()">+ Ajouter une exception</button>
 </div>
 <div id="exceptions-list"></div>
-</div><script>
-  document.addEventListener("DOMContentLoaded", () => {
+</div>`;
+
+// === Execute Module Logic ===
+document.addEventListener("DOMContentLoaded", () => {
     flatpickr.localize(flatpickr.l10ns.fr);
 
     // Initialisation des flatpickr date pour les dates exceptionnelles avec placeholder et valeur par défaut vide
@@ -76,14 +79,15 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       allowInput: true,
       defaultDate: null, // pas de date par défaut
       onOpen: function(selectedDates, dateStr, instance) {
-  if (!instance.input.value) {
-    const now = new Date();
-    const jour = String(now.getDate()).padStart(2, "0");
-    const mois = String(now.getMonth() + 1).padStart(2, "0");
-    const annee = now.getFullYear();
-    instance.setDate(`${jour}/${mois}/${annee}`, true, "d/m/Y");
-  }
-}
+        if (!instance.input.value) {
+          // Remplit le champ avec la date du module au focus si vide, ici on met la date actuelle du jour (module) formatée
+          const now = new Date();
+          const day = String(now.getDate()).padStart(2, "0");
+          const month = String(now.getMonth() + 1).padStart(2, "0");
+          const year = now.getFullYear();
+          instance.setDate(`${day}/${month}/${year}`, true, "d/m/Y");
+        }
+      }
     });
 
     const fpEnd = flatpickr("#date-exception-end", {
@@ -92,14 +96,14 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       allowInput: true,
       defaultDate: null,
       onOpen: function(selectedDates, dateStr, instance) {
-  if (!instance.input.value) {
-    const now = new Date();
-    const jour = String(now.getDate()).padStart(2, "0");
-    const mois = String(now.getMonth() + 1).padStart(2, "0");
-    const annee = now.getFullYear();
-    instance.setDate(`${jour}/${mois}/${annee}`, true, "d/m/Y");
-  }
-}
+        if (!instance.input.value) {
+          const now = new Date();
+          const day = String(now.getDate()).padStart(2, "0");
+          const month = String(now.getMonth() + 1).padStart(2, "0");
+          const year = now.getFullYear();
+          instance.setDate(`${day}/${month}/${year}`, true, "d/m/Y");
+        }
+      }
     });
 
     // Flatpickr pour heures habituels (sera aussi utilisé pour les nouvelles plages)
@@ -127,7 +131,7 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         button.classList.add('active');
-        document.getElementById(\`tab-${button.dataset.tab}\`).classList.add('active');
+        document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
       });
     });
 
@@ -164,11 +168,11 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
         advancedOptions.appendChild(summary);
 
         const freqLabel = document.createElement("label");
-        freqLabel.innerHTML = \`Semaine : <select class='frequence'>
+        freqLabel.innerHTML = `Semaine : <select class='frequence'>
           <option value='toutes'>Toutes les semaines</option>
           <option value='paire'>Semaines paires</option>
           <option value='impaire'>Semaines impaires</option>
-        </select>\`;
+        </select>`;
 
         toggle24h = document.createElement("label");
         toggle24h.className = "toggle";
@@ -198,7 +202,7 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       if (check24h) {
         check24h.addEventListener("change", () => {
           if (check24h.checked) {
-            plages.innerHTML = \`<div class='ferme'>Ouvert 24h/24</div>\`;
+            plages.innerHTML = `<div class='ferme'>Ouvert 24h/24</div>`;
             plages.style.display = "block";
             actions.style.display = "none";
             if (advancedOptions) advancedOptions.style.display = "none";
@@ -263,12 +267,12 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       div.className = "plage";
 
       // Inputs avec placeholder HH:MM
-      div.innerHTML = \`
+      div.innerHTML = `
         <input type='text' class='heure' value='${debut}' placeholder="HH:MM"> 
         <span>à</span> 
         <input type='text' class='heure' value='${fin}' placeholder="HH:MM"> 
         <button type='button' title="Supprimer cette plage">❌</button>
-      \`;
+      `;
 
       // Suppression plage
       div.querySelector("button").onclick = () => {
@@ -334,7 +338,7 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
       container.className = "exception-container";
 
       const range = document.createElement("div");
-      range.innerHTML = \`<strong>Exception du ${formatFR(start)} au ${formatFR(end)}</strong> <button onclick='this.parentNode.parentNode.remove()'>Supprimer</button>\`;
+      range.innerHTML = `<strong>Exception du ${formatFR(start)} au ${formatFR(end)}</strong> <button onclick='this.parentNode.parentNode.remove()'>Supprimer</button>`;
       container.appendChild(range);
 
       const horaires = document.createElement("div");
@@ -359,6 +363,4 @@ container.innerHTML = `<h1>Configuration des horaires</h1><div class="tabs">
     }
 
   });
-</script>`;
 
-// === Execute Module Logic ===
