@@ -1,8 +1,9 @@
-// === Inject styles ===
+// module-horaires.js
+
+// Inject styles
 const style = document.createElement('style');
 style.textContent = `
-body { font-family: 'Segoe UI', sans-serif; margin: 0; }
-#module-horaires { max-width: 700px; margin: 2rem auto; }
+#module-horaires { max-width: 1000px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
 .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
 .tab-button {
   padding: 0.5rem 1rem;
@@ -48,41 +49,39 @@ label.toggle {
   margin-bottom: 1rem;
   border-radius: 6px;
 }
-.exception-controls {
-  margin-bottom: 1rem;
-}
-.exception-container input[type="date"],
+.exception-controls { margin-bottom: 1rem; }
 .exception-container input[type="text"].date {
   margin-right: 0.5rem;
 }`;
 document.head.appendChild(style);
 
-// === Inject HTML content ===
-const container = document.getElementById('module-horaires');
-container.innerHTML = `
-  <div class="tabs">
-    <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
-    <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
-  </div>
-  <div class="tab-content active" id="tab-habituels">
-    <div id="horaires-habituels"></div>
-  </div>
-  <div class="tab-content" id="tab-exceptionnels">
-    <div class="exception-controls">
-      <strong>Plage de dates :</strong>
-      <input class="date" id="date-exception-start" placeholder="JJ/MM/AAAA" type="text"/> au 
-      <input class="date" id="date-exception-end" placeholder="JJ/MM/AAAA" type="text"/>
-      <button onclick="ajouterException()">+ Ajouter une exception</button>
-    </div>
-    <div id="exceptions-list"></div>
-  </div>
-`;
-
-// === Execute Module Logic ===
+// Inject HTML structure
 document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("module-horaires");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="tabs">
+      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
+      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
+    </div>
+    <div class="tab-content active" id="tab-habituels">
+      <div id="horaires-habituels"></div>
+    </div>
+    <div class="tab-content" id="tab-exceptionnels">
+      <div class="exception-controls">
+        <strong>Plage de dates :</strong>
+        <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au
+        <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
+        <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
+      </div>
+      <div id="exceptions-list"></div>
+    </div>
+  `;
+
+  // === Logique complète du module ===
   flatpickr.localize(flatpickr.l10ns.fr);
 
-  // Flatpickr exception dates
   flatpickr("#date-exception-start", {
     dateFormat: "d/m/Y",
     locale: "fr",
@@ -146,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const title = document.createElement("h3");
     title.textContent = jour.charAt(0).toUpperCase() + jour.slice(1);
+
     const status = document.createElement("div");
     status.className = "ferme";
     status.textContent = "Fermé";
@@ -199,7 +199,21 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     actions.appendChild(addBtn);
 
-    container.append(title, status, addBtn, plages, actions);
+    const initBtn = document.createElement("button");
+    initBtn.textContent = "+ Ajouter une plage";
+    initBtn.onclick = () => {
+      initBtn.remove();
+      status.remove();
+      plages.appendChild(makePlage(container));
+      plages.style.display = "block";
+      actions.style.display = "flex";
+      if (advancedOptions) {
+        advancedOptions.style.display = "block";
+        advancedOptions.open = false;
+      }
+    };
+
+    container.append(title, status, initBtn, plages, actions);
     if (advancedOptions) container.appendChild(advancedOptions);
     parentContainer.appendChild(container);
   }
@@ -218,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return div;
   }
 
-  window.ajouterException = function () {
+  document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("date-exception-start");
     const endInput = document.getElementById("date-exception-end");
     const start = flatpickr.parseDate(startInput.value, "d/m/Y");
@@ -254,5 +268,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("exceptions-list").appendChild(container);
     startInput.value = "";
     endInput.value = "";
-  };
+  });
 });
