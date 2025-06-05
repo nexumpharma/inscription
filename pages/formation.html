@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vidéo de formation</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <div id="app" data-page="formation" style="display: none;">
+    <header>
+      <h1>
+        <a href="../index.html" style="color: inherit; text-decoration: none;">
+          <strong>NEXUM</strong>PHARMA
+        </a>
+      </h1>
+    </header>
+
+    <main>
+      <div class="content">
+        <h2>Vidéo de formation</h2>
+        <p>Voici une vidéo de démonstration pour comprendre comment utiliser la plateforme Nexum Pharma.</p>
+
+        <iframe
+          src="https://www.youtube.com/embed/9mTDMdFQ_PU?rel=0"
+          title="Vidéo de formation Nexum Pharma"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+          style="width: 100%; max-width: 700px; height: 400px; border: none; display: block; margin: 2rem auto;">
+        </iframe>
+      </div>
+    </main>
+
+    <footer>
+      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
+    </footer>
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("app").style.display = "block";
+    });
+  </script>
+</body>
+</html>

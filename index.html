@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Accueil - Nexum Pharma</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div id="app" data-page="index" style="display: none">
+    <!-- Header -->
+    <header>
+      <h1>
+        <a href="index.html" style="color: inherit; text-decoration: none;">
+          <strong>NEXUM</strong>PHARMA
+        </a>
+      </h1>
+    </header>
+
+    <!-- Status -->
+    <div id="status-container" class="status-container" style="display: none;">
+      <div id="status">Chargement...</div>
+      <button id="logoutBtn" style="display: none;">Se déconnecter</button>
+    </div>
+
+    <!-- Main -->
+    <main>
+      <div class="grid">
+        <a class="card" href="pages/infos.html">
+          <img src="assets/img/informations.png" alt="Informations" width="48" height="48" />
+          <span>Informations</span>
+        </a>
+        <a class="card" href="pages/rib.html">
+          <img src="assets/img/rib.png" alt="RIB" width="48" height="48" />
+          <span>RIB</span>
+        </a>
+        <a class="card" href="pages/contrat.html">
+          <img src="assets/img/contrat.png" alt="Contrat" width="48" height="48" />
+          <span>Contrat</span>
+        </a>
+        <a class="card" href="pages/formation.html">
+          <img src="assets/img/formation.png" alt="Formation" width="48" height="48" />
+          <span>Formation</span>
+        </a>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
+    </footer>
+  </div>
+
+  <!-- Scripts dans l’ordre -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      await window.initAuthPage(); // Authentification et affichage conditionnel
+    });
+  </script>
+</body>
+</html>

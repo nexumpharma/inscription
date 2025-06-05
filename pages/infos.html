@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Informations</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
+  <script src="../assets/js/infos.js" defer></script>
+</head>
+<body>
+  <div id="app" data-page="infos">
+
+    <!-- component:Header -->
+    <header>
+      <h1>
+        <a href="../index.html" style="color: inherit; text-decoration: none;">
+          <strong>NEXUM</strong>PHARMA
+        </a>
+      </h1>
+    </header>
+
+    <!-- component:Status -->
+    <div id="status-container" style="display: none;">
+      <div id="status">Chargement...</div>
+      <button id="logoutBtn">Se déconnecter</button>
+    </div>
+
+    <!-- component:Main -->
+    <main>
+      <form id="pharmacyForm" novalidate style="display:none;">
+        <h2>Informations du titulaire</h2>
+
+        <label>Civilité
+          <select name="Civilité">
+            <option disabled hidden selected value="">— Sélectionnez —</option>
+            <option value="Monsieur">Monsieur</option>
+            <option value="Madame">Madame</option>
+          </select>
+        </label>
+
+        <label>Prénom <input name="Prénom" type="text" /></label>
+        <label>Nom <input name="Nom" type="text" /></label>
+        <label>Mail du titulaire (contrat) <input name="Mail du titulaire" type="email" /></label>
+        <label>Portable du titulaire <input name="Portable du titulaire" type="tel" /></label>
+
+        <h2>Informations de la pharmacie</h2>
+
+        <label>Raison sociale <input name="Raison sociale" type="text" /></label>
+        <label>Nom commercial (nom de la pharmacie sur NEXUM PHARMA) <input name="Nom commercial" type="text" /></label>
+        <label>Mail de la pharmacie (alertes) <input name="Mail de la pharmacie" type="email" /></label>
+        <label>Téléphone de la pharmacie <input name="Téléphone de la pharmacie" type="tel" /></label>
+        <label>Adresse <input name="Adresse" type="text" /></label>
+        <label>Code postal <input name="Code postal" type="text" /></label>
+        <label>Ville <input name="Ville" type="text" /></label>
+        <label>CIP <input name="CIP" type="text" /></label>
+        <label>FINESS <input name="FINESS" type="text" /></label>
+        <label>RCS (SIREN) <input name="RCS (SIREN)" type="text" /></label>
+
+        <label>Type de pharmacie
+          <select name="Type de pharmacie">
+            <option disabled hidden selected value="">— Sélectionnez —</option>
+            <option>Centre-Ville</option>
+            <option>Périphérie et banlieue résidentielle</option>
+            <option>Zone commerciale</option>
+            <option>Pôle touristique</option>
+            <option>Rurale</option>
+          </select>
+        </label>
+
+        <label>Groupement
+          <select name="Groupement">
+            <option disabled hidden selected value="">— Sélectionnez —</option>
+            <option>Elsie</option>
+            <option>Pharmabest</option>
+            <option>Aprium</option>
+            <option>Autre</option>
+          </select>
+        </label>
+
+        <label>LGO
+          <select name="LGO">
+            <option disabled hidden selected value="">— Sélectionnez —</option>
+            <option>Smart RX</option>
+            <option>WinPharma</option>
+            <option>LGPI</option>
+            <option>Autre</option>
+          </select>
+        </label>
+
+        <div class="button-container">
+          <button class="suivantBtn" type="submit">Suivant</button>
+        </div>
+      </form>
+    </main>
+
+    <!-- component:Footer -->
+    <footer>
+      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
+    </footer>
+  </div>
+</body>
+</html>

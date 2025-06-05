@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Horaires</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css" />
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+
+  <!-- Flatpickr -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
+
+  <!-- Config + Auth -->
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
+  <script src="../assets/js/module-horaires.js" defer></script>
+</head>
+<body>
+  <div id="app" data-page="horaires" style="display: none;">
+
+    <!-- component:Header -->
+    <header>
+      <h1>
+        <a href="../index.html" style="color: inherit; text-decoration: none;">
+          <strong>NEXUM</strong>PHARMA
+        </a>
+      </h1>
+    </header>
+
+    <!-- component:Status -->
+    <div id="status-container" class="status-container">
+      <div id="status">Chargement...</div>
+      <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
+    </div>
+
+    <!-- component:Main -->
+    <main>
+      <h2>Horaires d'ouverture</h2>
+      <div id="module-horaires"></div>
+    </main>
+
+    <!-- component:Footer -->
+    <footer>
+      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
+    </footer>
+  </div>
+
+  <!-- Initialisation de l'authentification -->
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      const { user } = await window.initAuthPage();
+      if (!user) return;
+      document.getElementById("app").style.display = "block";
+    });
+  </script>
+</body>
+</html>
