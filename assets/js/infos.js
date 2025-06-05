@@ -23,6 +23,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       const input = form.querySelector(`[name="${key}"]`);
       if (input) {
         input.value = value;
+      if (
+        value?.trim().toLowerCase() === user.email.trim().toLowerCase() &&
+        (key === "Mail du titulaire" || key === "Mail de la pharmacie")
+      ) {
+        input.disabled = true;
+        input.title = "Ce champ ne peut pas être modifié car il correspond à votre email de connexion.";
+      }
         if (
           value?.trim().toLowerCase() === user.email.trim().toLowerCase() &&
           (key === "Mail du titulaire" || key === "Mail de la pharmacie")
