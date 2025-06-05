@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         (key === "Mail du titulaire" || key === "Mail de la pharmacie")
       ) {
         input.disabled = true;
-        input.title = "Ce champ ne peut pas être modifié car il correspond à votre email de connexion.";
+        input.title = "Ce champ ne peut pas être modifié car il correspond à votre mail de connexion. Pour le modifier, vous devez vous connecter avec l'autre mail.";
 
         // Ajout d'un champ hidden pour que la valeur soit envoyée dans FormData
         const hiddenInput = document.createElement("input");
