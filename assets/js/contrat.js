@@ -1,5 +1,4 @@
 // assets/js/contrat.js
-
 document.addEventListener("DOMContentLoaded", async () => {
   const signButton = document.getElementById("sign-button");
   const statusText = document.getElementById("status");
@@ -12,28 +11,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   const config = window.config;
   const supabase = window.supabase;
 
-  function normalizeUrl(url) {
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      return "https://" + url;
-    }
-    return url;
-  }
+  const normalizeUrl = url =>
+    url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
 
-  // 🔐 Auth
+  // 🔐 Authentification
   const { user, token } = await initAuthPage();
   if (!user) return;
 
   // 📄 Récupération des données pharmacie
-  const record = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(r => r.json());
+  let record;
+  try {
+    const res = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    record = await res.json();
+  } catch (err) {
+    console.error("❌ Erreur lors de la récupération des données pharmacie", err);
+    step2.className = "step visible error";
+    return;
+  }
 
   const fields = record?.records?.[0]?.fields;
   const recordId = record?.records?.[0]?.id;
 
   if (!fields || !recordId) {
+    console.error("❌ Données pharmacie manquantes");
     step2.className = "step visible error";
-    console.error("❌ Pas de données pharmacie ou ID");
     return;
   }
 
@@ -48,91 +51,110 @@ document.addEventListener("DOMContentLoaded", async () => {
     const signUrl = normalizeUrl(existingLink);
     console.log("🔗 Lien normalisé :", signUrl);
 
-    const statusRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-signature-status`, {
+    try {
+      const statusRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-signature-status`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ objectId: contratId })
+      });
+
+      const statusData = await statusRes.json();
+      console.log("📄 Résultat get-signature-status :", statusData);
+
+      if (statusRes.ok && statusData?.status === "completed") {
+        document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
+        signButton.textContent = "Voir le contrat signé";
+        signButton.href = signUrl;
+        signButton.style.display = "inline-block";
+        actionButtons.style.display = "flex";
+        return;
+      }
+
+      // Si non signé
+      console.log("⏳ Contrat en attente de signature...");
+      step2.style.display = "none";
+      step3.style.display = "none";
+      step4.className = "step visible done";
+      signButton.href = signUrl;
+      signButton.style.display = "inline-block";
+      actionButtons.style.display = "flex";
+      return;
+
+    } catch (err) {
+      console.error("❌ Erreur lors de la vérification du statut de signature", err);
+      step2.className = "step visible error";
+      return;
+    }
+  }
+
+  // 📝 Génération du PDF
+  step2.className = "step visible pending";
+
+  let pdfData;
+  try {
+    const pdfRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ objectId: contratId })
+      body: JSON.stringify({ fields })
     });
+    pdfData = await pdfRes.json();
 
-    const statusData = await statusRes.json();
-    console.log("📄 Résultat get-signature-status :", statusData);
-
-    if (statusRes.ok && statusData?.status === "completed") {
-      document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
-
-      signButton.textContent = "Voir le contrat signé";
-
-      signButton.href = signUrl;
-      signButton.style.display = "inline-block";
-      actionButtons.style.display = "flex";
-      return;
+    if (!pdfRes.ok || !pdfData?.success) {
+      throw new Error("Réponse PDF invalide");
     }
 
-    console.log("⏳ Contrat en attente de signature...");
-    step2.style.display = "none";
-    step3.style.display = "none";
-    step4.className = "step visible done";
-    signButton.href = signUrl;
-    signButton.style.display = "inline-block";
-    actionButtons.style.display = "flex";
-    return;
-  }
-
-  // 📝 Génération du PDF
-  step2.className = "step visible pending";
-  const pdfRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ fields })
-  });
-
-  const pdfData = await pdfRes.json();
-  console.log("🧾 PDF généré :", pdfData);
-
-  if (!pdfRes.ok || !pdfData?.success) {
+    console.log("🧾 PDF généré :", pdfData);
+  } catch (err) {
+    console.error("❌ Erreur lors de la génération du PDF", err);
     step2.className = "step visible error";
-    console.error("❌ Erreur lors de la génération du PDF");
     return;
   }
 
   step2.className = "step visible done";
   step3.className = "step visible pending";
 
+  // ✍️ Signature
   const recipient = {
     email: fields["Mail du titulaire"] || user.email,
     name: `${fields["Prénom"] || "Titulaire"} ${fields["Nom"] || ""}`.trim(),
     phone: fields["Portable du titulaire"] || ""
   };
 
-  const signRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      pdfBase64: pdfData.pdfBase64,
-      recipient
-    })
-  });
+  let signData;
+  try {
+    const signRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        pdfBase64: pdfData.pdfBase64,
+        recipient
+      })
+    });
 
-  const signData = await signRes.json();
-  console.log("✍️ Signature créée :", signData);
+    signData = await signRes.json();
+    console.log("✍️ Signature créée :", signData);
 
-  const openSignUrl =
-    signData?.iframeUrl ||
-    signData?.openSignResponse?.signurl?.[0]?.url ||
-    null;
+    const openSignUrl =
+      signData?.iframeUrl ||
+      signData?.openSignResponse?.signurl?.[0]?.url ||
+      null;
 
-  const docId = signData?.documentId || null;
+    const docId = signData?.documentId || null;
 
-  if (signRes.ok && openSignUrl && docId) {
+    if (!signRes.ok || !openSignUrl || !docId) {
+      throw new Error("Lien ou ID de signature manquant");
+    }
+
+    // 📬 Mise à jour Airtable
     await fetch(`${config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
       method: "POST",
       headers: {
@@ -153,8 +175,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     signButton.href = normalizeUrl(openSignUrl);
     signButton.style.display = "inline-block";
     actionButtons.style.display = "flex";
-  } else {
-    console.error("❌ Erreur création signature ou lien invalide");
+
+  } catch (err) {
+    console.error("❌ Erreur création signature ou mise à jour Airtable", err);
     step3.className = "step visible error";
     step4.className = "step visible error";
   }
