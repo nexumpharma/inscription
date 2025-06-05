@@ -49,15 +49,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const statusData = await statusRes.json();
 
-    if (statusRes.ok && statusData?.status === "completed") {
-      // ✅ Contrat déjà signé
-      progress.innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
-      signButton.querySelector("button").textContent = "Voir le contrat signé";
-      signButton.href = signUrl;
-      signButton.style.display = "inline-block";
-      actionButtons.style.display = "flex";
-      return;
-    }
+if (statusRes.ok && statusData?.status === "completed") {
+  document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
+  
+  const button = signButton.querySelector("button");
+  if (button) {
+    button.textContent = "Voir le contrat signé";
+  }
+  
+  signButton.href = signUrl;
+  signButton.style.display = "inline-block";
+  actionButtons.style.display = "flex";
+  return;
+}
+
 
     // 🔁 Contrat pas encore signé mais généré
     step2.style.display = "none";
