@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const signButton = document.getElementById("sign-button");
   const statusText = document.getElementById("status");
   const actionButtons = document.getElementById("action-buttons");
-  const progress = document.getElementById("progress");
 
   const step2 = document.getElementById("step2");
   const step3 = document.getElementById("step3");
   const step4 = document.getElementById("step4");
+  const progress = document.getElementById("progress");
 
-  const config = window.config;
-  const supabase = window.supabase;
+  const { user, token } = await initAuthPage();
+  if (!user) return;
 
   function normalizeUrl(url) {
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -20,11 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return url;
   }
 
-  // 🔐 Authentification centralisée
-  const { user, token } = await initAuthPage();
-  if (!user) return;
-
-  // 📄 Récupération des données pharmacie
   const record = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
     headers: { Authorization: `Bearer ${token}` }
   }).then(r => r.json());
@@ -55,19 +50,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusData = await statusRes.json();
 
     if (statusRes.ok && statusData?.status === "completed") {
-      // ✅ Déjà signé → on n'essaie pas de relancer le process
-      progress.innerHTML = `<p><strong>✅ Contrat déjà signé</strong></p>`;
+      // ✅ Contrat déjà signé
+      progress.innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
       signButton.querySelector("button").textContent = "Voir le contrat signé";
       signButton.href = signUrl;
       signButton.style.display = "inline-block";
       actionButtons.style.display = "flex";
-      step2.style.display = "none";
-      step3.style.display = "none";
-      step4.className = "step visible done";
       return;
     }
 
-    // 🔁 Contrat en cours de signature
+    // 🔁 Contrat pas encore signé mais généré
     step2.style.display = "none";
     step3.style.display = "none";
     step4.className = "step visible done";
@@ -77,8 +69,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 📝 Génération du PDF
+  // 📝 Pas encore généré → lancement du process
   step2.className = "step visible pending";
+
   const pdfRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
     method: "POST",
     headers: {
@@ -149,3 +142,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     step4.className = "step visible error";
   }
 });
+
