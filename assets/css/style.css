@@ -468,3 +468,19 @@ input[disabled] {
   color: #666;
   cursor: not-allowed;
 }
+
+.button-link {
+  display: inline-block;
+  background: #000;
+  color: #fff;
+  padding: 0.7rem 1.5rem;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.button-link:hover {
+  background: #333;
+}
