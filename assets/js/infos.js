@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!user) return;
 
   // Récupération des données existantes
-  const res = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   const record = (await res.json()).records?.[0];
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const saveRes = await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+    const saveRes = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
