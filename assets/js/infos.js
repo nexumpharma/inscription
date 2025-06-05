@@ -29,7 +29,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       ) {
         input.disabled = true;
         input.title = "Ce champ ne peut pas être modifié car il correspond à votre email de connexion.";
+
+        // Ajout d'un champ hidden pour que la valeur soit envoyée dans FormData
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = input.name;
+        hiddenInput.value = input.value;
+        form.appendChild(hiddenInput);
       }
+
         if (
           value?.trim().toLowerCase() === user.email.trim().toLowerCase() &&
           (key === "Mail du titulaire" || key === "Mail de la pharmacie")
