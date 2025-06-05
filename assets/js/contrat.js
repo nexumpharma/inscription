@@ -8,10 +8,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const step2 = document.getElementById("step2");
   const step3 = document.getElementById("step3");
   const step4 = document.getElementById("step4");
-  const progress = document.getElementById("progress");
 
-  const { user, token } = await initAuthPage();
-  if (!user) return;
+  const config = window.config;
+  const supabase = window.supabase;
 
   function normalizeUrl(url) {
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -20,6 +19,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     return url;
   }
 
+  // 🔐 Auth
+  const { user, token } = await initAuthPage();
+  if (!user) return;
+
+  // 📄 Récupération des données pharmacie
   const record = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
     headers: { Authorization: `Bearer ${token}` }
   }).then(r => r.json());
@@ -29,14 +33,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (!fields || !recordId) {
     step2.className = "step visible error";
+    console.error("❌ Pas de données pharmacie ou ID");
     return;
   }
 
   const existingLink = fields["Lien contrat"];
   const contratId = fields["Contrat ID"];
 
+  console.log("📄 Lien contrat existant :", existingLink);
+  console.log("📄 Contrat ID :", contratId);
+
+  // ✅ Contrat déjà généré
   if (existingLink && contratId) {
     const signUrl = normalizeUrl(existingLink);
+    console.log("🔗 Lien normalisé :", signUrl);
 
     const statusRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-signature-status`, {
       method: "POST",
@@ -48,23 +58,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const statusData = await statusRes.json();
+    console.log("📄 Résultat get-signature-status :", statusData);
 
-if (statusRes.ok && statusData?.status === "completed") {
-  document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
-  
-  const button = signButton.querySelector("button");
-  if (button) {
-    button.textContent = "Voir le contrat signé";
-  }
-  
-  signButton.href = signUrl;
-  signButton.style.display = "inline-block";
-  actionButtons.style.display = "flex";
-  return;
-}
+    if (statusRes.ok && statusData?.status === "completed") {
+      document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
 
+      const innerButton = signButton.querySelector("button");
+      console.log("🔘 inner button:", innerButton);
 
-    // 🔁 Contrat pas encore signé mais généré
+      if (innerButton) innerButton.textContent = "Voir le contrat signé";
+      else console.warn("⚠️ Bouton intérieur non trouvé dans #sign-button");
+
+      signButton.href = signUrl;
+      signButton.style.display = "inline-block";
+      actionButtons.style.display = "flex";
+      return;
+    }
+
+    console.log("⏳ Contrat en attente de signature...");
     step2.style.display = "none";
     step3.style.display = "none";
     step4.className = "step visible done";
@@ -74,9 +85,8 @@ if (statusRes.ok && statusData?.status === "completed") {
     return;
   }
 
-  // 📝 Pas encore généré → lancement du process
+  // 📝 Génération du PDF
   step2.className = "step visible pending";
-
   const pdfRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
     method: "POST",
     headers: {
@@ -87,8 +97,11 @@ if (statusRes.ok && statusData?.status === "completed") {
   });
 
   const pdfData = await pdfRes.json();
+  console.log("🧾 PDF généré :", pdfData);
+
   if (!pdfRes.ok || !pdfData?.success) {
     step2.className = "step visible error";
+    console.error("❌ Erreur lors de la génération du PDF");
     return;
   }
 
@@ -114,6 +127,8 @@ if (statusRes.ok && statusData?.status === "completed") {
   });
 
   const signData = await signRes.json();
+  console.log("✍️ Signature créée :", signData);
+
   const openSignUrl =
     signData?.iframeUrl ||
     signData?.openSignResponse?.signurl?.[0]?.url ||
@@ -143,8 +158,8 @@ if (statusRes.ok && statusData?.status === "completed") {
     signButton.style.display = "inline-block";
     actionButtons.style.display = "flex";
   } else {
+    console.error("❌ Erreur création signature ou lien invalide");
     step3.className = "step visible error";
     step4.className = "step visible error";
   }
 });
-
