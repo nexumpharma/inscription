@@ -63,11 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (statusRes.ok && statusData?.status === "completed") {
       document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
 
-      const innerButton = signButton.querySelector("button");
-      console.log("🔘 inner button:", innerButton);
-
-      if (innerButton) innerButton.textContent = "Voir le contrat signé";
-      else console.warn("⚠️ Bouton intérieur non trouvé dans #sign-button");
+      signButton.textContent = "Voir le contrat signé";
 
       signButton.href = signUrl;
       signButton.style.display = "inline-block";
