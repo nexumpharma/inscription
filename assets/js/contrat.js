@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const signButton = document.getElementById("sign-button");
   const statusText = document.getElementById("status");
   const actionButtons = document.getElementById("action-buttons");
+  const progress = document.getElementById("progress");
 
   const step2 = document.getElementById("step2");
   const step3 = document.getElementById("step3");
@@ -54,14 +55,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusData = await statusRes.json();
 
     if (statusRes.ok && statusData?.status === "completed") {
-      document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
+      // ✅ Déjà signé → on n'essaie pas de relancer le process
+      progress.innerHTML = `<p><strong>✅ Contrat déjà signé</strong></p>`;
       signButton.querySelector("button").textContent = "Voir le contrat signé";
       signButton.href = signUrl;
       signButton.style.display = "inline-block";
       actionButtons.style.display = "flex";
+      step2.style.display = "none";
+      step3.style.display = "none";
+      step4.className = "step visible done";
       return;
     }
 
+    // 🔁 Contrat en cours de signature
     step2.style.display = "none";
     step3.style.display = "none";
     step4.className = "step visible done";
