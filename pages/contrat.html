@@ -112,7 +112,15 @@
       text-decoration: none;
     }
   </style>
+
+  <!-- Charger Supabase JS UMD en premier -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js"></script>
+  <!-- Charger la config avant tout -->
+  <script src="../assets/js/config.js"></script>
+  <!-- Charger auth.js qui dépend de config + supabase -->
+  <script src="../assets/js/auth.js"></script>
 </head>
+
 <body>
   <h1><a href="index.html" style="color: inherit; text-decoration: none;"><strong>NEXUM</strong>PHARMA</a></h1>
 
@@ -136,9 +144,7 @@
     </a>
   </div>
 
-  <!-- Chargement des scripts -->
-  <script src="../assets/js/config.js"></script>
-  <script src="../assets/js/auth.js"></script>
+  <!-- Script principal : dépend de tout ce qui précède -->
   <script>
     const { SUPABASE_FUNCTION_BASE } = window.config;
     const supabase = window.supabase;
