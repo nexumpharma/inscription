@@ -486,3 +486,12 @@ input[disabled] {
 .button-link:hover {
   background-color: #333;
 }
+
+.step {
+  display: none;
+  margin-bottom: 0.8rem;
+}
+
+.step.visible {
+  display: block;
+}
