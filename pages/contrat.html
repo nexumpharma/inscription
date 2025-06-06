@@ -7,6 +7,31 @@
   <!-- Global CSS -->
   <link rel="stylesheet" href="../assets/css/style.css" />
 
+  <style>
+    .step {
+      display: none;
+      margin: 1rem auto;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-left: 5px solid #0070f3;
+      background: #f9f9f9;
+      max-width: 700px;
+      font-weight: bold;
+    }
+    .step.visible {
+      display: block;
+    }
+    .step.done {
+      border-left-color: green;
+    }
+    .step.error {
+      border-left-color: red;
+    }
+    .step.pending {
+      border-left-color: orange;
+    }
+  </style>
+
   <!-- Supabase + Auth -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
   <script src="../assets/js/config.js" defer></script>
@@ -31,13 +56,22 @@
       <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
     </div>
 
+    <!-- component:Steps -->
+    <div class="steps">
+      <div id="step2" class="step">📄 Génération du contrat...</div>
+      <div id="step3" class="step">✍️ Envoi à la signature...</div>
+      <div id="step4" class="step">🔏 Signature en cours ou terminée</div>
+    </div>
+
     <!-- component:Main -->
     <main>
       <div id="contrat-container" style="display: none;">
         <h2>Signature du contrat</h2>
         <p id="message"></p>
-        <div id="actions-container" class="button-container" style="margin-top: 2rem;">
-          <button id="actionBtn" type="button">Chargement...</button>
+        <div id="action-buttons" class="button-container" style="margin-top: 2rem; display: none;">
+          <a id="sign-button" class="button" href="#" target="_blank" style="display: none;">
+            Signer le contrat
+          </a>
         </div>
       </div>
     </main>
