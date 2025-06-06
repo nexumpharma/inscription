@@ -20,11 +20,21 @@ function normalizeUrl(url) {
 }
 
 function setStepStatus(stepElement, status) {
+  // Cacher toutes les étapes sauf celle-ci
+  [step2, step3, step4].forEach(step => {
+    if (step !== stepElement) {
+      step.classList.remove("visible", "pending", "done", "error");
+    }
+  });
+
+  // Afficher l'étape cible avec le bon statut
   stepElement.classList.add("visible");
   stepElement.classList.remove("pending", "done", "error");
   if (status) stepElement.classList.add(status);
+
   console.log(`⏱ Étape [${stepElement.id}] → ${status}`);
 }
+
 
 async function run() {
   const { data: { user }, error } = await supabase.auth.getUser();
