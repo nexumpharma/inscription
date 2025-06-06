@@ -4,11 +4,15 @@
   <meta charset="UTF-8" />
   <title>Contrat</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
+  <script src="../assets/js/contrat.js" defer></script>
 </head>
 <body>
   <div id="app" data-page="contrat">
     
-    <!-- component:Header -->
+    <!-- Header -->
     <header>
       <h1>
         <a href="../index.html" style="color: inherit; text-decoration: none;">
@@ -17,13 +21,13 @@
       </h1>
     </header>
 
-    <!-- component:Status -->
-    <div id="status-container" class="status-container" style="display: none;">
+    <!-- Status utilisateur -->
+    <div id="status-container" style="display: none;" class="status-container">
       <div id="status">Chargement...</div>
       <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
     </div>
 
-    <!-- component:Main -->
+    <!-- Contenu principal -->
     <main>
       <section id="progress">
         <h2>Signature du contrat</h2>
@@ -32,10 +36,8 @@
         <div id="step3" class="step">📬 Envoi du contrat pour signature...</div>
         <div id="step4" class="step">📑 Prêt à signer !</div>
 
-<a id="sign-button" href="#" target="_blank" style="display: none;">
-  <button>Signer le contrat</button>
-</a>
-
+        <!-- ✅ Le bouton manquant ici -->
+        <a id="sign-button" class="button-link" href="#" target="_blank" style="display: none;">Voir le contrat signé</a>
 
         <div id="action-buttons" style="display: none; margin-top: 1rem;">
           <a href="infos.html">← Modifier mes infos</a>
@@ -44,16 +46,10 @@
       </section>
     </main>
 
-    <!-- component:Footer -->
+    <!-- Footer -->
     <footer>
       <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
     </footer>
   </div>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-  <script src="../assets/js/config.js" defer></script>
-  <script src="../assets/js/auth.js" defer></script>
-  <script src="../assets/js/contrat.js" defer></script>
 </body>
 </html>
