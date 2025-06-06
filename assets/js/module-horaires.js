@@ -61,10 +61,14 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("module-horaires");
-  if (!container) return;
+// DOM Ready
+document.addEventListener("DOMContentLoaded", async () => {
+  const { user } = await initAuthPage();
+  if (!user) return;
 
+  document.getElementById("pharmacyForm").style.display = "block";
+
+  const container = document.getElementById("module-horaires");
   container.innerHTML = `
     <div class="tabs">
       <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
@@ -84,12 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Init Flatpickr
   flatpickr.localize(flatpickr.l10ns.fr);
   flatpickr("#date-exception-start", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
   flatpickr("#date-exception-end", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
 
-  // Tabs
   document.querySelectorAll(".tab-button").forEach(button => {
     button.addEventListener("click", () => {
       document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
@@ -138,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Fonctions utilitaires
+// Utilitaires
 
 function initFlatpickrHeure(input) {
   return flatpickr(input, {
