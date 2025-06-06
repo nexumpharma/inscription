@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const horairesContainer = document.getElementById("horaires-habituels");
   jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
-  function creerBlocJour(jour, parentContainer, isException = false) {
+function creerBlocJour(jour, parentContainer, isException = false) {
   const container = document.createElement("div");
   container.className = "jour-container";
   container.dataset.jour = jour;
@@ -163,6 +163,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const actions = document.createElement("div");
   actions.className = "actions";
   actions.style.display = "none";
+
+  // Zone pour afficher la case "Ouvert 24h/24" hors des <details>
+  const toggle24hOutside = document.createElement("div");
+  toggle24hOutside.className = "toggle24h-visible";
+  toggle24hOutside.style.marginTop = "0.5rem";
 
   let advancedOptions = null;
   let toggle24h, check24h;
@@ -191,13 +196,13 @@ document.addEventListener("DOMContentLoaded", () => {
     advancedOptions.appendChild(freqLabel);
     advancedOptions.appendChild(toggle24h);
 
-    // 🔁 Ajouter l'écouteur de changement
     check24h.addEventListener("change", () => {
       if (check24h.checked) {
         plages.innerHTML = `<div class='ferme'>Ouvert 24h/24</div>`;
         plages.style.display = "block";
         actions.style.display = "none";
         if (advancedOptions) advancedOptions.style.display = "none";
+        toggle24hOutside.appendChild(toggle24h); // on déplace la case hors <details>
       } else {
         plages.innerHTML = "";
         plages.style.display = "none";
@@ -210,9 +215,15 @@ document.addEventListener("DOMContentLoaded", () => {
           check24h.checked = false;
         }
 
+        if (!advancedOptions.contains(toggle24h)) {
+          advancedOptions.appendChild(toggle24h); // on la remet dans <details>
+        }
+        toggle24hOutside.innerHTML = "";
+
         const status = document.createElement("div");
         status.className = "ferme";
         status.textContent = "Fermé";
+
         const initBtn = document.createElement("button");
         initBtn.type = "button";
         initBtn.textContent = "+ Ajouter une plage";
@@ -229,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         container.innerHTML = "";
-        container.append(title, status, initBtn, plages, actions);
+        container.append(title, status, initBtn, plages, actions, toggle24hOutside);
         if (advancedOptions) container.appendChild(advancedOptions);
       }
     });
@@ -264,7 +275,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  container.append(title, status, initBtn, plages, actions);
+  // Ordre d’insertion dans le container
+  container.append(title, status, initBtn, plages, actions, toggle24hOutside);
   if (advancedOptions) container.appendChild(advancedOptions);
   parentContainer.appendChild(container);
 }
