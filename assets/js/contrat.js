@@ -1,5 +1,5 @@
-const { SUPABASE_FUNCTION_BASE } = window.config;
-const supabase = window.supabase;
+import { supabase, checkAndRestoreSessionFromURL, logout } from './js/auth.js';
+import { SUPABASE_FUNCTION_BASE } from './js/config.js';
 
 const signButton = document.getElementById("sign-button");
 const statusContainer = document.getElementById("status-container");
@@ -18,11 +18,27 @@ function normalizeUrl(url) {
   return url;
 }
 
-async function run() {
-  const authResult = await window.initAuthPage();
-  if (!authResult) return;
+function setStepStatus(stepElement, status) {
+  stepElement.classList.add("visible");
+  stepElement.classList.remove("pending", "done", "error");
+  if (status) stepElement.classList.add(status);
+}
 
-  const { user, token } = authResult;
+async function run() {
+  await checkAndRestoreSessionFromURL();
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (!user || error) {
+    window.location.href = "connexion.html";
+    return;
+  }
+
+  const session = await supabase.auth.getSession();
+  const token = session.data.session.access_token;
+
+  statusText.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+  statusContainer.style.display = "flex";
+  logoutBtn.style.display = "inline-block";
 
   const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -32,7 +48,7 @@ async function run() {
   const recordId = record?.records?.[0]?.id;
 
   if (!fields || !recordId) {
-    step2.className = "step visible error";
+    setStepStatus(step2, "error");
     return;
   }
 
@@ -64,14 +80,14 @@ async function run() {
 
     step2.style.display = "none";
     step3.style.display = "none";
-    step4.className = "step visible done";
+    setStepStatus(step4, "done");
     signButton.href = signUrl;
     signButton.style.display = "inline-block";
     actionButtons.style.display = "flex";
     return;
   }
 
-  step2.className = "step visible pending";
+  setStepStatus(step2, "pending");
 
   const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
     method: "POST",
@@ -84,12 +100,12 @@ async function run() {
 
   const pdfData = await pdfRes.json();
   if (!pdfRes.ok || !pdfData?.success) {
-    step2.className = "step visible error";
+    setStepStatus(step2, "error");
     return;
   }
 
-  step2.className = "step visible done";
-  step3.className = "step visible pending";
+  setStepStatus(step2, "done");
+  setStepStatus(step3, "pending");
 
   const recipient = {
     email: fields["Mail du titulaire"] || user.email,
@@ -133,21 +149,16 @@ async function run() {
       })
     });
 
-    step3.className = "step visible done";
-    step4.className = "step visible done";
+    setStepStatus(step3, "done");
+    setStepStatus(step4, "done");
     signButton.href = normalizeUrl(openSignUrl);
     signButton.style.display = "inline-block";
     actionButtons.style.display = "flex";
   } else {
-    step3.className = "step visible error";
-    step4.className = "step visible error";
+    setStepStatus(step3, "error");
+    setStepStatus(step4, "error");
   }
 }
 
-logoutBtn.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  alert("Déconnecté.");
-  window.location.href = "connexion.html";
-});
-
+logoutBtn.addEventListener("click", logout);
 run();
