@@ -62,9 +62,31 @@ label.toggle {
 document.head.appendChild(style);
 
 // Inject HTML structure
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("module-horaires");
-  if (!container) return;
+  const moduleWrapper = document.getElementById("moduleContainer");
+  const status = document.querySelector(".status");
+  const statusContainer = document.querySelector(".status-container");
+  const logoutBtn = document.querySelector(".logoutBtn");
+
+  const { user } = await initAuthPage();
+  if (!user) return;
+
+  // Affiche le module une fois connecté
+  status.textContent = `Connecté en tant que ${user.email}`;
+  statusContainer.style.display = "flex";
+  moduleWrapper.style.display = "block";
+
+  logoutBtn.addEventListener("click", () => {
+    window.supabase.auth.signOut().then(() => {
+      window.location.href = "../index.html";
+    });
+  });
+
+  // Ensuite, continue avec la logique d'injection du module horaires...
+  container.innerHTML = `...`; // ton module
+});
+
 
   container.innerHTML = `
     <div class="tabs">
