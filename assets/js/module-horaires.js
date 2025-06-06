@@ -145,86 +145,129 @@ document.addEventListener("DOMContentLoaded", () => {
   jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
   function creerBlocJour(jour, parentContainer, isException = false) {
-    const container = document.createElement("div");
-    container.className = "jour-container";
-    container.dataset.jour = jour;
+  const container = document.createElement("div");
+  container.className = "jour-container";
+  container.dataset.jour = jour;
 
-    const title = document.createElement("h3");
-    title.textContent = jour.charAt(0).toUpperCase() + jour.slice(1);
+  const title = document.createElement("h3");
+  title.textContent = jour.charAt(0).toUpperCase() + jour.slice(1);
 
-    const status = document.createElement("div");
-    status.className = "ferme";
-    status.textContent = "Fermé";
+  const status = document.createElement("div");
+  status.className = "ferme";
+  status.textContent = "Fermé";
 
-    const plages = document.createElement("div");
-    plages.className = "plages";
-    plages.style.display = "none";
+  const plages = document.createElement("div");
+  plages.className = "plages";
+  plages.style.display = "none";
 
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    actions.style.display = "none";
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.style.display = "none";
 
-    let advancedOptions = null;
-    let toggle24h, check24h;
-    if (!isException) {
-      advancedOptions = document.createElement("details");
-      advancedOptions.style.display = "none";
-      const summary = document.createElement("summary");
-      summary.textContent = "Options avancées";
-      advancedOptions.appendChild(summary);
+  let advancedOptions = null;
+  let toggle24h, check24h;
+  if (!isException) {
+    advancedOptions = document.createElement("details");
+    advancedOptions.style.display = "none";
+    const summary = document.createElement("summary");
+    summary.textContent = "Options avancées";
+    advancedOptions.appendChild(summary);
 
-      const freqLabel = document.createElement("label");
-      freqLabel.innerHTML = `Semaine : <select class='frequence'>
-        <option value='toutes'>Toutes les semaines</option>
-        <option value='paire'>Semaines paires</option>
-        <option value='impaire'>Semaines impaires</option>
-      </select>`;
+    const freqLabel = document.createElement("label");
+    freqLabel.innerHTML = `Semaine : <select class='frequence'>
+      <option value='toutes'>Toutes les semaines</option>
+      <option value='paire'>Semaines paires</option>
+      <option value='impaire'>Semaines impaires</option>
+    </select>`;
 
-      toggle24h = document.createElement("label");
-      toggle24h.className = "toggle";
-      check24h = document.createElement("input");
-      check24h.type = "checkbox";
-      check24h.className = "ouvert24hCheck";
-      toggle24h.appendChild(check24h);
-      toggle24h.append("Ouvert 24h/24");
+    toggle24h = document.createElement("label");
+    toggle24h.className = "toggle";
+    check24h = document.createElement("input");
+    check24h.type = "checkbox";
+    check24h.className = "ouvert24hCheck";
+    toggle24h.appendChild(check24h);
+    toggle24h.append("Ouvert 24h/24");
 
-      advancedOptions.appendChild(freqLabel);
-      advancedOptions.appendChild(toggle24h);
-    }
+    advancedOptions.appendChild(freqLabel);
+    advancedOptions.appendChild(toggle24h);
 
-    const addBtn = document.createElement("button");
-    addBtn.type = "button";
-    addBtn.textContent = "+ Ajouter une plage";
-    addBtn.onclick = () => {
-      plages.appendChild(makePlage(container));
-      plages.style.display = "block";
-      actions.style.display = "flex";
-      if (advancedOptions) {
-        advancedOptions.style.display = "block";
-        advancedOptions.open = false;
+    // 🔁 Ajouter l'écouteur de changement
+    check24h.addEventListener("change", () => {
+      if (check24h.checked) {
+        plages.innerHTML = `<div class='ferme'>Ouvert 24h/24</div>`;
+        plages.style.display = "block";
+        actions.style.display = "none";
+        if (advancedOptions) advancedOptions.style.display = "none";
+      } else {
+        plages.innerHTML = "";
+        plages.style.display = "none";
+        actions.style.display = "none";
+        if (advancedOptions) {
+          advancedOptions.style.display = "none";
+          advancedOptions.open = false;
+          const freqSelect = advancedOptions.querySelector("select.frequence");
+          if (freqSelect) freqSelect.value = "toutes";
+          check24h.checked = false;
+        }
+
+        const status = document.createElement("div");
+        status.className = "ferme";
+        status.textContent = "Fermé";
+        const initBtn = document.createElement("button");
+        initBtn.type = "button";
+        initBtn.textContent = "+ Ajouter une plage";
+        initBtn.onclick = () => {
+          initBtn.remove();
+          status.remove();
+          plages.appendChild(makePlage(container));
+          plages.style.display = "block";
+          actions.style.display = "flex";
+          if (advancedOptions) {
+            advancedOptions.style.display = "block";
+            advancedOptions.open = false;
+          }
+        };
+
+        container.innerHTML = "";
+        container.append(title, status, initBtn, plages, actions);
+        if (advancedOptions) container.appendChild(advancedOptions);
       }
-    };
-    actions.appendChild(addBtn);
-
-    const initBtn = document.createElement("button");
-    initBtn.type = "button";
-    initBtn.textContent = "+ Ajouter une plage";
-    initBtn.onclick = () => {
-      initBtn.remove();
-      status.remove();
-      plages.appendChild(makePlage(container));
-      plages.style.display = "block";
-      actions.style.display = "flex";
-      if (advancedOptions) {
-        advancedOptions.style.display = "block";
-        advancedOptions.open = false;
-      }
-    };
-
-    container.append(title, status, initBtn, plages, actions);
-    if (advancedOptions) container.appendChild(advancedOptions);
-    parentContainer.appendChild(container);
+    });
   }
+
+  const addBtn = document.createElement("button");
+  addBtn.type = "button";
+  addBtn.textContent = "+ Ajouter une plage";
+  addBtn.onclick = () => {
+    plages.appendChild(makePlage(container));
+    plages.style.display = "block";
+    actions.style.display = "flex";
+    if (advancedOptions) {
+      advancedOptions.style.display = "block";
+      advancedOptions.open = false;
+    }
+  };
+  actions.appendChild(addBtn);
+
+  const initBtn = document.createElement("button");
+  initBtn.type = "button";
+  initBtn.textContent = "+ Ajouter une plage";
+  initBtn.onclick = () => {
+    initBtn.remove();
+    status.remove();
+    plages.appendChild(makePlage(container));
+    plages.style.display = "block";
+    actions.style.display = "flex";
+    if (advancedOptions) {
+      advancedOptions.style.display = "block";
+      advancedOptions.open = false;
+    }
+  };
+
+  container.append(title, status, initBtn, plages, actions);
+  if (advancedOptions) container.appendChild(advancedOptions);
+  parentContainer.appendChild(container);
+}
 
   function makePlage(container, debut = "", fin = "") {
     const div = document.createElement("div");
