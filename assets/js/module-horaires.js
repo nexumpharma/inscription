@@ -1,6 +1,6 @@
 // module-horaires.js
 
-// Inject styles
+// DOM Ready
 const style = document.createElement('style');
 style.textContent = `
 #module-horaires { max-width: 1000px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
@@ -62,6 +62,7 @@ label.toggle {
 document.head.appendChild(style);
 
 // DOM Ready
+
 document.addEventListener("DOMContentLoaded", async () => {
   const moduleWrapper = document.getElementById("moduleContainer");
   const { user } = await initAuthPage();
@@ -69,7 +70,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   moduleWrapper.style.display = "block";
 
-  // === HTML du module horaires ===
   const container = document.getElementById("module-horaires");
   container.innerHTML = `
     <div class="tabs">
@@ -90,28 +90,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
   `;
 
-  // Flatpickr init
   flatpickr.localize(flatpickr.l10ns.fr);
-  flatpickr("#date-exception-start", { dateFormat: "d/m/Y", locale: "fr", allowInput: true, defaultDate: null,
-    onOpen(_, __, instance) { if (!instance.input.value) instance.setDate(new Date(), true); }
-  });
-  flatpickr("#date-exception-end", { dateFormat: "d/m/Y", locale: "fr", allowInput: true, defaultDate: null,
-    onOpen(_, __, instance) { if (!instance.input.value) instance.setDate(new Date(), true); }
-  });
+  flatpickr("#date-exception-start", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
+  flatpickr("#date-exception-end", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
 
   function initFlatpickrHeure(input) {
     return flatpickr(input, {
-      enableTime: true, noCalendar: true,
-      dateFormat: "H:i", time_24hr: true,
-      locale: "fr", allowInput: true,
-      defaultDate: null,
-      onOpen(_, __, instance) {
-        if (!instance.input.value) instance.setDate("12:00", true, "H:i");
-      }
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      locale: "fr",
+      allowInput: true,
     });
   }
 
-  // Onglets
   document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
       document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -121,20 +114,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Horaires habituels
   const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
   const horairesContainer = document.getElementById("horaires-habituels");
   jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
-  // Horaires exceptionnels
   document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("date-exception-start");
     const endInput = document.getElementById("date-exception-end");
     const start = flatpickr.parseDate(startInput.value, "d/m/Y");
     const end = flatpickr.parseDate(endInput.value, "d/m/Y");
+
     if (!start || !end || start > end) return alert("Veuillez renseigner une plage de dates valide");
 
     const formatFR = d => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+
     const container = document.createElement("div");
     container.className = "exception-container";
     const range = document.createElement("div");
@@ -145,8 +138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const horaires = document.createElement("div");
     horaires.className = "horaires-exceptions";
     let current = new Date(start);
-    const endDate = new Date(end);
-    while (current <= endDate) {
+    while (current <= end) {
       const jour = current.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
       creerBlocJour(jour, horaires, true);
       current.setDate(current.getDate() + 1);
@@ -157,6 +149,65 @@ document.addEventListener("DOMContentLoaded", async () => {
     startInput.value = "";
     endInput.value = "";
   });
-
-  // Tu peux garder `creerBlocJour()` et `makePlage()` tels quels
 });
+
+function creerBlocJour(jour, parentContainer, isException = false) {
+  const container = document.createElement("div");
+  container.className = "jour-container";
+  container.dataset.jour = jour;
+
+  const title = document.createElement("h3");
+  title.textContent = jour;
+
+  const status = document.createElement("div");
+  status.className = "ferme";
+  status.textContent = "Fermé";
+
+  const plages = document.createElement("div");
+  plages.className = "plages";
+  plages.style.display = "none";
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.style.display = "none";
+
+  const addBtn = document.createElement("button");
+  addBtn.type = "button";
+  addBtn.textContent = "+ Ajouter une plage";
+  addBtn.onclick = () => {
+    plages.appendChild(makePlage(container));
+    plages.style.display = "block";
+    actions.style.display = "flex";
+  };
+
+  actions.appendChild(addBtn);
+
+  const initBtn = document.createElement("button");
+  initBtn.type = "button";
+  initBtn.textContent = "+ Ajouter une plage";
+  initBtn.onclick = () => {
+    initBtn.remove();
+    status.remove();
+    plages.appendChild(makePlage(container));
+    plages.style.display = "block";
+    actions.style.display = "flex";
+  };
+
+  container.append(title, status, initBtn, plages, actions);
+  parentContainer.appendChild(container);
+}
+
+function makePlage(container, debut = "", fin = "") {
+  const div = document.createElement("div");
+  div.className = "plage";
+  div.innerHTML = `
+    <input type='text' class='heure' value='${debut}' placeholder="HH:MM">
+    <span>à</span>
+    <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
+    <button type='button' title="Supprimer cette plage">❌</button>
+  `;
+
+  div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
+  div.querySelector("button").onclick = () => div.remove();
+  return div;
+}
