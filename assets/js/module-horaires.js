@@ -83,9 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Ensuite, continue avec la logique d'injection du module horaires...
-  container.innerHTML = `...`; // ton module
-});
 
 
   container.innerHTML = `
