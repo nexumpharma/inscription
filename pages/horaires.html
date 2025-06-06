@@ -2,27 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Horaires</title>
+  <title>Horaires d'ouverture</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
-
-  <!-- Flatpickr -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css" />
-
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-
-  <!-- Flatpickr -->
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
-
-  <!-- Config + Auth -->
   <script src="../assets/js/config.js" defer></script>
   <script src="../assets/js/auth.js" defer></script>
   <script src="../assets/js/module-horaires.js" defer></script>
 </head>
 <body>
-  <div id="app" data-page="horaires" style="display: none;">
+  <div id="app" data-page="horaires">
 
     <!-- component:Header -->
     <header>
@@ -34,15 +22,19 @@
     </header>
 
     <!-- component:Status -->
-    <div id="status-container" class="status-container">
+    <div id="status-container" class="status-container" style="display: none;">
       <div id="status">Chargement...</div>
       <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
     </div>
 
     <!-- component:Main -->
     <main>
-      <h2>Horaires d'ouverture</h2>
-      <div id="module-horaires"></div>
+      <div id="moduleContainer" style="display: none;">
+        <h2>Horaires d'ouverture</h2>
+        <div class="form-container">
+          <div id="module-horaires"></div>
+        </div>
+      </div>
     </main>
 
     <!-- component:Footer -->
@@ -50,14 +42,5 @@
       <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
     </footer>
   </div>
-
-  <!-- Initialisation de l'authentification -->
-  <script>
-    window.addEventListener("DOMContentLoaded", async () => {
-      const { user } = await window.initAuthPage();
-      if (!user) return;
-      document.getElementById("app").style.display = "block";
-    });
-  </script>
 </body>
 </html>
