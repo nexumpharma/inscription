@@ -65,7 +65,7 @@ document.head.appendChild(style);
 document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("module-horaires");
   const moduleWrapper = document.getElementById("moduleContainer");
-  const status = document.querySelector(".status");
+  const status = document.querySelector("status");
   const statusContainer = document.querySelector(".status-container");
   const logoutBtn = document.querySelector(".logoutBtn");
 
