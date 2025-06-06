@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Module Horaires</title>
+  <title>Horaires d'ouverture</title>
 
   <!-- Global CSS -->
   <link rel="stylesheet" href="../assets/css/style.css" />
@@ -11,19 +11,18 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
 
-  <!-- Flatpickr JS -->
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-
-  <!-- Supabase + Auth -->
+  <!-- Supabase + Config + Auth -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
   <script src="../assets/js/config.js" defer></script>
   <script src="../assets/js/auth.js" defer></script>
 
-  <!-- Module horaires -->
+  <!-- Flatpickr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
+
+  <!-- Module JS -->
   <script src="../assets/js/module-horaires.js" defer></script>
 </head>
-
 
 <body>
   <div id="app" data-page="horaires">
@@ -38,19 +37,26 @@
     </header>
 
     <!-- component:Status -->
-    <div id="status-container" class="status-container" style="display: none;">
+    <div id="status-container" style="display: none;">
       <div id="status">Chargement...</div>
-      <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
+      <button id="logoutBtn">Se déconnecter</button>
     </div>
 
     <!-- component:Main -->
     <main>
-      <div id="moduleContainer" style="display: none;">
+      <form id="pharmacyForm" novalidate style="display: none;">
         <h2>Horaires d'ouverture</h2>
+
+        <!-- Injection JS dynamique ici -->
         <div class="form-container">
           <div id="module-horaires"></div>
         </div>
-      </div>
+
+        <div class="button-container">
+          <span style="flex: 1;"></span>
+          <button class="suivantBtn" type="submit">Suivant</button>
+        </div>
+      </form>
     </main>
 
     <!-- component:Footer -->
