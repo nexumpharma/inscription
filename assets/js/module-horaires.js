@@ -62,11 +62,8 @@ label.toggle {
 document.head.appendChild(style);
 
 // DOM Ready
-document.addEventListener("DOMContentLoaded", async () => {
-  const { user } = await initAuthPage();
-  if (!user) return;
-
-  document.getElementById("pharmacyForm").style.display = "block";
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("horairesForm").style.display = "block";
 
   const container = document.getElementById("module-horaires");
   container.innerHTML = `
@@ -89,8 +86,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   `;
 
   flatpickr.localize(flatpickr.l10ns.fr);
-  flatpickr("#date-exception-start", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
-  flatpickr("#date-exception-end", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
+  flatpickr("#date-exception-start", {
+    dateFormat: "d/m/Y",
+    locale: "fr",
+    allowInput: true,
+    defaultDate: "today"
+  });
+  flatpickr("#date-exception-end", {
+    dateFormat: "d/m/Y",
+    locale: "fr",
+    allowInput: true,
+    defaultDate: "today"
+  });
 
   document.querySelectorAll(".tab-button").forEach(button => {
     button.addEventListener("click", () => {
