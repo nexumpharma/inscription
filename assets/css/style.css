@@ -486,39 +486,3 @@ input[disabled] {
 .button-link:hover {
   background-color: #333;
 }
-
-/* Étapes affichées dynamiquement dans le contrat */
-.step {
-  display: none;
-  margin-bottom: 0.8rem;
-  font-weight: normal;
-}
-
-.step.visible {
-  display: block;
-}
-
-.step.pending::before {
-  content: '⏳ ';
-}
-
-.step.done::before {
-  content: '✅ ';
-}
-
-.step.error::before {
-  content: '❌ ';
-}
-
-/* Optionnel : couleurs des états */
-.step.done {
-  color: green;
-}
-
-.step.error {
-  color: red;
-}
-
-.step.pending {
-  color: #c49b00;
-}
