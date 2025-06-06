@@ -65,22 +65,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("📄 Résultat get-signature-status :", statusData);
 
 if (statusRes.ok && statusData?.status === "completed") {
-  console.log("✅ Contrat déjà signé détecté.");
   document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
 
-  signButton.textContent = "Voir le contrat signé";
+  const innerButton = signButton.querySelector("button");
+  if (innerButton) innerButton.textContent = "Voir le contrat signé";
+  else console.warn("⚠️ Aucun bouton trouvé dans #sign-button");
+
   signButton.href = signUrl;
   signButton.style.display = "inline-block";
-
   actionButtons.style.display = "flex";
-
-  // Affiche les étapes comme validées
-  step2.className = "step visible done";
-  step3.className = "step visible done";
-  step4.className = "step visible done";
-
   return;
 }
+
 
 
       // Si non signé
