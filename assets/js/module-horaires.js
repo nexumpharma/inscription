@@ -282,18 +282,71 @@ function creerBlocJour(jour, parentContainer, isException = false) {
 }
 
   function makePlage(container, debut = "", fin = "") {
-    const div = document.createElement("div");
-    div.className = "plage";
-    div.innerHTML = `
-      <input type='text' class='heure' value='${debut}' placeholder="HH:MM">
-      <span>à</span>
-      <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
-      <button type='button' title="Supprimer cette plage">❌</button>
-    `;
-    div.querySelector("button").onclick = () => div.remove();
-    div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
-    return div;
-  }
+  const div = document.createElement("div");
+  div.className = "plage";
+  div.innerHTML = `
+    <input type='text' class='heure' value='${debut}' placeholder="HH:MM">
+    <span>à</span>
+    <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
+    <button type='button' title="Supprimer cette plage">❌</button>
+  `;
+
+  // Initialisation flatpickr sur les inputs
+  div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
+
+  // 🔁 Lorsqu'on supprime une plage
+  div.querySelector("button").onclick = () => {
+    div.remove();
+    const plages = container.querySelector(".plages");
+    const actions = container.querySelector(".actions");
+    const advancedOptions = container.querySelector("details");
+    const toggle24hOutside = container.querySelector(".toggle24h-visible");
+    const check24h = container.querySelector(".ouvert24hCheck");
+
+    if (plages.children.length === 0) {
+      plages.style.display = "none";
+      actions.style.display = "none";
+      plages.innerHTML = "";
+
+      if (advancedOptions) {
+        advancedOptions.style.display = "none";
+        advancedOptions.open = false;
+        const freqSelect = advancedOptions.querySelector("select.frequence");
+        if (freqSelect) freqSelect.value = "toutes";
+      }
+      if (check24h) check24h.checked = false;
+      if (toggle24hOutside) toggle24hOutside.innerHTML = "";
+
+      const status = document.createElement("div");
+      status.className = "ferme";
+      status.textContent = "Fermé";
+
+      const initBtn = document.createElement("button");
+      initBtn.type = "button";
+      initBtn.textContent = "+ Ajouter une plage";
+      initBtn.onclick = () => {
+        initBtn.remove();
+        status.remove();
+        plages.appendChild(makePlage(container));
+        plages.style.display = "block";
+        actions.style.display = "flex";
+        if (advancedOptions) {
+          advancedOptions.style.display = "block";
+          advancedOptions.open = false;
+        }
+      };
+
+      container.innerHTML = "";
+      const title = document.createElement("h3");
+      title.textContent = container.dataset.jour || "";
+      container.append(title, status, initBtn, plages, actions, toggle24hOutside);
+      if (advancedOptions) container.appendChild(advancedOptions);
+    }
+  };
+
+  return div;
+}
+
 
   document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("date-exception-start");
