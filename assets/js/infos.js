@@ -23,27 +23,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       const input = form.querySelector(`[name="${key}"]`);
       if (input) {
         input.value = value;
-      if (
-        value?.trim().toLowerCase() === user.email.trim().toLowerCase() &&
-        (key === "Mail du titulaire" || key === "Mail de la pharmacie")
-      ) {
-        input.disabled = true;
-        input.title = "Ce champ ne peut pas être modifié car il correspond à votre mail de connexion. Pour le modifier, vous devez vous connecter avec le mail de la pharmacie.";
-
-        // Ajout d'un champ hidden pour que la valeur soit envoyée dans FormData
-        const hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = input.name;
-        hiddenInput.value = input.value;
-        form.appendChild(hiddenInput);
-      }
-
         if (
           value?.trim().toLowerCase() === user.email.trim().toLowerCase() &&
           (key === "Mail du titulaire" || key === "Mail de la pharmacie")
         ) {
           input.disabled = true;
-          input.title = "Ce champ ne peut pas être modifié car il correspond à votre mail de connexion. Pour le modifier, vous devez vous connecter avec le mail du titulaire.";
+          input.title = key === "Mail du titulaire"
+            ? "Ce champ ne peut pas être modifié car il correspond à votre mail de connexion. Pour le modifier, vous devez vous connecter avec le mail du titulaire."
+            : "Ce champ ne peut pas être modifié car il correspond à votre mail de connexion. Pour le modifier, vous devez vous connecter avec le mail de la pharmacie.";
+        
+          // Ajout d'un champ hidden pour que la valeur soit envoyée dans FormData
+          const hiddenInput = document.createElement("input");
+          hiddenInput.type = "hidden";
+          hiddenInput.name = input.name;
+          hiddenInput.value = input.value;
+          form.appendChild(hiddenInput);
         }
       }
     }
