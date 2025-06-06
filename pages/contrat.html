@@ -3,302 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <title>Signature du contrat</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fff;
-      color: #111;
-      margin: 2rem;
-      line-height: 1.6;
-    }
-
-    h1, h2 {
-      font-weight: normal;
-    }
-
-    h1 {
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    h2 {
-      margin-bottom: 1rem;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.5rem;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #status-container {
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 700px;
-      margin: 0 auto 1.5rem auto;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #ddd;
-    }
-
-    #logoutBtn {
-      padding: 0.6rem 1rem;
-      background: none;
-      color: #000;
-      border: 1px solid #000;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    #logoutBtn:hover {
-      background: #000;
-      color: #fff;
-    }
-
-    #progress {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      border-radius: 4px;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .step {
-      margin-bottom: 0.8rem;
-      display: none;
-    }
-
-    .step.visible {
-      display: block;
-    }
-
-    .done::before {
-      content: '✅ ';
-    }
-
-    .pending::before {
-      content: '⏳ ';
-    }
-
-    .error::before {
-      content: '❌ ';
-      color: red;
-    }
-
-    .button-container {
-      display: none;
-      justify-content: space-between;
-      max-width: 700px;
-      margin: 2rem auto;
-    }
-
-    button {
-      padding: 0.7rem 1.5rem;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #333;
-    }
-
-    a {
-      text-decoration: none;
-    }
-  </style>
-
-  <!-- Charger Supabase JS UMD en premier -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js"></script>
-  <!-- Charger la config avant tout -->
-  <script src="../assets/js/config.js"></script>
-  <!-- Charger auth.js qui dépend de config + supabase -->
-  <script src="../assets/js/auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+  <script src="assets/js/config.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
+  <script src="assets/js/contrat.js" defer></script>
 </head>
-
 <body>
-  <h1><a href="index.html" style="color: inherit; text-decoration: none;"><strong>NEXUM</strong>PHARMA</a></h1>
+  <div id="app" data-page="contrat">
 
-  <div id="status-container">
-    <div id="status">Chargement...</div>
-    <button id="logoutBtn">Se déconnecter</button>
+    <!-- component:Header -->
+    <header>
+      <h1>
+        <a href="index.html" style="color: inherit; text-decoration: none;">
+          <strong>NEXUM</strong>PHARMA
+        </a>
+      </h1>
+    </header>
+
+    <!-- component:Status -->
+    <div id="status-container" style="display: none;">
+      <div id="status">Chargement...</div>
+      <button id="logoutBtn">Se déconnecter</button>
+    </div>
+
+    <!-- component:Main -->
+    <main>
+      <h2>Contrat</h2>
+
+      <div id="progress">
+        <div id="step2" class="step">Génération du contrat PDF…</div>
+        <div id="step3" class="step">Envoi à OpenSign pour signature…</div>
+        <div id="step4" class="step">Document prêt à être signé !</div>
+      </div>
+
+      <div class="button-container" id="action-buttons">
+        <button id="prev-button" onclick="window.location.href='rib.html'">Précédent</button>
+        <a id="sign-button" href="#" target="_blank" style="display:none;">
+          <button>Signer le contrat</button>
+        </a>
+      </div>
+    </main>
+
+    <!-- component:Footer -->
+    <footer>
+      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
+    </footer>
   </div>
-
-  <h2>Contrat</h2>
-
-  <div id="progress">
-    <div id="step2" class="step">Génération du contrat PDF…</div>
-    <div id="step3" class="step">Envoi à OpenSign pour signature…</div>
-    <div id="step4" class="step">Document prêt à être signé !</div>
-  </div>
-
-  <div class="button-container" id="action-buttons">
-    <button id="prev-button" onclick="window.location.href='rib.html'">Précédent</button>
-    <a id="sign-button" href="#" target="_blank" style="display:none;">
-      <button>Signer le contrat</button>
-    </a>
-  </div>
-
-  <!-- Script principal : dépend de tout ce qui précède -->
-  <script>
-    const { SUPABASE_FUNCTION_BASE } = window.config;
-    const supabase = window.supabase;
-
-    const signButton = document.getElementById("sign-button");
-    const statusContainer = document.getElementById("status-container");
-    const statusText = document.getElementById("status");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const actionButtons = document.getElementById("action-buttons");
-
-    const step2 = document.getElementById("step2");
-    const step3 = document.getElementById("step3");
-    const step4 = document.getElementById("step4");
-
-    function normalizeUrl(url) {
-      if (!url.startsWith("http://") && !url.startsWith("https://")) {
-        return "https://" + url;
-      }
-      return url;
-    }
-
-    async function run() {
-      const authResult = await window.initAuthPage();
-      if (!authResult) return;
-
-      const { user, token } = authResult;
-
-      const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
-
-      const fields = record?.records?.[0]?.fields;
-      const recordId = record?.records?.[0]?.id;
-
-      if (!fields || !recordId) {
-        step2.className = "step visible error";
-        return;
-      }
-
-      const existingLink = fields["Lien contrat"];
-      const contratId = fields["Contrat ID"];
-
-      if (existingLink && contratId) {
-        const signUrl = normalizeUrl(existingLink);
-
-        const statusRes = await fetch(`${SUPABASE_FUNCTION_BASE}/get-signature-status`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ objectId: contratId })
-        });
-
-        const statusData = await statusRes.json();
-
-        if (statusRes.ok && statusData?.status === "completed") {
-          document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
-          signButton.querySelector("button").textContent = "Voir le contrat signé";
-          signButton.href = signUrl;
-          signButton.style.display = "inline-block";
-          actionButtons.style.display = "flex";
-          return;
-        }
-
-        step2.style.display = "none";
-        step3.style.display = "none";
-        step4.className = "step visible done";
-        signButton.href = signUrl;
-        signButton.style.display = "inline-block";
-        actionButtons.style.display = "flex";
-        return;
-      }
-
-      step2.className = "step visible pending";
-
-      const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ fields })
-      });
-
-      const pdfData = await pdfRes.json();
-      if (!pdfRes.ok || !pdfData?.success) {
-        step2.className = "step visible error";
-        return;
-      }
-
-      step2.className = "step visible done";
-      step3.className = "step visible pending";
-
-      const recipient = {
-        email: fields["Mail du titulaire"] || user.email,
-        name: `${fields["Prénom"] || "Titulaire"} ${fields["Nom"] || ""}`.trim(),
-        phone: fields["Portable du titulaire"] || ""
-      };
-
-      const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          pdfBase64: pdfData.pdfBase64,
-          recipient
-        })
-      });
-
-      const signData = await signRes.json();
-      const openSignUrl =
-        signData?.iframeUrl ||
-        signData?.openSignResponse?.signurl?.[0]?.url ||
-        null;
-
-      const docId = signData?.documentId || null;
-
-      if (signRes.ok && openSignUrl && docId) {
-        await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            id: recordId,
-            fields: {
-              "Lien contrat": openSignUrl,
-              "Contrat ID": docId
-            }
-          })
-        });
-
-        step3.className = "step visible done";
-        step4.className = "step visible done";
-        signButton.href = normalizeUrl(openSignUrl);
-        signButton.style.display = "inline-block";
-        actionButtons.style.display = "flex";
-      } else {
-        step3.className = "step visible error";
-        step4.className = "step visible error";
-      }
-    }
-
-    logoutBtn.addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      alert("Déconnecté.");
-      window.location.href = "connexion.html";
-    });
-
-    run();
-  </script>
 </body>
 </html>
