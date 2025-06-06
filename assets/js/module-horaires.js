@@ -1,7 +1,7 @@
 // module-horaires.js
 
-// DOM Ready
-const style = document.createElement('style');
+// Inject styles
+const style = document.createElement("style");
 style.textContent = `
 #module-horaires { max-width: 1000px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
 .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
@@ -61,16 +61,10 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-// DOM Ready
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const moduleWrapper = document.getElementById("moduleContainer");
-  const { user } = await initAuthPage();
-  if (!user) return;
-
-  moduleWrapper.style.display = "block";
-
+document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("module-horaires");
+  if (!container) return;
+
   container.innerHTML = `
     <div class="tabs">
       <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
@@ -90,27 +84,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
   `;
 
+  // Init Flatpickr
   flatpickr.localize(flatpickr.l10ns.fr);
   flatpickr("#date-exception-start", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
   flatpickr("#date-exception-end", { dateFormat: "d/m/Y", locale: "fr", allowInput: true });
 
-  function initFlatpickrHeure(input) {
-    return flatpickr(input, {
-      enableTime: true,
-      noCalendar: true,
-      dateFormat: "H:i",
-      time_24hr: true,
-      locale: "fr",
-      allowInput: true,
-    });
-  }
-
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      button.classList.add('active');
-      document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+  // Tabs
+  document.querySelectorAll(".tab-button").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      button.classList.add("active");
+      document.getElementById(`tab-${button.dataset.tab}`).classList.add("active");
     });
   });
 
@@ -123,8 +108,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const endInput = document.getElementById("date-exception-end");
     const start = flatpickr.parseDate(startInput.value, "d/m/Y");
     const end = flatpickr.parseDate(endInput.value, "d/m/Y");
-
-    if (!start || !end || start > end) return alert("Veuillez renseigner une plage de dates valide");
+    if (!start || !end || start > end) {
+      alert("Veuillez renseigner une plage de dates valide");
+      return;
+    }
 
     const formatFR = d => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 
@@ -150,6 +137,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     endInput.value = "";
   });
 });
+
+// Fonctions utilitaires
+
+function initFlatpickrHeure(input) {
+  return flatpickr(input, {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true,
+    locale: "fr",
+    allowInput: true
+  });
+}
 
 function creerBlocJour(jour, parentContainer, isException = false) {
   const container = document.createElement("div");
