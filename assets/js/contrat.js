@@ -1,6 +1,5 @@
 const supabase = window.supabase;
 const SUPABASE_FUNCTION_BASE = window.config.SUPABASE_FUNCTION_BASE;
-const checkAndRestoreSessionFromURL = window.checkAndRestoreSessionFromURL;
 const logout = window.logout;
 
 const signButton = document.getElementById("sign-button");
@@ -24,11 +23,10 @@ function setStepStatus(stepElement, status) {
   stepElement.classList.add("visible");
   stepElement.classList.remove("pending", "done", "error");
   if (status) stepElement.classList.add(status);
+  console.log(`⏱ Étape [${stepElement.id}] → ${status}`);
 }
 
 async function run() {
-
-
   const { data: { user }, error } = await supabase.auth.getUser();
   if (!user || error) {
     window.location.href = "connexion.html";
