@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function uploadFile(file) {
     if (file.size > 5 * 1024 * 1024) {
-      invalide("ribFile", "Le fichier dépasse 5 Mo.");
+      invalide("ribFile", "Le fichier dépasse 5 Mo");
       return null;
     }
 
