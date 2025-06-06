@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Contrat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Global CSS -->
   <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <!-- Supabase + Auth -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
   <script src="../assets/js/config.js" defer></script>
   <script src="../assets/js/auth.js" defer></script>
@@ -23,36 +26,27 @@
     </header>
 
     <!-- component:Status -->
-    <div id="status-container" style="display: none;">
+    <div id="status-container" style="display: none;" class="status-container">
       <div id="status">Chargement...</div>
-      <button id="logoutBtn">Se déconnecter</button>
+      <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
     </div>
 
     <!-- component:Main -->
-<main>
-  <div class="content">
-    <h2>Contrat</h2>
-
-    <div id="progress">
-      <div id="step2" class="step">Génération du contrat PDF…</div>
-      <div id="step3" class="step">Envoi à OpenSign pour signature…</div>
-      <div id="step4" class="step">Document prêt à être signé !</div>
-    </div>
-
-    <div class="button-container" id="action-buttons">
-      <button id="prev-button" onclick="window.location.href='rib.html'">Précédent</button>
-      <a id="sign-button" href="#" target="_blank" style="display:none;">
-        <button>Signer le contrat</button>
-      </a>
-    </div>
-  </div>
-</main>
-
+    <main>
+      <div id="contrat-container" style="display: none;">
+        <h2>Signature du contrat</h2>
+        <p id="message"></p>
+        <div id="actions-container" class="button-container" style="margin-top: 2rem;">
+          <button id="actionBtn" type="button">Chargement...</button>
+        </div>
+      </div>
+    </main>
 
     <!-- component:Footer -->
     <footer>
       <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
     </footer>
+
   </div>
 </body>
 </html>
