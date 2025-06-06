@@ -1,5 +1,7 @@
-import { supabase, checkAndRestoreSessionFromURL, logout } from '../assets/js/auth.js';
-import { SUPABASE_FUNCTION_BASE } from '../assets/js/config.js';
+const supabase = window.supabase;
+const SUPABASE_FUNCTION_BASE = window.config.SUPABASE_FUNCTION_BASE;
+const checkAndRestoreSessionFromURL = window.checkAndRestoreSessionFromURL;
+const logout = window.logout;
 
 const signButton = document.getElementById("sign-button");
 const statusContainer = document.getElementById("status-container");
