@@ -27,7 +27,7 @@ function setStepStatus(stepElement, status) {
 }
 
 async function run() {
-  await supabase.auth.getSessionFromUrl();
+
 
   const { data: { user }, error } = await supabase.auth.getUser();
   if (!user || error) {
