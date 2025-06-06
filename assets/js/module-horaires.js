@@ -63,7 +63,13 @@ document.head.appendChild(style);
 
 // DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("horairesForm").style.display = "block";
+  const form = document.getElementById("horairesForm");
+  if (!form) {
+    console.warn("Le formulaire 'horairesForm' est introuvable.");
+    return;
+  }
+
+  form.style.display = "block";
 
   const container = document.getElementById("module-horaires");
   container.innerHTML = `
