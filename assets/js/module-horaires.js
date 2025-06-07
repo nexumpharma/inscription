@@ -601,10 +601,11 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
       'Content-Type': 'application/json',
         'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session.access_token}`,
     },
-    body: JSON.stringify({
-      id: pharmacieId,
-      horaires: data,
-    })
+body: JSON.stringify({
+  id: pharmacieId,
+  fields: { horaires: data }
+})
+
   })
     .then(res => {
       if (!res.ok) throw new Error("Erreur HTTP " + res.status);
