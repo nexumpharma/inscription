@@ -61,100 +61,7 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-// DOM Ready
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("horairesForm");
-  if (!form) {
-    console.warn("Le formulaire 'horairesForm' est introuvable.");
-    return;
-  }
-
-  form.style.display = "block";
-
-  const container = document.getElementById("module-horaires");
-  container.innerHTML = `
-    <div class="tabs">
-      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
-      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
-    </div>
-    <div class="tab-content active" id="tab-habituels">
-      <div id="horaires-habituels"></div>
-    </div>
-    <div class="tab-content" id="tab-exceptionnels">
-      <div class="exception-controls">
-        <strong>Plage de dates :</strong>
-        <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au
-        <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
-        <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
-      </div>
-      <div id="exceptions-list"></div>
-    </div>
-  `;
-
-  flatpickr.localize(flatpickr.l10ns.fr);
-  flatpickr("#date-exception-start", {
-    dateFormat: "d/m/Y",
-    locale: "fr",
-    allowInput: true,
-    defaultDate: "today"
-  });
-  flatpickr("#date-exception-end", {
-    dateFormat: "d/m/Y",
-    locale: "fr",
-    allowInput: true,
-    defaultDate: "today"
-  });
-
-  document.querySelectorAll(".tab-button").forEach(button => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
-      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-      button.classList.add("active");
-      document.getElementById(`tab-${button.dataset.tab}`).classList.add("active");
-    });
-  });
-
-  const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-  const horairesContainer = document.getElementById("horaires-habituels");
-  jours.forEach(jour => creerBlocJour(jour, horairesContainer));
-
-  document.getElementById("ajouter-exception").addEventListener("click", () => {
-    const startInput = document.getElementById("date-exception-start");
-    const endInput = document.getElementById("date-exception-end");
-    const start = flatpickr.parseDate(startInput.value, "d/m/Y");
-    const end = flatpickr.parseDate(endInput.value, "d/m/Y");
-    if (!start || !end || start > end) {
-      alert("Veuillez renseigner une plage de dates valide");
-      return;
-    }
-
-    const formatFR = d => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
-
-    const container = document.createElement("div");
-    container.className = "exception-container";
-    const range = document.createElement("div");
-    range.innerHTML = `<strong>Exception du ${formatFR(start)} au ${formatFR(end)}</strong>
-      <button onclick='this.parentNode.parentNode.remove()'>Supprimer</button>`;
-    container.appendChild(range);
-
-    const horaires = document.createElement("div");
-    horaires.className = "horaires-exceptions";
-    let current = new Date(start);
-    while (current <= end) {
-      const jour = current.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
-      creerBlocJour(jour, horaires, true);
-      current.setDate(current.getDate() + 1);
-    }
-
-    container.appendChild(horaires);
-    document.getElementById("exceptions-list").appendChild(container);
-    startInput.value = "";
-    endInput.value = "";
-  });
-});
-
 // Utilitaires
-
 function initFlatpickrHeure(input) {
   return flatpickr(input, {
     enableTime: true,
@@ -164,6 +71,21 @@ function initFlatpickrHeure(input) {
     locale: "fr",
     allowInput: true
   });
+}
+
+function makePlage(container, debut = "", fin = "") {
+  const div = document.createElement("div");
+  div.className = "plage";
+  div.innerHTML = `
+    <input type='text' class='heure' value='${debut}' placeholder="HH:MM">
+    <span>à</span>
+    <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
+    <button type='button' title="Supprimer cette plage">❌</button>
+  `;
+
+  div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
+  div.querySelector("button").onclick = () => div.remove();
+  return div;
 }
 
 function creerBlocJour(jour, parentContainer, isException = false) {
@@ -212,17 +134,104 @@ function creerBlocJour(jour, parentContainer, isException = false) {
   parentContainer.appendChild(container);
 }
 
-function makePlage(container, debut = "", fin = "") {
-  const div = document.createElement("div");
-  div.className = "plage";
-  div.innerHTML = `
-    <input type='text' class='heure' value='${debut}' placeholder="HH:MM">
-    <span>à</span>
-    <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
-    <button type='button' title="Supprimer cette plage">❌</button>
+// DOM Ready
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof flatpickr === "undefined") {
+    console.warn("flatpickr non défini !");
+    return;
+  }
+
+  const form = document.getElementById("horairesForm");
+  if (form) form.style.display = "block";
+
+  const container = document.getElementById("module-horaires");
+  if (!container) {
+    console.warn("module-horaires introuvable");
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="tabs">
+      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
+      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
+    </div>
+    <div class="tab-content active" id="tab-habituels">
+      <div id="horaires-habituels"></div>
+    </div>
+    <div class="tab-content" id="tab-exceptionnels">
+      <div class="exception-controls">
+        <strong>Plage de dates :</strong>
+        <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au
+        <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
+        <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
+      </div>
+      <div id="exceptions-list"></div>
+    </div>
   `;
 
-  div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
-  div.querySelector("button").onclick = () => div.remove();
-  return div;
-}
+  flatpickr.localize(flatpickr.l10ns.fr);
+  const pickerStart = flatpickr("#date-exception-start", {
+    dateFormat: "d/m/Y",
+    locale: "fr",
+    allowInput: true,
+    defaultDate: "today"
+  });
+  const pickerEnd = flatpickr("#date-exception-end", {
+    dateFormat: "d/m/Y",
+    locale: "fr",
+    allowInput: true,
+    defaultDate: "today"
+  });
+
+  const parseDate = pickerStart.config.parseDate;
+
+  document.querySelectorAll(".tab-button").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      button.classList.add("active");
+      document.getElementById(`tab-${button.dataset.tab}`).classList.add("active");
+    });
+  });
+
+  const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+  const horairesContainer = document.getElementById("horaires-habituels");
+  jours.forEach(jour => creerBlocJour(jour, horairesContainer));
+
+  document.getElementById("ajouter-exception").addEventListener("click", () => {
+    const startInput = document.getElementById("date-exception-start");
+    const endInput = document.getElementById("date-exception-end");
+    const start = parseDate(startInput.value, "d/m/Y");
+    const end = parseDate(endInput.value, "d/m/Y");
+
+    if (!start || !end || start > end) {
+      alert("Veuillez renseigner une plage de dates valide");
+      return;
+    }
+
+    const formatFR = d => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+    const container = document.createElement("div");
+    container.className = "exception-container";
+    const range = document.createElement("div");
+    range.innerHTML = `<strong>Exception du ${formatFR(start)} au ${formatFR(end)}</strong>
+      <button onclick='this.parentNode.parentNode.remove()'>Supprimer</button>`;
+    container.appendChild(range);
+
+    const horaires = document.createElement("div");
+    horaires.className = "horaires-exceptions";
+    let current = new Date(start);
+    while (current <= end) {
+      const jour = current.toLocaleDateString("fr-FR", {
+        weekday: "long", day: "2-digit", month: "2-digit", year: "numeric"
+      });
+      creerBlocJour(jour, horaires, true);
+      current.setDate(current.getDate() + 1);
+    }
+
+    container.appendChild(horaires);
+    document.getElementById("exceptions-list").appendChild(container);
+    startInput.value = "";
+    endInput.value = "";
+  });
+});
