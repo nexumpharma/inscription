@@ -64,5 +64,16 @@
       <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
     </footer>
   </div>
+
+  <!-- ⚙️ Appel d'initAuthPage -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof initAuthPage === 'function') {
+        initAuthPage();
+      } else {
+        console.error("⚠️ initAuthPage non défini !");
+      }
+    });
+  </script>
 </body>
 </html>
