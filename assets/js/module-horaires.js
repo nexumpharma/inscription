@@ -532,25 +532,6 @@ if (data.fields?.horaires) {
   hydrateModuleFromJson(data.fields.horaires);
 }
 
-
-  if (!res.ok) {
-    console.error("❌ Impossible de récupérer les infos pharmacie");
-    return;
-  }
-
-const fullData = await res.json();
-const record = fullData.records?.[0];
-
-if (!record?.id) {
-  console.error("❌ ID pharmacie introuvable");
-  return;
-}
-
-pharmacieId = record.id;
-console.log("✅ ID pharmacie :", pharmacieId);
-
-if (record.fields?.horaires) {
-  hydrateModuleFromJson(record.fields.horaires);
 }
 
 
