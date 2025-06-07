@@ -3,7 +3,7 @@
 // Inject styles
 const style = document.createElement('style');
 style.textContent = `
-#module-horaires { max-width: 1000px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
+#module-horaires { max-width: 700px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
 .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
 .tab-button {
   padding: 0.5rem 1rem;
