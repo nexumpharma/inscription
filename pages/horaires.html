@@ -75,5 +75,30 @@
       }
     });
   </script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const tryShowForm = () => {
+      const user = window.supabase?.auth?.getUser?.();
+      if (user && typeof user.then === 'function') {
+        user.then(({ data }) => {
+          if (data?.user) {
+            document.getElementById("horairesForm").style.display = "block";
+          }
+        });
+      }
+    };
+
+    if (typeof initAuthPage === 'function') {
+      initAuthPage();
+      setTimeout(tryShowForm, 500); // ⏱ petit délai pour laisser le temps à Supabase
+    } else {
+      console.warn("initAuthPage manquant, affichage manuel forcé.");
+      tryShowForm();
+    }
+  });
+</script>
+
+
 </body>
 </html>
