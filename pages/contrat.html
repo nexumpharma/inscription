@@ -18,18 +18,10 @@
       max-width: 700px;
       font-weight: bold;
     }
-    .step.visible {
-      display: block;
-    }
-    .step.done {
-      border-left-color: green;
-    }
-    .step.error {
-      border-left-color: red;
-    }
-    .step.pending {
-      border-left-color: orange;
-    }
+    .step.visible { display: block; }
+    .step.done { border-left-color: green; }
+    .step.error { border-left-color: red; }
+    .step.pending { border-left-color: orange; }
   </style>
 
   <!-- Supabase + Auth -->
@@ -57,29 +49,14 @@
     </div>
 
     <!-- component:Steps -->
-    <div class="steps">
-      <div id="step2" class="step">📄 Génération du contrat...</div>
-      <div id="step3" class="step">✍️ Envoi à la signature...</div>
-      <div id="step4" class="step">🔏 Signature en cours ou terminée</div>
+    <div id="step2" class="step">Étape 2 – Récupération des infos pharmacie...</div>
+    <div id="step3" class="step">Étape 3 – Vérification du contrat existant...</div>
+    <div id="step4" class="step">Étape 4 – Préparation à la signature...</div>
+
+    <!-- 🔽 Bouton signer/voir -->
+    <div id="action-buttons" style="text-align:center; margin-top: 2rem; display:none;">
+      <button id="sign-button" class="button">Signer le contrat</button>
     </div>
-
-    <!-- component:Main -->
-    <main>
-      <div id="contrat-container" style="display: none;">
-        <h2>Signature du contrat</h2>
-        <p id="message"></p>
-        <div id="action-buttons" class="button-container" style="margin-top: 2rem; display: none;">
-          <a id="sign-button" class="button" href="#" target="_blank" style="display: none;">
-            Signer le contrat
-          </a>
-        </div>
-      </div>
-    </main>
-
-    <!-- component:Footer -->
-    <footer>
-      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
-    </footer>
 
   </div>
 </body>
