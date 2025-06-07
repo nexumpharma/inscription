@@ -61,6 +61,81 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
+// Chargement de l'utilisateur et des horaires depuis Supabase + Airtable
+window.addEventListener("DOMContentLoaded", async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !session.access_token) return console.warn("Non connecté");
+
+  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+    headers: { Authorization: `Bearer ${session.access_token}` }
+  });
+
+  const json = await res.json();
+  const record = json.records?.[0];
+  if (!record) return;
+
+  window._airtablePharmaId = record.id;
+
+  try {
+    const parsed = JSON.parse(record.fields?.horaires || "null");
+    if (parsed) {
+      hydrateModuleFromJson(parsed);
+    }
+  } catch (e) {
+    console.warn("Aucune donnée horaire à charger");
+  }
+});
+
+// Fonction d’enregistrement manuelle (ex: bouton "Enregistrer")
+async function enregistrerHoraires() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !session.access_token || !window._airtablePharmaId) return;
+
+  const payload = {
+    id: window._airtablePharmaId,
+    fields: {
+      horaires: JSON.stringify(window._horairesDraft || {})
+    }
+  };
+
+  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const json = await res.json();
+  console.log("Enregistrement réussi :", json);
+}
+
+// Déclenchement automatique (auto-save avec debounce)
+let autoSaveTimeout;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimeout);
+  autoSaveTimeout = setTimeout(() => {
+    console.log("Auto-save déclenché");
+    enregistrerHoraires();
+  }, 1500);
+}
+
+// Fonction d'hydratation du module depuis un JSON (à implémenter selon ta structure)
+function hydrateModuleFromJson(json) {
+  console.log("Hydratation du module avec les données :", json);
+  // À compléter selon ta structure : création des blocs jours, plages, exceptions...
+  // Exemples à venir si tu veux une structure précise
+}
+
+// 🔁 Exemple de modification à déclencher sur les interactions utilisateur
+// scheduleAutoSave(); à placer après chaque changement de plage, 24h, suppression...
+
+// ... (le reste de ton code reste inchangé après cette injection)
+
+// 👉 Tu dois maintenant continuer avec le reste du module-horaires.js (tout ton code précédemment présent à partir de l’injection HTML structurelle, Flatpickr, création des blocs jours, makePlage, etc.).
+// Tu peux copier-coller ce que tu avais avant cette intégration ici, sans modification.
+
 // Inject HTML structure
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("module-horaires");
