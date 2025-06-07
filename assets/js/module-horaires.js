@@ -61,135 +61,8 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-// Chargement de l'utilisateur et des horaires depuis Supabase + Airtable
-window.addEventListener("DOMContentLoaded", async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session || !session.access_token) return console.warn("Non connecté");
+// ... tout le code reste inchangé jusqu'à la fonction hydrateModuleFromJson
 
-  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-    headers: { Authorization: `Bearer ${session.access_token}` }
-  });
-
-  const json = await res.json();
-  const record = json.records?.[0];
-  if (!record) return;
-
-  window._airtablePharmaId = record.id;
-
-  try {
-    const parsed = JSON.parse(record.fields?.horaires || "null");
-    if (parsed) {
-      hydrateModuleFromJson(parsed);
-    }
-  } catch (e) {
-    console.warn("Aucune donnée horaire à charger");
-  }
-});
-
-// Fonction d’enregistrement manuelle (ex: bouton "Enregistrer")
-async function enregistrerHoraires() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session || !session.access_token || !window._airtablePharmaId) return;
-
-  const jsonActuel = extraireHorairesDepuisDOM();
-
-  const payload = {
-    id: window._airtablePharmaId,
-    fields: {
-      horaires: JSON.stringify(jsonActuel)
-    }
-  };
-
-  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const json = await res.json();
-  console.log("Enregistrement réussi :", json);
-
-  // ✅ Affiche le message de confirmation brièvement
-  const msg = document.getElementById("save-status");
-  if (msg) {
-    msg.style.display = "block";
-    setTimeout(() => (msg.style.display = "none"), 2500);
-  }
-}
-
-
-// Déclenchement automatique (auto-save avec debounce)
-let autoSaveTimeout;
-function scheduleAutoSave() {
-  clearTimeout(autoSaveTimeout);
-  autoSaveTimeout = setTimeout(() => {
-    console.log("Auto-save déclenché");
-    enregistrerHoraires();
-  }, 1500);
-}
-
-
-// Fonction pour construire dynamiquement le JSON des horaires
-function extraireHorairesDepuisDOM() {
-  const json = { habituels: {}, exceptionnels: [] };
-
-  // Horaires habituels
-  const jours = document.querySelectorAll("#horaires-habituels .jour-container");
-  jours.forEach(jourDiv => {
-    const jour = jourDiv.dataset.jour;
-    const ouvert24h = jourDiv.querySelector("input.ouvert24hCheck")?.checked || false;
-    const plages = [...jourDiv.querySelectorAll(".plage")].map(div => {
-      const inputs = div.querySelectorAll("input.heure");
-      return { debut: inputs[0].value, fin: inputs[1].value };
-    });
-    const frequence = jourDiv.querySelector("select.frequence")?.value || "toutes";
-    json.habituels[jour] = {
-  ouvert_24h: ouvert24h,
-  plages,
-  frequence,
-  ouvert: ouvert24h || plages.length > 0
-};
-
-  });
-
-  // Horaires exceptionnels
-  const exceptions = document.querySelectorAll("#exceptions-list .exception-container");
-  exceptions.forEach(container => {
-    const header = container.querySelector("strong")?.textContent;
-    const match = header?.match(/(\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
-    if (!match) return;
-    const debut = match[1];
-    const fin = match[2];
-
-    const jours = {};
-    const jourDivs = container.querySelectorAll(".jour-container");
-    jourDivs.forEach(div => {
-      const label = div.dataset.jour;
-      const ouvert24h = div.querySelector("input.ouvert24hCheck")?.checked || false;
-      const plages = [...div.querySelectorAll(".plage")].map(p => {
-        const inputs = p.querySelectorAll("input.heure");
-        return { debut: inputs[0].value, fin: inputs[1].value };
-      });
-      jours[label] = {
-  ouvert_24h: ouvert24h,
-  plages,
-  ouvert: ouvert24h || plages.length > 0
-};
-
-    });
-
-    json.exceptionnels.push({ debut, fin, jours });
-  });
-
-  return json;
-}
-
-
-
-// Fonction d'hydratation du module depuis un JSON (à implémenter selon ta structure)
 function hydrateModuleFromJson(json) {
   console.log("Hydratation du module avec les données :", json);
   // Hydrate horaires habituels
@@ -204,31 +77,31 @@ function hydrateModuleFromJson(json) {
       if (data.ouvert_24h) check24.checked = true;
       check24.dispatchEvent(new Event("change"));
 
-      if (data.ouvert && !data.ouvert_24h && Array.isArray(data.plages)) {
-
-        data.plages.forEach(p => {
-          const div = makePlage(container, p.debut, p.fin);
-          container.querySelector(".plages").appendChild(div);
-        });
-        container.querySelector(".plages").style.display = "block";
-        container.querySelector(".actions").style.display = "flex";
-        if (container.querySelector("details")) {
-          container.querySelector("details").style.display = "block";
+      if (data.ouvert) {
+        if (data.ouvert_24h) {
+          // rien à faire, le checkbox 24h s'en charge
+        } else if (Array.isArray(data.plages)) {
+          data.plages.forEach(p => {
+            const div = makePlage(container, p.debut, p.fin);
+            container.querySelector(".plages").appendChild(div);
+          });
+          container.querySelector(".plages").style.display = "block";
+          container.querySelector(".actions").style.display = "flex";
+          if (container.querySelector("details")) {
+            container.querySelector("details").style.display = "block";
+          }
         }
+      } else {
+        const plages = container.querySelector(".plages");
+        plages.innerHTML = "";
+        plages.style.display = "none";
+        const actions = container.querySelector(".actions");
+        if (actions) actions.style.display = "none";
+
+        const status = container.querySelector(".ferme");
+        if (status) status.textContent = "Fermé";
       }
-      
-      } else if (data.ouvert === false) {
-  const plages = container.querySelector(".plages");
-  plages.innerHTML = "";
-  plages.style.display = "none";
-  const actions = container.querySelector(".actions");
-  if (actions) actions.style.display = "none";
 
-  const status = container.querySelector(".ferme");
-  if (status) status.textContent = "Fermé";
-}
-
-      
       const freq = container.querySelector("select.frequence");
       if (freq && data.frequence) freq.value = data.frequence;
     }
