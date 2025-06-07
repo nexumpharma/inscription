@@ -508,6 +508,36 @@ container.insertBefore(status, container.querySelector('.plages'));
   });
 });
 
+let pharmacieId = null; // accessible globalement dans ce fichier
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const token = (await window.supabase.auth.getSession()).data.session.access_token;
+
+  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    console.error("❌ Impossible de récupérer les infos pharmacie");
+    return;
+  }
+
+  const data = await res.json();
+  pharmacieId = data?.id;
+
+  if (!pharmacieId) {
+    console.error("❌ ID pharmacie introuvable");
+    return;
+  }
+
+  console.log("✅ ID pharmacie :", pharmacieId);
+
+  // ➕ Ensuite on peut appeler hydrateModuleFromJson ici si tu veux pré-remplir :
+  if (data?.horaires) {
+    hydrateModuleFromJson(data.horaires);
+  }
+});
+
 
 function collectHoraires() {
   const result = { habituels: {}, exceptionnels: [] };
@@ -564,7 +594,10 @@ function enregistrerHoraires() {
 
 
 function sauvegarderDansAirtable(data, afficherMessage = false) {
-  const pharmacieId = window.pharmacieId; // doit être défini dans auth.js ou ailleurs
+  if (!pharmacieId) {
+  console.error("❌ pharmacieId non défini");
+  return;
+}
 
   fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
     method: 'POST',
