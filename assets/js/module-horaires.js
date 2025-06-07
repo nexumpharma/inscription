@@ -235,7 +235,57 @@ document.addEventListener("DOMContentLoaded", () => {
       <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
       <button type='button' title="Supprimer cette plage">❌</button>
     `;
-    div.querySelector("button").onclick = () => div.remove();
+    div.querySelector("button").onclick = () => {
+  div.remove();
+
+  const plages = container.querySelectorAll('.plage');
+  if (plages.length === 0) {
+    // Réaffiche le bouton init si besoin
+    const status = container.querySelector('.ferme');
+    if (status) container.insertBefore(status, container.querySelector('.plages'));
+    const initBtn = document.createElement("button");
+    initBtn.type = "button";
+    initBtn.textContent = "+ Ajouter une plage";
+    initBtn.onclick = () => {
+      initBtn.remove();
+      if (status) status.remove();
+      container.querySelector('.plages').appendChild(makePlage(container));
+      container.querySelector('.plages').style.display = "block";
+      container.querySelector('.actions').style.display = "flex";
+
+      const advanced = container.querySelector("details");
+      if (advanced) {
+        advanced.style.display = "block";
+        advanced.open = false;
+      }
+    };
+    container.insertBefore(initBtn, container.querySelector('.plages'));
+
+    // Cache le bloc options avancées
+    const advanced = container.querySelector("details");
+    if (advanced) {
+      advanced.style.display = "none";
+      advanced.open = false;
+    }
+
+    // Réinitialise le champ semaine
+    const freq = container.querySelector("select.frequence");
+    if (freq) {
+      freq.value = "toutes";
+    }
+
+    // Réinitialise la case 24h
+    const check24 = container.querySelector("input.ouvert24hCheck");
+    if (check24) {
+      check24.checked = false;
+    }
+
+    // Cache les actions (boutons + Ajouter une plage)
+    container.querySelector('.actions').style.display = "none";
+    container.querySelector('.plages').style.display = "none";
+  }
+};
+
     div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
     return div;
   }
