@@ -43,9 +43,7 @@ async function run() {
   const session = await window.supabase.auth.getSession();
   const token = session.data.session.access_token;
 
-  statusText.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
-  statusContainer.style.display = "flex";
-  logoutBtn.style.display = "inline-block";
+  
 
   const record = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
     headers: { Authorization: `Bearer ${token}` }
