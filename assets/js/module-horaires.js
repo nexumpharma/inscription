@@ -230,27 +230,48 @@ check24h.addEventListener("change", () => {
       toggle24h.dataset.alone = "true";
     }
 
-  } else {
-    // Retour à "Fermé"
-    status.textContent = "Fermé";
-
+} else {
+  // Retour à "Fermé"
+  status.textContent = "Fermé";
   if (!status.parentNode) {
     container.insertBefore(status, plages);
   }
-    
-    plages.style.display = "none";
-    actions.style.display = "none";
 
-    if (initBtn) initBtn.style.display = "inline-block";
+  plages.style.display = "none";
+  actions.style.display = "none";
 
-    // Replace le toggle dans les options avancées
-    if (toggle24h.dataset.alone === "true" && advanced) {
-      advanced.appendChild(toggle24h);
-      toggle24h.dataset.alone = "false";
-    }
-
-    if (advanced) advanced.style.display = "none";
+  // ✅ Recrée le bouton init s’il n’existe plus
+  let initBtn = container.querySelector(".init-ajouter");
+  if (!initBtn) {
+    initBtn = document.createElement("button");
+    initBtn.type = "button";
+    initBtn.className = "init-ajouter";
+    initBtn.textContent = "+ Ajouter une plage";
+    initBtn.onclick = () => {
+      initBtn.remove();
+      status.remove();
+      plages.appendChild(makePlage(container));
+      plages.style.display = "block";
+      actions.style.display = "flex";
+      if (advanced) {
+        advanced.style.display = "block";
+        advanced.open = false;
+      }
+    };
+    container.insertBefore(initBtn, plages);
+  } else {
+    initBtn.style.display = "inline-block";
   }
+
+  // Replace le toggle dans les options avancées
+  if (toggle24h.dataset.alone === "true" && advanced) {
+    advanced.appendChild(toggle24h);
+    toggle24h.dataset.alone = "false";
+  }
+
+  if (advanced) advanced.style.display = "none";
+}
+
 });
 
 
