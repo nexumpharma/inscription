@@ -535,18 +535,7 @@ if (data.fields?.horaires) {
 });
 
 
-  if (!pharmacieId) {
-    console.error("❌ ID pharmacie introuvable");
-    return;
-  }
 
-  console.log("✅ ID pharmacie :", pharmacieId);
-
-  // ➕ Ensuite on peut appeler hydrateModuleFromJson ici si tu veux pré-remplir :
-  if (data?.horaires) {
-    hydrateModuleFromJson(data.horaires);
-  }
-});
 
 
 function collectHoraires() {
@@ -603,13 +592,14 @@ function enregistrerHoraires() {
 }
 
 
-function sauvegarderDansAirtable(data, afficherMessage = false) {
+async function sauvegarderDansAirtable(data, afficherMessage = false) {
 
 
   fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+        'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session.access_token}`,
     },
     body: JSON.stringify({
       id: pharmacieId,
