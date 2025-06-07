@@ -62,8 +62,10 @@ label.toggle {
 document.head.appendChild(style);
 
 // Inject HTML structure
-const container = document.getElementById("module-horaires");
-if (container) {
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("module-horaires");
+  if (!container) return;
+
   container.innerHTML = `
     <div class="tabs">
       <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
@@ -83,33 +85,7 @@ if (container) {
     </div>
   `;
 
-  
-// ✅ Correction de la case à cocher "Ouvert 24h/24"
-document.addEventListener("change", (e) => {
-  if (e.target && e.target.classList.contains("toggle-24h")) {
-    const container = e.target.closest(".jour-container");
-    const plages = container.querySelector(".plages");
-    const actions = container.querySelector(".actions");
-    const status = container.querySelector(".ferme");
-    if (e.target.checked) {
-      plages.style.display = "none";
-      actions.style.display = "none";
-      status.style.display = "none";
-    } else {
-      if (plages.children.length > 0) {
-        plages.style.display = "block";
-        actions.style.display = "block";
-        status.style.display = "none";
-      } else {
-        plages.style.display = "none";
-        actions.style.display = "none";
-        status.style.display = "block";
-      }
-    }
-  }
-});
-
-// === Logique complète du module ===
+  // === Logique complète du module ===
   flatpickr.localize(flatpickr.l10ns.fr);
 
   flatpickr("#date-exception-start", {
@@ -208,7 +184,7 @@ document.addEventListener("change", (e) => {
       toggle24h.className = "toggle";
       check24h = document.createElement("input");
       check24h.type = "checkbox";
-      check24h.className = "toggle-24h";
+      check24h.className = "ouvert24hCheck";
       toggle24h.appendChild(check24h);
       toggle24h.append("Ouvert 24h/24");
 
@@ -259,21 +235,7 @@ document.addEventListener("change", (e) => {
       <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
       <button type='button' title="Supprimer cette plage">❌</button>
     `;
-div.querySelector("button").onclick = () => {
-  div.remove();
-  const plages = container.querySelector(".plages");
-  const actions = container.querySelector(".actions");
-  const status = container.querySelector(".ferme");
-
-  if (plages.children.length === 0) {
-    plages.style.display = "none";
-    actions.style.display = "none";
-    status.style.display = "block";
-    const advanced = container.querySelector("details");
-    if (advanced) advanced.style.display = "none";
-  }
-};
-
+    div.querySelector("button").onclick = () => div.remove();
     div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
     return div;
   }
@@ -315,4 +277,4 @@ div.querySelector("button").onclick = () => {
     startInput.value = "";
     endInput.value = "";
   });
-  }
+});
