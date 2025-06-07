@@ -195,7 +195,8 @@ check24h.addEventListener("change", () => {
   let status = container.querySelector(".ferme");
   const plages = container.querySelector(".plages");
   const actions = container.querySelector(".actions");
-  const initBtn = container.querySelector("button");
+  const initBtn = container.querySelector(".init-ajouter");
+
   const advanced = container.querySelector("details");
   const freq = container.querySelector("select.frequence");
 
@@ -278,6 +279,8 @@ check24h.addEventListener("change", () => {
     const initBtn = document.createElement("button");
     initBtn.type = "button";
     initBtn.textContent = "+ Ajouter une plage";
+    initBtn.className = "init-ajouter";
+
     initBtn.onclick = () => {
       initBtn.remove();
       status.remove();
