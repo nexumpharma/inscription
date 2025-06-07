@@ -507,3 +507,12 @@ container.insertBefore(status, container.querySelector('.plages'));
     endInput.value = "";
   });
 });
+
+function enregistrerHoraires() {
+  const data = collectHoraires();
+  console.log("➡️ Données à enregistrer :", data);
+  sauvegarderDansAirtable(data, true); // true = affichage du message "Enregistrement réussi"
+}
+
+// Pour que le bouton fonctionne même si le script est en module
+window.enregistrerHoraires = enregistrerHoraires;
