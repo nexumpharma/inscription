@@ -562,5 +562,34 @@ function enregistrerHoraires() {
   sauvegarderDansAirtable(data, true); // true = affichage du message "Enregistrement réussi"
 }
 
+
+function sauvegarderDansAirtable(data, afficherMessage = false) {
+  const pharmacieId = window.pharmacieId; // doit être défini dans auth.js ou ailleurs
+
+  fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id: pharmacieId,
+      horaires: data,
+    })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Erreur HTTP " + res.status);
+      return res.json();
+    })
+    .then(json => {
+      console.log("✅ Enregistrement réussi via Supabase :", json);
+      if (afficherMessage) alert("✅ Enregistrement effectué !");
+    })
+    .catch(err => {
+      console.error("❌ Erreur update-pharmacie :", err);
+      if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
+    });
+}
+
+
 // Pour que le bouton fonctionne même si le script est en module
 window.enregistrerHoraires = enregistrerHoraires;
