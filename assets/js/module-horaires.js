@@ -204,7 +204,8 @@ function hydrateModuleFromJson(json) {
       if (data.ouvert_24h) check24.checked = true;
       check24.dispatchEvent(new Event("change"));
 
-      if (!data.ouvert_24h && Array.isArray(data.plages)) {
+      if (data.ouvert && !data.ouvert_24h && Array.isArray(data.plages)) {
+
         data.plages.forEach(p => {
           const div = makePlage(container, p.debut, p.fin);
           container.querySelector(".plages").appendChild(div);
@@ -215,6 +216,19 @@ function hydrateModuleFromJson(json) {
           container.querySelector("details").style.display = "block";
         }
       }
+      
+      } else if (data.ouvert === false) {
+  const plages = container.querySelector(".plages");
+  plages.innerHTML = "";
+  plages.style.display = "none";
+  const actions = container.querySelector(".actions");
+  if (actions) actions.style.display = "none";
+
+  const status = container.querySelector(".ferme");
+  if (status) status.textContent = "Fermé";
+}
+
+      
       const freq = container.querySelector("select.frequence");
       if (freq && data.frequence) freq.value = data.frequence;
     }
