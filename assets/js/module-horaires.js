@@ -241,8 +241,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const plages = container.querySelectorAll('.plage');
   if (plages.length === 0) {
     // Réaffiche le bouton init si besoin
-    const status = container.querySelector('.ferme');
-    if (status) container.insertBefore(status, container.querySelector('.plages'));
+// Réaffiche le texte "Fermé"
+let status = container.querySelector('.ferme');
+if (!status) {
+  status = document.createElement("div");
+  status.className = "ferme";
+  status.textContent = "Fermé";
+}
+container.insertBefore(status, container.querySelector('.plages'));
+
     const initBtn = document.createElement("button");
     initBtn.type = "button";
     initBtn.textContent = "+ Ajouter une plage";
