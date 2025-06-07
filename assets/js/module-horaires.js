@@ -146,7 +146,13 @@ function extraireHorairesDepuisDOM() {
       return { debut: inputs[0].value, fin: inputs[1].value };
     });
     const frequence = jourDiv.querySelector("select.frequence")?.value || "toutes";
-    json.habituels[jour] = { ouvert_24h: ouvert24h, plages, frequence };
+    json.habituels[jour] = {
+  ouvert_24h: ouvert24h,
+  plages,
+  frequence,
+  ouvert: ouvert24h || plages.length > 0
+};
+
   });
 
   // Horaires exceptionnels
@@ -167,7 +173,12 @@ function extraireHorairesDepuisDOM() {
         const inputs = p.querySelectorAll("input.heure");
         return { debut: inputs[0].value, fin: inputs[1].value };
       });
-      jours[label] = { ouvert_24h: ouvert24h, plages };
+      jours[label] = {
+  ouvert_24h: ouvert24h,
+  plages,
+  ouvert: ouvert24h || plages.length > 0
+};
+
     });
 
     json.exceptionnels.push({ debut, fin, jours });
