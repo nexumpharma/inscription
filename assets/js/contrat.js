@@ -80,11 +80,12 @@ async function run() {
     const statusData = await statusRes.json();
 
     if (statusRes.ok && statusData?.status === "completed") {
-      document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
-      signButton.querySelector("button").textContent = "Voir le contrat signé";
-      signButton.href = signUrl;
-      signButton.style.display = "inline-block";
-      actionButtons.style.display = "flex";
+setStepStatus(step2, "done");
+step2.innerHTML = "✅ Contrat déjà signé.";
+signButton.querySelector("button").textContent = "Voir le contrat signé";
+signButton.href = signUrl;
+signButton.style.display = "inline-block";
+actionButtons.style.display = "flex";
       return;
     }
 
