@@ -1,3 +1,5 @@
+//penser à refacto l'auth
+
 const supabase = window.supabase;
 const SUPABASE_FUNCTION_BASE = window.config.SUPABASE_FUNCTION_BASE;
 const logout = window.logout;
