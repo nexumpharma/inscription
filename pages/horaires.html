@@ -2,30 +2,27 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Horaires d'ouverture</title>
-
-  <!-- Global CSS -->
+  <title>Horaires</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
 
-  <!-- Flatpickr CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css" />
 
-  <!-- Supabase + Config + Auth -->
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-  <script src="../assets/js/config.js" defer></script>
-  <script src="../assets/js/auth.js" defer></script>
 
-  <!-- Flatpickr JS -->
+  <!-- Flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
 
-  <!-- Module JS -->
+  <!-- Config + Auth -->
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
   <script src="../assets/js/module-horaires.js" defer></script>
 </head>
-
 <body>
-  <div id="app" data-page="horaires">
+  <div id="app" data-page="horaires" style="display: none;">
 
     <!-- component:Header -->
     <header>
@@ -37,26 +34,15 @@
     </header>
 
     <!-- component:Status -->
-    <div id="status-container" style="display: none;">
+    <div id="status-container" class="status-container">
       <div id="status">Chargement...</div>
-      <button id="logoutBtn">Se déconnecter</button>
+      <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
     </div>
 
     <!-- component:Main -->
     <main>
-      <form id="horairesForm" novalidate style="display: none;">
-        <h2>Horaires d'ouverture</h2>
-
-        <!-- Injection JS dynamique ici -->
-        <div class="form-container">
-          <div id="module-horaires"></div>
-        </div>
-
-        <div class="button-container">
-          <span style="flex: 1;"></span>
-          <button class="suivantBtn" type="submit">Suivant</button>
-        </div>
-      </form>
+      <h2>Horaires d'ouverture</h2>
+      <div id="module-horaires"></div>
     </main>
 
     <!-- component:Footer -->
@@ -65,40 +51,13 @@
     </footer>
   </div>
 
-  <!-- ⚙️ Appel d'initAuthPage -->
+  <!-- Initialisation de l'authentification -->
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      if (typeof initAuthPage === 'function') {
-        initAuthPage();
-      } else {
-        console.error("⚠️ initAuthPage non défini !");
-      }
+    window.addEventListener("DOMContentLoaded", async () => {
+      const { user } = await window.initAuthPage();
+      if (!user) return;
+      document.getElementById("app").style.display = "block";
     });
   </script>
-
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const tryShowForm = () => {
-      const user = window.supabase?.auth?.getUser?.();
-      if (user && typeof user.then === 'function') {
-        user.then(({ data }) => {
-          if (data?.user) {
-            document.getElementById("horairesForm").style.display = "block";
-          }
-        });
-      }
-    };
-
-    if (typeof initAuthPage === 'function') {
-      initAuthPage();
-      setTimeout(tryShowForm, 500); // ⏱ petit délai pour laisser le temps à Supabase
-    } else {
-      console.warn("initAuthPage manquant, affichage manuel forcé.");
-      tryShowForm();
-    }
-  });
-</script>
-
-
 </body>
 </html>
