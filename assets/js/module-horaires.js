@@ -233,6 +233,10 @@ check24h.addEventListener("change", () => {
     // Retour à "Fermé"
     status.textContent = "Fermé";
 
+  if (!status.parentNode) {
+    container.insertBefore(status, plages);
+  }
+    
     plages.style.display = "none";
     actions.style.display = "none";
 
