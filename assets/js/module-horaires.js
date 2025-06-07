@@ -532,7 +532,7 @@ if (data.fields?.horaires) {
   hydrateModuleFromJson(data.fields.horaires);
 }
 
-}
+});
 
 
   if (!pharmacieId) {
