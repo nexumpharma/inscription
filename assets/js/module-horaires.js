@@ -85,7 +85,33 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // === Logique complète du module ===
+  
+// ✅ Correction de la case à cocher "Ouvert 24h/24"
+document.addEventListener("change", (e) => {
+  if (e.target && e.target.classList.contains("toggle-24h")) {
+    const container = e.target.closest(".jour-container");
+    const plages = container.querySelector(".plages");
+    const actions = container.querySelector(".actions");
+    const status = container.querySelector(".ferme");
+    if (e.target.checked) {
+      plages.style.display = "none";
+      actions.style.display = "none";
+      status.style.display = "none";
+    } else {
+      if (plages.children.length > 0) {
+        plages.style.display = "block";
+        actions.style.display = "block";
+        status.style.display = "none";
+      } else {
+        plages.style.display = "none";
+        actions.style.display = "none";
+        status.style.display = "block";
+      }
+    }
+  }
+});
+
+// === Logique complète du module ===
   flatpickr.localize(flatpickr.l10ns.fr);
 
   flatpickr("#date-exception-start", {
