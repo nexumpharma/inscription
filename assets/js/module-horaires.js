@@ -208,7 +208,7 @@ document.addEventListener("change", (e) => {
       toggle24h.className = "toggle";
       check24h = document.createElement("input");
       check24h.type = "checkbox";
-      check24h.className = "ouvert24hCheck";
+      check24h.className = "toggle-24h";
       toggle24h.appendChild(check24h);
       toggle24h.append("Ouvert 24h/24");
 
@@ -259,7 +259,21 @@ document.addEventListener("change", (e) => {
       <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
       <button type='button' title="Supprimer cette plage">❌</button>
     `;
-    div.querySelector("button").onclick = () => div.remove();
+div.querySelector("button").onclick = () => {
+  div.remove();
+  const plages = container.querySelector(".plages");
+  const actions = container.querySelector(".actions");
+  const status = container.querySelector(".ferme");
+
+  if (plages.children.length === 0) {
+    plages.style.display = "none";
+    actions.style.display = "none";
+    status.style.display = "block";
+    const advanced = container.querySelector("details");
+    if (advanced) advanced.style.display = "none";
+  }
+};
+
     div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
     return div;
   }
