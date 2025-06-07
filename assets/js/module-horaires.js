@@ -124,17 +124,66 @@ function scheduleAutoSave() {
 // Fonction d'hydratation du module depuis un JSON (à implémenter selon ta structure)
 function hydrateModuleFromJson(json) {
   console.log("Hydratation du module avec les données :", json);
-  // À compléter selon ta structure : création des blocs jours, plages, exceptions...
-  // Exemples à venir si tu veux une structure précise
+  // Hydrate horaires habituels
+  if (json.habituels) {
+    const horairesContainer = document.getElementById("horaires-habituels");
+    horairesContainer.innerHTML = "";
+    for (const jour in json.habituels) {
+      const data = json.habituels[jour];
+      const container = creerBlocJour(jour, horairesContainer);
+
+      const check24 = container.querySelector("input.ouvert24hCheck");
+      if (data.ouvert_24h) check24.checked = true;
+      check24.dispatchEvent(new Event("change"));
+
+      if (!data.ouvert_24h && Array.isArray(data.plages)) {
+        data.plages.forEach(p => {
+          const div = makePlage(container, p.debut, p.fin);
+          container.querySelector(".plages").appendChild(div);
+        });
+        container.querySelector(".plages").style.display = "block";
+        container.querySelector(".actions").style.display = "flex";
+        if (container.querySelector("details")) {
+          container.querySelector("details").style.display = "block";
+        }
+      }
+      const freq = container.querySelector("select.frequence");
+      if (freq && data.frequence) freq.value = data.frequence;
+    }
+  }
+
+  // Hydrate horaires exceptionnels
+  if (Array.isArray(json.exceptionnels)) {
+    json.exceptionnels.forEach(({ debut, fin, jours }) => {
+      document.getElementById("date-exception-start").value = debut;
+      document.getElementById("date-exception-end").value = fin;
+      document.getElementById("ajouter-exception").click();
+      const blocks = [...document.querySelectorAll("#exceptions-list .exception-container")].pop();
+      if (!blocks) return;
+      const allDays = blocks.querySelectorAll(".jour-container");
+      allDays.forEach(container => {
+        const jour = container.dataset.jour;
+        const def = jours[jour];
+        if (!def) return;
+        const check24 = container.querySelector("input.ouvert24hCheck");
+        if (def.ouvert_24h) check24.checked = true;
+        check24.dispatchEvent(new Event("change"));
+        if (!def.ouvert_24h && Array.isArray(def.plages)) {
+          def.plages.forEach(p => {
+            const div = makePlage(container, p.debut, p.fin);
+            container.querySelector(".plages").appendChild(div);
+          });
+          container.querySelector(".plages").style.display = "block";
+          container.querySelector(".actions").style.display = "flex";
+        }
+      });
+    });
+  }
 }
 
-// 🔁 Exemple de modification à déclencher sur les interactions utilisateur
-// scheduleAutoSave(); à placer après chaque changement de plage, 24h, suppression...
+// 👉 Tu peux maintenant continuer avec le reste de ton module (injection HTML, Flatpickr, creerBlocJour, makePlage, etc.)
+// Assure-toi simplement d’appeler scheduleAutoSave() après chaque action utilisateur qui modifie les horaires.
 
-// ... (le reste de ton code reste inchangé après cette injection)
-
-// 👉 Tu dois maintenant continuer avec le reste du module-horaires.js (tout ton code précédemment présent à partir de l’injection HTML structurelle, Flatpickr, création des blocs jours, makePlage, etc.).
-// Tu peux copier-coller ce que tu avais avant cette intégration ici, sans modification.
 
 // Inject HTML structure
 document.addEventListener("DOMContentLoaded", () => {
