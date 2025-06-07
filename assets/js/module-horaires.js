@@ -182,28 +182,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
       toggle24h = document.createElement("label");
       toggle24h.className = "toggle";
+
+toggle24h.style.marginBottom = "1rem"; // un peu d’air
+toggle24h.dataset.alone = "false"; // pour savoir si elle est déplacée ou pas
+
+      
       check24h = document.createElement("input");
       check24h.type = "checkbox";
       check24h.className = "ouvert24hCheck";
 
 check24h.addEventListener("change", () => {
-  const status = container.querySelector(".ferme");
+  let status = container.querySelector(".ferme");
   const plages = container.querySelector(".plages");
   const actions = container.querySelector(".actions");
   const initBtn = container.querySelector("button");
   const advanced = container.querySelector("details");
   const freq = container.querySelector("select.frequence");
 
+  if (!status) {
+    status = document.createElement("div");
+    status.className = "ferme";
+    container.insertBefore(status, plages);
+  }
+
   if (check24h.checked) {
     // Affiche "Ouvert 24h/24"
-    if (status) status.textContent = "Ouvert 24h/24";
+    status.textContent = "Ouvert 24h/24";
 
     // Supprime toutes les plages
     plages.innerHTML = "";
     plages.style.display = "none";
     actions.style.display = "none";
 
-    // Cache le bouton "+ Ajouter une plage"
+    // Cache bouton ajouter
     if (initBtn) initBtn.style.display = "none";
 
     // Cache les options avancées
@@ -212,20 +223,31 @@ check24h.addEventListener("change", () => {
     // Réinitialise fréquence
     if (freq) freq.value = "toutes";
 
+    // Déplace le label toggle24h en dehors des options avancées si besoin
+    if (toggle24h.dataset.alone !== "true") {
+      container.appendChild(toggle24h);
+      toggle24h.dataset.alone = "true";
+    }
+
   } else {
-    // Retour à l'état initial : Fermé
-    if (status) status.textContent = "Fermé";
+    // Retour à "Fermé"
+    status.textContent = "Fermé";
 
     plages.style.display = "none";
     actions.style.display = "none";
 
-    // Réaffiche le bouton initial
     if (initBtn) initBtn.style.display = "inline-block";
 
-    // Cache options avancées tant que pas de plage
+    // Replace le toggle dans les options avancées
+    if (toggle24h.dataset.alone === "true" && advanced) {
+      advanced.appendChild(toggle24h);
+      toggle24h.dataset.alone = "false";
+    }
+
     if (advanced) advanced.style.display = "none";
   }
 });
+
 
       
       toggle24h.appendChild(check24h);
