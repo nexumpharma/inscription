@@ -1,6 +1,6 @@
-// module-horaires.js
+// module-horaires.js - Version complète avec options "Fermé", "24h/24", semaine paire/impaire
 
-// Inject styles
+// Inject styles dynamiquement
 const style = document.createElement("style");
 style.textContent = `
 #module-horaires { max-width: 1000px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
@@ -31,24 +31,12 @@ style.textContent = `
   padding: 1rem;
   margin-bottom: 1.5rem;
 }
-.plage { display: flex; gap: 1rem; margin-bottom: 0.5rem; }
-.plage input.heure { width: 120px; }
+.plage { display: flex; gap: 1rem; margin-bottom: 0.5rem; align-items: center; }
+.plage input.heure { width: 100px; }
+.plage select.frequence { margin-left: auto; }
 .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
 .ferme { color: #999; font-style: italic; margin: 0.5rem 0; }
-#module-horaires button {
-  background: #fff;
-  color: #000;
-  border: 1px solid #333;
-  cursor: pointer;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-}
-#module-horaires button:hover {
-  background: #f0f0f0;
-}
-label.toggle {
-  display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
-}
+label.toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
 .exception-container {
   border: 1px solid #ccc;
   padding: 1rem;
@@ -56,12 +44,10 @@ label.toggle {
   border-radius: 6px;
 }
 .exception-controls { margin-bottom: 1rem; }
-.exception-container input[type="text"].date {
-  margin-right: 0.5rem;
-}`;
+.exception-container input[type="text"].date { margin-right: 0.5rem; }
+`;
 document.head.appendChild(style);
 
-// Utilitaires
 function initFlatpickrHeure(input) {
   return flatpickr(input, {
     enableTime: true,
@@ -80,9 +66,13 @@ function makePlage(container, debut = "", fin = "") {
     <input type='text' class='heure' value='${debut}' placeholder="HH:MM">
     <span>à</span>
     <input type='text' class='heure' value='${fin}' placeholder="HH:MM">
+    <select class="frequence">
+      <option value="toutes">Toutes</option>
+      <option value="paire">Semaines paires</option>
+      <option value="impaire">Semaines impaires</option>
+    </select>
     <button type='button' title="Supprimer cette plage">❌</button>
   `;
-
   div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
   div.querySelector("button").onclick = () => div.remove();
   return div;
@@ -108,47 +98,60 @@ function creerBlocJour(jour, parentContainer, isException = false) {
   actions.className = "actions";
   actions.style.display = "none";
 
-  const addBtn = document.createElement("button");
-  addBtn.type = "button";
-  addBtn.textContent = "+ Ajouter une plage";
-  addBtn.onclick = () => {
+  const btnAdd = document.createElement("button");
+  btnAdd.textContent = "+ Ajouter une plage";
+  btnAdd.onclick = () => {
     plages.appendChild(makePlage(container));
     plages.style.display = "block";
     actions.style.display = "flex";
   };
 
-  actions.appendChild(addBtn);
+  const checkboxFermeture = document.createElement("label");
+  checkboxFermeture.className = "toggle";
+  checkboxFermeture.innerHTML = `<input type="checkbox" class="ferme-checkbox"> Fermé ce jour-là`;
 
-  const initBtn = document.createElement("button");
-  initBtn.type = "button";
-  initBtn.textContent = "+ Ajouter une plage";
-  initBtn.onclick = () => {
-    initBtn.remove();
-    status.remove();
-    plages.appendChild(makePlage(container));
-    plages.style.display = "block";
-    actions.style.display = "flex";
+  const checkbox24h = document.createElement("label");
+  checkbox24h.className = "toggle";
+  checkbox24h.innerHTML = `<input type="checkbox" class="ouvert24h-checkbox"> Ouvert 24h/24`;
+
+  const updateState = () => {
+    const isFerme = checkboxFermeture.querySelector("input").checked;
+    const is24h = checkbox24h.querySelector("input").checked;
+    if (isFerme) {
+      plages.innerHTML = "";
+      plages.style.display = "none";
+      actions.style.display = "none";
+      status.textContent = "Fermé";
+    } else if (is24h) {
+      plages.innerHTML = "";
+      plages.style.display = "none";
+      actions.style.display = "none";
+      status.textContent = "Ouvert 24h/24";
+    } else {
+      plages.style.display = plages.children.length ? "block" : "none";
+      actions.style.display = plages.children.length ? "flex" : "none";
+      status.textContent = "";
+    }
   };
 
-  container.append(title, status, initBtn, plages, actions);
+  checkboxFermeture.querySelector("input").addEventListener("change", updateState);
+  checkbox24h.querySelector("input").addEventListener("change", updateState);
+
+  actions.appendChild(btnAdd);
+
+  container.append(title, status, checkboxFermeture, checkbox24h, plages, actions);
   parentContainer.appendChild(container);
 }
 
 // DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
-  if (typeof flatpickr === "undefined") {
-    console.warn("flatpickr non défini !");
-    return;
-  }
+  if (typeof flatpickr === "undefined") return console.warn("flatpickr non chargé");
 
   const form = document.getElementById("horairesForm");
   if (form) form.style.display = "block";
 
   const container = document.getElementById("module-horaires");
-  if (!container) {
-    console.warn("module-horaires introuvable");
-    return;
-  }
+  if (!container) return;
 
   container.innerHTML = `
     <div class="tabs">
@@ -173,24 +176,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const pickerStart = flatpickr("#date-exception-start", {
     dateFormat: "d/m/Y",
     locale: "fr",
-    allowInput: true,
-    defaultDate: "today"
+    allowInput: true
   });
   const pickerEnd = flatpickr("#date-exception-end", {
     dateFormat: "d/m/Y",
     locale: "fr",
-    allowInput: true,
-    defaultDate: "today"
+    allowInput: true
   });
 
   const parseDate = pickerStart.config.parseDate;
 
-  document.querySelectorAll(".tab-button").forEach(button => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+  document.querySelectorAll(".tab-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-      button.classList.add("active");
-      document.getElementById(`tab-${button.dataset.tab}`).classList.add("active");
+      btn.classList.add("active");
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
     });
   });
 
@@ -222,9 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     horaires.className = "horaires-exceptions";
     let current = new Date(start);
     while (current <= end) {
-      const jour = current.toLocaleDateString("fr-FR", {
-        weekday: "long", day: "2-digit", month: "2-digit", year: "numeric"
-      });
+      const jour = current.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
       creerBlocJour(jour, horaires, true);
       current.setDate(current.getDate() + 1);
     }
