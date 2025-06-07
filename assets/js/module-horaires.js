@@ -185,6 +185,49 @@ document.addEventListener("DOMContentLoaded", () => {
       check24h = document.createElement("input");
       check24h.type = "checkbox";
       check24h.className = "ouvert24hCheck";
+
+check24h.addEventListener("change", () => {
+  const status = container.querySelector(".ferme");
+  const plages = container.querySelector(".plages");
+  const actions = container.querySelector(".actions");
+  const initBtn = container.querySelector("button");
+  const advanced = container.querySelector("details");
+  const freq = container.querySelector("select.frequence");
+
+  if (check24h.checked) {
+    // Affiche "Ouvert 24h/24"
+    if (status) status.textContent = "Ouvert 24h/24";
+
+    // Supprime toutes les plages
+    plages.innerHTML = "";
+    plages.style.display = "none";
+    actions.style.display = "none";
+
+    // Cache le bouton "+ Ajouter une plage"
+    if (initBtn) initBtn.style.display = "none";
+
+    // Cache les options avancées
+    if (advanced) advanced.style.display = "none";
+
+    // Réinitialise fréquence
+    if (freq) freq.value = "toutes";
+
+  } else {
+    // Retour à l'état initial : Fermé
+    if (status) status.textContent = "Fermé";
+
+    plages.style.display = "none";
+    actions.style.display = "none";
+
+    // Réaffiche le bouton initial
+    if (initBtn) initBtn.style.display = "inline-block";
+
+    // Cache options avancées tant que pas de plage
+    if (advanced) advanced.style.display = "none";
+  }
+});
+
+      
       toggle24h.appendChild(check24h);
       toggle24h.append("Ouvert 24h/24");
 
