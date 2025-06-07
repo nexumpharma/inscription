@@ -601,24 +601,35 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
       'Content-Type': 'application/json',
         'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session.access_token}`,
     },
-body: JSON.stringify({
+const payload = {
   id: pharmacieId,
   fields: { horaires: data }
+};
+console.log("📦 Payload envoyé à Supabase :", payload);
+
+fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session.access_token}`,
+  },
+  body: JSON.stringify(payload)
 })
+
 
   })
     .then(res => {
       if (!res.ok) throw new Error("Erreur HTTP " + res.status);
       return res.json();
     })
-    .then(json => {
-      console.log("✅ Enregistrement réussi via Supabase :", json);
-      if (afficherMessage) alert("✅ Enregistrement effectué !");
-    })
-    .catch(err => {
-      console.error("❌ Erreur update-pharmacie :", err);
-      if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
-    });
+.then(json => {
+  console.log("✅ Enregistrement réussi via Supabase :", json);
+  if (json.error) {
+    console.error("❌ Erreur retournée par Supabase :", json.error);
+  }
+  if (afficherMessage) alert("✅ Enregistrement effectué !");
+});
+
 }
 
 
