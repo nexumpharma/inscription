@@ -513,9 +513,25 @@ let pharmacieId = null; // accessible globalement dans ce fichier
 document.addEventListener("DOMContentLoaded", async () => {
   const token = (await window.supabase.auth.getSession()).data.session.access_token;
 
-  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+const fullData = await res.json();
+const data = fullData.records?.[0];
+if (!data?.id) {
+  console.error("❌ ID pharmacie introuvable");
+  return;
+}
+
+pharmacieId = data.id;
+console.log("✅ ID pharmacie :", pharmacieId);
+
+// Hydratation
+if (data.fields?.horaires) {
+  hydrateModuleFromJson(data.fields.horaires);
+}
+
 
   if (!res.ok) {
     console.error("❌ Impossible de récupérer les infos pharmacie");
