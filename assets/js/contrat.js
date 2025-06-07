@@ -1,4 +1,6 @@
-
+const supabase = window.supabase;
+const SUPABASE_FUNCTION_BASE = window.config.SUPABASE_FUNCTION_BASE;
+const logout = window.logout;
 
 const signButton = document.getElementById("sign-button");
 const statusContainer = document.getElementById("status-container");
@@ -33,19 +35,22 @@ function setStepStatus(stepElement, status) {
   console.log(`⏱ Étape [${stepElement.id}] → ${status}`);
 }
 
+
 async function run() {
-  const { data: { user }, error } = await window.supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
   if (!user || error) {
     window.location.href = "connexion.html";
     return;
   }
 
-  const session = await window.supabase.auth.getSession();
+  const session = await supabase.auth.getSession();
   const token = session.data.session.access_token;
 
-  
+  statusText.innerHTML = `✅ Connecté en tant que <strong>${user.email}</strong>`;
+  statusContainer.style.display = "flex";
+  logoutBtn.style.display = "inline-block";
 
-  const record = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+  const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
     headers: { Authorization: `Bearer ${token}` }
   }).then(r => r.json());
 
@@ -63,7 +68,7 @@ async function run() {
   if (existingLink && contratId) {
     const signUrl = normalizeUrl(existingLink);
 
-    const statusRes = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-signature-status`, {
+    const statusRes = await fetch(`${SUPABASE_FUNCTION_BASE}/get-signature-status`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -75,11 +80,12 @@ async function run() {
     const statusData = await statusRes.json();
 
     if (statusRes.ok && statusData?.status === "completed") {
-      document.getElementById("progress").innerHTML = "<p><strong>✅ Contrat déjà signé.</strong></p>";
-      signButton.querySelector("button").textContent = "Voir le contrat signé";
-      signButton.href = signUrl;
-      signButton.style.display = "inline-block";
-      actionButtons.style.display = "flex";
+setStepStatus(step2, "done");
+step2.innerHTML = "✅ Contrat déjà signé.";
+signButton.querySelector("button").textContent = "Voir le contrat signé";
+signButton.href = signUrl;
+signButton.style.display = "inline-block";
+actionButtons.style.display = "flex";
       return;
     }
 
@@ -94,7 +100,7 @@ async function run() {
 
   setStepStatus(step2, "pending");
 
-  const pdfRes = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
+  const pdfRes = await fetch(`${SUPABASE_FUNCTION_BASE}/trigger-google-pdf`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -118,7 +124,7 @@ async function run() {
     phone: fields["Portable du titulaire"] || ""
   };
 
-  const signRes = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
+  const signRes = await fetch(`${SUPABASE_FUNCTION_BASE}/create-signature-from-pdf`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -139,7 +145,7 @@ async function run() {
   const docId = signData?.documentId || null;
 
   if (signRes.ok && openSignUrl && docId) {
-    await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+    await fetch(`${SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -165,5 +171,5 @@ async function run() {
   }
 }
 
-logoutBtn.addEventListener("click", window.logout);
+logoutBtn.addEventListener("click", logout);
 run();
