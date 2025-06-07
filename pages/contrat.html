@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Contrat</title>
-
-  <!-- Global CSS -->
   <link rel="stylesheet" href="../assets/css/style.css" />
-
   <style>
     .step {
       display: none;
@@ -23,12 +20,6 @@
     .step.error { border-left-color: red; }
     .step.pending { border-left-color: orange; }
   </style>
-
-  <!-- Supabase + Auth -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-  <script src="../assets/js/config.js" defer></script>
-  <script src="../assets/js/auth.js" defer></script>
-  <script src="../assets/js/contrat.js" defer></script>
 </head>
 <body>
   <div id="app" data-page="contrat">
@@ -48,16 +39,38 @@
       <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
     </div>
 
-    <!-- component:Steps -->
-    <div id="step2" class="step">Étape 2 – Récupération des infos pharmacie...</div>
-    <div id="step3" class="step">Étape 3 – Vérification du contrat existant...</div>
-    <div id="step4" class="step">Étape 4 – Préparation à la signature...</div>
+    <!-- component:Main -->
+    <main>
+      <section id="progress">
+        <h2>Signature du contrat</h2>
 
-    <!-- 🔽 Bouton signer/voir -->
-    <div id="action-buttons" style="text-align:center; margin-top: 2rem; display:none;">
-      <button id="sign-button" class="button">Signer le contrat</button>
-    </div>
+        <div id="step2" class="step">📄 Génération du contrat en cours...</div>
+        <div id="step3" class="step">📬 Envoi du contrat pour signature...</div>
+        <div id="step4" class="step">📑 Prêt à signer !</div>
 
+        <!-- Bouton voir/signer -->
+        <a id="sign-button" class="button-link" style="display: none;" target="_blank">
+          <button>Signer le contrat</button>
+        </a>
+
+        <!-- Navigation -->
+        <div id="action-buttons" style="display: none; margin-top: 1rem;">
+          <a href="infos.html">← Modifier mes infos</a>
+          <a href="rib.html" style="margin-left: auto;">Étape suivante →</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- component:Footer -->
+    <footer>
+      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
+    </footer>
   </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
+  <script src="../assets/js/contrat.js" defer></script>
 </body>
 </html>
