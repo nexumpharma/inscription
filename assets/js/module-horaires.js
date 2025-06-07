@@ -62,10 +62,8 @@ label.toggle {
 document.head.appendChild(style);
 
 // Inject HTML structure
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("module-horaires");
-  if (!container) return;
-
+const container = document.getElementById("module-horaires");
+if (container) {
   container.innerHTML = `
     <div class="tabs">
       <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
