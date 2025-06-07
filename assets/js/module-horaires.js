@@ -604,10 +604,7 @@ function enregistrerHoraires() {
 
 
 function sauvegarderDansAirtable(data, afficherMessage = false) {
-  if (!pharmacieId) {
-  console.error("❌ pharmacieId non défini");
-  return;
-}
+
 
   fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
     method: 'POST',
