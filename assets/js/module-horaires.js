@@ -595,7 +595,8 @@ function enregistrerHoraires() {
 async function sauvegarderDansAirtable(data, afficherMessage = false) {
   const payload = {
     id: pharmacieId,
-    fields: { horaires: data }
+    fields: { horaires: JSON.stringify(data) }
+
   };
   console.log("📦 Payload envoyé à Supabase :", payload);
 
