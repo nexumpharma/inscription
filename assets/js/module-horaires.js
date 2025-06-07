@@ -91,10 +91,12 @@ async function enregistrerHoraires() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session || !session.access_token || !window._airtablePharmaId) return;
 
+  const jsonActuel = extraireHorairesDepuisDOM();
+
   const payload = {
     id: window._airtablePharmaId,
     fields: {
-      horaires: JSON.stringify(window._horairesDraft || {})
+      horaires: JSON.stringify(jsonActuel)
     }
   };
 
@@ -109,7 +111,15 @@ async function enregistrerHoraires() {
 
   const json = await res.json();
   console.log("Enregistrement réussi :", json);
+
+  // ✅ Affiche le message de confirmation brièvement
+  const msg = document.getElementById("save-status");
+  if (msg) {
+    msg.style.display = "block";
+    setTimeout(() => (msg.style.display = "none"), 2500);
+  }
 }
+
 
 // Déclenchement automatique (auto-save avec debounce)
 let autoSaveTimeout;
@@ -120,6 +130,53 @@ function scheduleAutoSave() {
     enregistrerHoraires();
   }, 1500);
 }
+
+
+// Fonction pour construire dynamiquement le JSON des horaires
+function extraireHorairesDepuisDOM() {
+  const json = { habituels: {}, exceptionnels: [] };
+
+  // Horaires habituels
+  const jours = document.querySelectorAll("#horaires-habituels .jour-container");
+  jours.forEach(jourDiv => {
+    const jour = jourDiv.dataset.jour;
+    const ouvert24h = jourDiv.querySelector("input.ouvert24hCheck")?.checked || false;
+    const plages = [...jourDiv.querySelectorAll(".plage")].map(div => {
+      const inputs = div.querySelectorAll("input.heure");
+      return { debut: inputs[0].value, fin: inputs[1].value };
+    });
+    const frequence = jourDiv.querySelector("select.frequence")?.value || "toutes";
+    json.habituels[jour] = { ouvert_24h: ouvert24h, plages, frequence };
+  });
+
+  // Horaires exceptionnels
+  const exceptions = document.querySelectorAll("#exceptions-list .exception-container");
+  exceptions.forEach(container => {
+    const header = container.querySelector("strong")?.textContent;
+    const match = header?.match(/(\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
+    if (!match) return;
+    const debut = match[1];
+    const fin = match[2];
+
+    const jours = {};
+    const jourDivs = container.querySelectorAll(".jour-container");
+    jourDivs.forEach(div => {
+      const label = div.dataset.jour;
+      const ouvert24h = div.querySelector("input.ouvert24hCheck")?.checked || false;
+      const plages = [...div.querySelectorAll(".plage")].map(p => {
+        const inputs = p.querySelectorAll("input.heure");
+        return { debut: inputs[0].value, fin: inputs[1].value };
+      });
+      jours[label] = { ouvert_24h: ouvert24h, plages };
+    });
+
+    json.exceptionnels.push({ debut, fin, jours });
+  });
+
+  return json;
+}
+
+
 
 // Fonction d'hydratation du module depuis un JSON (à implémenter selon ta structure)
 function hydrateModuleFromJson(json) {
