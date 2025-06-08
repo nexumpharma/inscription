@@ -591,7 +591,16 @@ console.log("✅ ID pharmacie :", pharmacieId);
 
 // Hydratation
 if (data.fields?.horaires) {
-  hydrateModuleFromJson(data.fields.horaires);
+  let horaires = data.fields.horaires;
+  if (typeof horaires === "string") {
+    try {
+      horaires = JSON.parse(horaires);
+    } catch (e) {
+      console.error("Impossible de parser les horaires", e);
+      horaires = null;
+    }
+  }
+  if (horaires) hydrateModuleFromJson(horaires);
 }
 
 });
