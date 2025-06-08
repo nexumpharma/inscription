@@ -125,7 +125,7 @@ function hydrateModuleFromJson(json) {
     }
   }
 
-  return;
+
   console.log("Hydratation du module avec les données :", json);
   // Hydrate horaires habituels
   if (json.habituels) {
