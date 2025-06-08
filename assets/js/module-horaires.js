@@ -65,68 +65,6 @@ document.head.appendChild(style);
 
 function hydrateModuleFromJson(json) {
   console.log("Hydratation du module avec les données :", json);
-
-  if (json.habituels) {
-    const horairesContainer = document.getElementById("horaires-habituels");
-    horairesContainer.innerHTML = "";
-
-    for (const jour in json.habituels) {
-      const data = json.habituels[jour];
-      const container = creerBlocJour(jour, horairesContainer);
-
-      const check24 = container.querySelector("input.ouvert24hCheck");
-      const label24 = container.querySelector("label.ouvert24hLabel");
-      const plages = container.querySelector(".plages");
-      const actions = container.querySelector(".actions");
-      const details = container.querySelector("details");
-      const ajouterPlageBtn = container.querySelector(".ajouter-plage-btn");
-      const fermeText = container.querySelector(".ferme");
-
-      if (data.ouvert) {
-        container.classList.remove("ferme");
-        container.classList.add("ouvert");
-        if (fermeText) fermeText.style.display = "none";
-
-        if (data.ouvert_24h) {
-          check24.checked = true;
-          plages.innerHTML = "";
-          plages.style.display = "none";
-          actions.style.display = "none";
-          if (details) details.style.display = "none";
-          if (ajouterPlageBtn) ajouterPlageBtn.style.display = "none";
-          if (label24) label24.innerHTML = "Ouvert 24h/24";
-        } else {
-          check24.checked = false;
-          if (label24) label24.innerHTML = "";
-          if (Array.isArray(data.plages)) {
-            plages.innerHTML = "";
-            data.plages.forEach(p => {
-              const div = makePlage(container, p.debut, p.fin);
-              plages.appendChild(div);
-            });
-            plages.style.display = "block";
-            actions.style.display = "flex";
-            if (ajouterPlageBtn) ajouterPlageBtn.style.display = "inline-block";
-            if (details) details.style.display = "block";
-          }
-        }
-      } else {
-        container.classList.remove("ouvert");
-        container.classList.add("ferme");
-        plages.innerHTML = "";
-        plages.style.display = "none";
-        actions.style.display = "none";
-        if (details) details.style.display = "none";
-        if (ajouterPlageBtn) ajouterPlageBtn.style.display = "none";
-        if (fermeText) fermeText.style.display = "block";
-        check24.checked = false;
-        if (label24) label24.innerHTML = "Fermé";
-      }
-    }
-  }
-
-
-  console.log("Hydratation du module avec les données :", json);
   // Hydrate horaires habituels
   if (json.habituels) {
     const horairesContainer = document.getElementById("horaires-habituels");
@@ -527,12 +465,9 @@ container.insertBefore(status, container.querySelector('.plages'));
   }
 };
 
-  div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
-  return div;
+    div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
+    return div;
   }
-
-  window.creerBlocJour = creerBlocJour;
-  window.makePlage = makePlage;
 
   document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("date-exception-start");
@@ -594,16 +529,7 @@ console.log("✅ ID pharmacie :", pharmacieId);
 
 // Hydratation
 if (data.fields?.horaires) {
-  let horaires = data.fields.horaires;
-  if (typeof horaires === "string") {
-    try {
-      horaires = JSON.parse(horaires);
-    } catch (e) {
-      console.error("Impossible de parser les horaires", e);
-      horaires = null;
-    }
-  }
-  if (horaires) hydrateModuleFromJson(horaires);
+  hydrateModuleFromJson(data.fields.horaires);
 }
 
 });
