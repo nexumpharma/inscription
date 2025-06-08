@@ -527,9 +527,12 @@ container.insertBefore(status, container.querySelector('.plages'));
   }
 };
 
-    div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
-    return div;
+  div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
+  return div;
   }
+
+  window.creerBlocJour = creerBlocJour;
+  window.makePlage = makePlage;
 
   document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("date-exception-start");
