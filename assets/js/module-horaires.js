@@ -169,7 +169,8 @@ console.log(`📌 Après ajout, plagesContainer :`, plagesContainer.innerHTML);
 
 
 function hydrateModuleFromJson(json) {
- 
+ console.trace("📍 hydrateModuleFromJson appelée ici");
+  
   if (!window.moduleHorairesReady) {
   console.warn("⏳ Module non prêt, hydratation annulée");
   return;
