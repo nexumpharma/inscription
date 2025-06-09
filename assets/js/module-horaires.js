@@ -61,137 +61,109 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-function hydrateModuleFromJson(horairesJson) {
-  console.log("🚀 Début de l'hydratation du module...");
-  console.log("✅ hydrateModuleFromJson appelée avec :", horairesJson);
+function hydrateModuleFromJson(json) {
+  console.log("✅ hydrateModuleFromJson appelée avec :", json);
 
-  if (!horairesJson) {
-    console.warn("❌ Aucune donnée à hydrater !");
-    return;
-  }
+  const { habituels = {}, exceptionnels = [] } = json;
 
-  // --- HABITUELS ---
-  const jours = Object.keys(horairesJson.habituels || {});
-  console.log("📆 Hydratation des horaires habituels :", jours);
+  // HABITUELS
+  console.log("📆 Hydratation des horaires habituels :", Object.entries(habituels));
 
-  jours.forEach(jour => {
-    const info = horairesJson.habituels[jour];
-    console.log(`➡️ Jour : ${jour}`, info);
-
+  for (const [jour, data] of Object.entries(habituels)) {
     const container = document.querySelector(`.jour-container[data-jour="${jour}"]`);
     if (!container) {
-      console.warn(`⚠️ Conteneur introuvable pour ${jour}`);
-      return;
+      console.warn(`❌ Aucun conteneur trouvé pour le jour ${jour}`);
+      continue;
     }
 
-    if (info.ouvert) {
-      console.log(`✅ ${jour} est ouvert`);
+    console.log(`🔧 Hydratation de ${jour} avec :`, data);
 
-      const initBtn = container.querySelector(".init-ajouter");
-      if (initBtn) {
-        initBtn.remove();
-        console.log("🧹 Bouton '+ Ajouter une plage' retiré");
-      }
+    const boutonInit = container.querySelector(".init-ajouter");
+    const divFerme = container.querySelector(".ferme");
+    const checkbox24h = container.querySelector(".ouvert24hCheck");
+    const selectFrequence = container.querySelector(".frequence");
 
-      const status = container.querySelector(".ferme");
-      if (status) {
-        status.remove();
-        console.log("🧹 Étiquette 'Fermé' retirée");
-      }
+    // Affiche les bonnes options si ouvert
+    if (data.ouvert) {
+      divFerme.style.display = "none";
+      boutonInit.style.display = "inline-block";
+      container.querySelector(".actions").style.display = "block";
+      container.querySelector("details").style.display = "block";
+    }
 
-      creerBlocJour(jour, container, true);
-      console.log("🧱 Bloc jour recréé");
+    // Fréquence des semaines
+    if (selectFrequence && data.frequence) {
+      selectFrequence.value = data.frequence;
+    }
 
-      for (const plage of info.plages || []) {
-        console.log(`➕ Plage ajoutée : ${plage.debut} - ${plage.fin}`);
-        ajouterPlage(jour, plage.debut, plage.fin, info.frequence || "toutes");
-      }
+    // Checkbox 24h
+    if (checkbox24h) {
+      checkbox24h.checked = !!data.ouvert_24h;
+      checkbox24h.dispatchEvent(new Event("change")); // pour déclencher le bon comportement
+    }
 
-      const checkbox = container.querySelector(".ouvert24hCheck");
-      if (checkbox) {
-        checkbox.checked = !!info.ouvert_24h;
-        console.log("🕛 Checkbox 'Ouvert 24h/24' cochée :", checkbox.checked);
-      }
-
-      const select = container.querySelector(".frequence");
-      if (select && info.frequence) {
-        select.value = info.frequence;
-        console.log("🔁 Fréquence définie :", info.frequence);
-      }
+    // Ajout des plages
+    if (data.plages && data.plages.length > 0) {
+      data.plages.forEach(({ debut, fin }) => {
+        console.log(`➕ Ajout plage ${debut} - ${fin} pour ${jour}`);
+        ajouterPlage(jour, debut, fin);
+      });
     } else {
-      console.log(`❌ ${jour} est fermé`);
+      console.log(`ℹ️ Aucune plage à afficher pour ${jour}`);
     }
-  });
+  }
 
-  // --- EXCEPTIONNELS ---
-  const exceptionnels = horairesJson.exceptionnels || [];
+  // EXCEPTIONNELS
   console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
 
-  for (const exception of exceptionnels) {
-    const { debut: start, fin: end, jours: journees } = exception;
-    console.log(`📅 Exception du ${start} au ${end}`, journees);
-
-    if (!start || !end) {
-      console.warn("⚠️ Exception ignorée : dates manquantes");
+  for (const item of exceptionnels) {
+    const startInput = document.getElementById("exception-start");
+    const endInput = document.getElementById("exception-end");
+    if (!startInput || !endInput) {
+      console.warn("❌ Impossible d'hydrater les exceptionnels, inputs manquants");
       continue;
     }
 
-    const startInput = document.getElementById("date-exception-start");
-    const endInput = document.getElementById("date-exception-end");
+    // Remplit les dates puis simule un clic sur "Ajouter la période"
+    startInput.value = item.debut;
+    endInput.value = item.fin;
 
-    startInput.value = start;
-    endInput.value = end;
+    document.querySelector("#add-exception-button")?.click();
 
-    document.getElementById("ajouter-exception").click();
-    console.log("➕ Exception ajoutée à l'UI");
-
-    const lastContainer = document.querySelector("#exceptions-list > .exception-container:last-child");
-
-    if (!lastContainer) {
-      console.warn("❌ Conteneur d'exception non trouvé !");
-      continue;
-    }
-
-    for (const jour of Object.keys(journees)) {
-      const info = journees[jour];
-      const jourContainer = lastContainer.querySelector(`.jour-container[data-jour="${jour}"]`);
-
-      if (!jourContainer) {
-        console.warn(`⚠️ Jour ${jour} introuvable dans le conteneur d'exception`);
+    for (const [jourComplet, details] of Object.entries(item.jours)) {
+      const jourKey = jourComplet.split(" ")[0];
+      const container = document.querySelector(`.jour-container[data-jour="${jourKey}"]:last-of-type`);
+      if (!container) {
+        console.warn(`❌ Pas de conteneur exceptionnel trouvé pour ${jourKey}`);
         continue;
       }
 
-      console.log(`🧩 Hydratation du jour ${jour} (exceptionnel)`, info);
+      console.log(`🔁 Exceptionnel ${jourKey} - ${jourComplet}`, details);
 
-      const initBtn = jourContainer.querySelector(".init-ajouter");
-      if (initBtn) initBtn.remove();
+      const boutonInit = container.querySelector(".init-ajouter");
+      const checkbox24h = container.querySelector(".ouvert24hCheck");
 
-      const status = jourContainer.querySelector(".ferme");
-      if (status) status.remove();
+      boutonInit.style.display = "inline-block";
+      container.querySelector(".actions").style.display = "block";
+      container.querySelector("details").style.display = "block";
 
-      creerBlocJour(jour, jourContainer, true);
-
-      for (const plage of info.plages || []) {
-        console.log(`➕ (Exceptionnel) ${jour} : ${plage.debut} - ${plage.fin}`);
-        ajouterPlage(jour, plage.debut, plage.fin, info.frequence || "toutes", jourContainer);
+      if (checkbox24h) {
+        checkbox24h.checked = !!details.ouvert_24h;
+        checkbox24h.dispatchEvent(new Event("change"));
       }
 
-      const checkbox = jourContainer.querySelector(".ouvert24hCheck");
-      if (checkbox) {
-        checkbox.checked = !!info.ouvert_24h;
-        console.log("🕛 (Exceptionnel) Checkbox 'Ouvert 24h/24' cochée :", checkbox.checked);
-      }
-
-      const select = jourContainer.querySelector(".frequence");
-      if (select && info.frequence) {
-        select.value = info.frequence;
-        console.log("🔁 (Exceptionnel) Fréquence définie :", info.frequence);
+      if (details.plages && details.plages.length > 0) {
+        details.plages.forEach(({ debut, fin }) => {
+          console.log(`➕ Ajout exception ${debut} - ${fin} pour ${jourKey}`);
+          ajouterPlage(jourKey, debut, fin, container);
+        });
       }
     }
   }
 
   console.log("✅ Hydratation terminée !");
 }
+
 
 window.hydrateModuleFromJson = hydrateModuleFromJson;
 
