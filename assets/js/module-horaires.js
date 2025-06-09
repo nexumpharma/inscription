@@ -322,47 +322,49 @@ for (const item of exceptionnels) {
   document.querySelector("#add-exception-button")?.click();
 
   // ⏱ Laisser le temps au DOM de générer les conteneurs exceptionnels
-  setTimeout(async () => {
-for (const [jourComplet, details] of Object.entries(item.jours)) {
-  const jourKey = jourComplet.split(" ")[0];
-  const normalizedKey = jourKey.charAt(0).toUpperCase() + jourKey.slice(1).toLowerCase();
+  setTimeout(() => {
+  const exceptionContainers = document.querySelectorAll("#exceptions-list .exception-container");
 
-  // Simule l’ajout d’un bloc pour ce jour
-  document.querySelector("#add-exception-button")?.click();
+  for (const item of exceptionContainers) {
+    const titre = item.querySelector("strong")?.textContent || "";
+    const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
+    if (!match) continue;
 
-  // Donne un court délai au DOM pour créer le conteneur
-  await new Promise(resolve => setTimeout(resolve, 50));
+    const [_, debut, fin] = match;
 
-  const container = document.querySelector(`.jour-container[data-jour="${normalizedKey}"]:last-of-type`);
+    // Cherche si cette plage correspond à celle qu’on veut hydrater
+    if (debut !== item.debut || fin !== item.fin) continue;
 
+    const joursHydratation = Object.entries(item.jours);
+    joursHydratation.forEach(([jourComplet, details]) => {
+      const jour = jourComplet.trim();
+      const container = item.querySelector(`.jour-container[data-jour="${jour}"]`);
       if (!container) {
-        console.warn(`❌ Pas de conteneur exceptionnel trouvé pour ${jourKey}`);
-        continue;
+        console.warn(`❌ Pas de conteneur exceptionnel trouvé pour ${jour}`);
+        return;
       }
-
-      console.log(`🔁 Exceptionnel ${jourKey} - ${jourComplet}`, details);
 
       const boutonInit = container.querySelector(".init-ajouter");
       const checkbox24h = container.querySelector(".ouvert24hCheck");
 
-      boutonInit.style.display = "inline-block";
+      if (boutonInit) boutonInit.style.display = "inline-block";
       container.querySelector(".actions").style.display = "block";
-      container.querySelector("details").style.display = "block";
+      container.querySelector("details")?.style.display = "block";
 
       if (checkbox24h) {
         checkbox24h.checked = !!details.ouvert_24h;
         checkbox24h.dispatchEvent(new Event("change"));
       }
 
-      if (details.plages && details.plages.length > 0) {
-        details.plages.forEach(({ debut, fin }) => {
-          console.log(`➕ Ajout exception ${debut} - ${fin} pour ${jourKey}`);
-          ajouterPlage(jourKey, debut, fin, container);
-        });
-      }
-  majAffichageJour(container, details); //S'il y a un pb c'est ça !!
-    }
-  }, 100); // ou 50ms si le DOM est rapide
+      (details.plages || []).forEach(({ debut, fin }) => {
+        ajouterPlage(jour, debut, fin, container);
+      });
+
+      majAffichageJour(container, details);
+    });
+  }
+}, 150); // petit délai pour laisser le temps au DOM de générer les blocs
+
 }
 
 
