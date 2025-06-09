@@ -631,7 +631,7 @@ function attendreModulePretEtHydrater(horaires) {
 }
 
 // 💡 Utilisation
-attendreModulePretEtHydrater(data.fields.horaires);
+attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
   }
 });
 
