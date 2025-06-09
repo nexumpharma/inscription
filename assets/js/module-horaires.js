@@ -293,71 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("module-horaires");
   if (!container) return;
 
-  container.innerHTML = `
-    <div class="tabs">
-      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
-      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
-    </div>
-    <div class="tab-content active" id="tab-habituels">
-      <div id="horaires-habituels"></div>
-    </div>
-    <div class="tab-content" id="tab-exceptionnels">
-      <div class="exception-controls">
-        <strong>Plage de dates :</strong>
-        <input type="text" class="date" id="exception-start" placeholder="JJ/MM/AAAA"> au
-        <input type="text" class="date" id="exception-end" placeholder="JJ/MM/AAAA">
-        <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
-      </div>
-      <div id="exceptions-list"></div>
-    </div>
-  `;
 
-  // === Logique complète du module ===
-  flatpickr.localize(flatpickr.l10ns.fr);
-
-  flatpickr("#exception-start", {
-    dateFormat: "d/m/Y",
-    locale: "fr",
-    allowInput: true,
-    defaultDate: null,
-    onOpen(selectedDates, dateStr, instance) {
-      if (!instance.input.value) {
-        const now = new Date();
-        instance.setDate(now, true);
-      }
-    }
-  });
-
-  flatpickr("#exception-end", {
-    dateFormat: "d/m/Y",
-    locale: "fr",
-    allowInput: true,
-    defaultDate: null,
-    onOpen(selectedDates, dateStr, instance) {
-      if (!instance.input.value) {
-        const now = new Date();
-        instance.setDate(now, true);
-      }
-    }
-  });
-
-
-
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      button.classList.add('active');
-      document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
-    });
-  });
-
-  const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-  const horairesContainer = document.getElementById("horaires-habituels");
-  jours.forEach(jour => creerBlocJour(jour, horairesContainer));
-
-window.moduleHorairesReady = true;
-  
   function creerBlocJour(jour, parentContainer, isException = false) {
     const container = document.createElement("div");
     container.className = "jour-container";
@@ -532,12 +468,79 @@ check24h.addEventListener("change", () => {
     if (advancedOptions) container.appendChild(advancedOptions);
     parentContainer.appendChild(container);
   }
+  
+  container.innerHTML = `
+    <div class="tabs">
+      <div class="tab-button active" data-tab="habituels">Horaires habituels</div>
+      <div class="tab-button" data-tab="exceptionnels">Horaires exceptionnels</div>
+    </div>
+    <div class="tab-content active" id="tab-habituels">
+      <div id="horaires-habituels"></div>
+    </div>
+    <div class="tab-content" id="tab-exceptionnels">
+      <div class="exception-controls">
+        <strong>Plage de dates :</strong>
+        <input type="text" class="date" id="exception-start" placeholder="JJ/MM/AAAA"> au
+        <input type="text" class="date" id="exception-end" placeholder="JJ/MM/AAAA">
+        <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
+      </div>
+      <div id="exceptions-list"></div>
+    </div>
+  `;
+
+  // === Logique complète du module ===
+  flatpickr.localize(flatpickr.l10ns.fr);
+
+  flatpickr("#exception-start", {
+    dateFormat: "d/m/Y",
+    locale: "fr",
+    allowInput: true,
+    defaultDate: null,
+    onOpen(selectedDates, dateStr, instance) {
+      if (!instance.input.value) {
+        const now = new Date();
+        instance.setDate(now, true);
+      }
+    }
+  });
+
+  flatpickr("#exception-end", {
+    dateFormat: "d/m/Y",
+    locale: "fr",
+    allowInput: true,
+    defaultDate: null,
+    onOpen(selectedDates, dateStr, instance) {
+      if (!instance.input.value) {
+        const now = new Date();
+        instance.setDate(now, true);
+      }
+    }
+  });
+
+
+
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      button.classList.add('active');
+      document.getElementById(`tab-${button.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+  const horairesContainer = document.getElementById("horaires-habituels");
+  jours.forEach(jour => creerBlocJour(jour, horairesContainer));
+
+window.moduleHorairesReady = true;
+  
+
 
 
 
   document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("exception-start");
-    const endInput = document.getElementById("date-exception-end");
+    const endInput = document.getElementById("exception-end");
     const start = flatpickr.parseDate(startInput.value, "d/m/Y");
     const end = flatpickr.parseDate(endInput.value, "d/m/Y");
 
