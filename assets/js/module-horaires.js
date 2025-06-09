@@ -298,9 +298,24 @@ if (hasPlages && boutonInit) {
 
     // Checkbox 24h
     if (checkbox24h) {
-      checkbox24h.checked = !!data.ouvert_24h;
-      checkbox24h.dispatchEvent(new Event("change")); // pour déclencher le bon comportement
+  checkbox24h.checked = !!data.ouvert_24h;
+  checkbox24h.dispatchEvent(new Event("change"));
+
+  if (data.ouvert_24h) {
+    const details = container.querySelector("details");
+    if (details) {
+      details.style.display = "none";
+      details.open = false;
     }
+
+    const divFerme = container.querySelector(".ferme");
+    if (divFerme) {
+      divFerme.textContent = "Ouvert 24h/24";
+      divFerme.style.display = "block";
+    }
+  }
+}
+
 
     // Ajout des plages
     if (data.plages && data.plages.length > 0) {
