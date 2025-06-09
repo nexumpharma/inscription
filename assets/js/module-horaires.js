@@ -175,10 +175,14 @@ function majAffichageJour(container, jourData) {
   const details = container.querySelector("details");
 
   if (jourData.ouvert_24h) {
-    if (boutonInit) boutonInit.style.display = "none";
-    if (actions) actions.style.display = "none";
-    if (details) details.style.display = "block";
-  } else if (hasPlages) {
+  if (boutonInit) boutonInit.style.display = "none";
+  if (actions) actions.style.display = "none";
+  if (details) {
+    details.style.display = "none"; // ✅ correction ici
+    details.open = false;
+  }
+}
+ else if (hasPlages) {
     if (boutonInit) boutonInit.remove();
     if (actions) actions.style.display = "flex";
     if (details) details.style.display = "block";
