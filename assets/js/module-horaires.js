@@ -506,6 +506,9 @@ container.insertBefore(status, container.querySelector('.plages'));
     startInput.value = "";
     endInput.value = "";
   });
+
+  window.moduleHorairesReady = true;
+
 });
 
 let pharmacieId = null; // accessible globalement dans ce fichier
