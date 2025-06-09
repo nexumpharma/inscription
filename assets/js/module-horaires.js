@@ -308,69 +308,97 @@ if (hasPlages && boutonInit) {
 // EXCEPTIONNELS
 console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
 
-for (const item of exceptionnels) {
+for (let i = 0; i < exceptionnels.length; i++) {
+  const item = exceptionnels[i];
   const startInput = document.getElementById("exception-start");
   const endInput = document.getElementById("exception-end");
   if (!startInput || !endInput) {
     console.warn("❌ Impossible d'hydrater les exceptionnels, inputs manquants");
-    continue;
+    continue; // ← ce `continue` est OK ici car on est bien dans une boucle
   }
 
-  // Remplit les dates puis simule un clic sur "Ajouter la période"
+  // Simule l'ajout de la plage
   startInput.value = item.debut;
   endInput.value = item.fin;
   document.querySelector("#add-exception-button")?.click();
 
-  // ⏱ Laisser le temps au DOM de générer les conteneurs exceptionnels
-setTimeout(() => {
-  const exceptionContainers = document.querySelectorAll("#exceptions-list .exception-container");
+  // Laisser le temps au DOM de générer les conteneurs
+  setTimeout(function () {
+    const exceptionContainers = document.querySelectorAll("#exceptions-list .exception-container");
 
-  for (const container of exceptionContainers) {
-    const titre = container.querySelector("strong")?.textContent || "";
-    const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
-    if (!match) continue;
-
-    const debut = match[1];
-    const fin = match[2];
-
-
-    const joursData = exceptionnels.find(e => e.debut === debut && e.fin === fin)?.jours;
-    if (!joursData) continue;
-
-    Object.keys(joursData).forEach(jourComplet => {
-  const details = joursData[jourComplet];
-      const jour = jourComplet.trim();
-      const jourContainer = container.querySelector(`.jour-container[data-jour="${jour}"]`);
-      if (!jourContainer) {
-        console.warn(`❌ Pas de conteneur exceptionnel trouvé pour ${jour}`);
+    for (let j = 0; j < exceptionContainers.length; j++) {
+      const container = exceptionContainers[j];
+      const titreElem = container.querySelector("strong");
+      if (!titreElem) {
+        console.warn("❌ Pas de titre trouvé dans container exception");
         continue;
       }
 
-      const boutonInit = jourContainer.querySelector(".init-ajouter");
-      const checkbox24h = jourContainer.querySelector(".ouvert24hCheck");
-
-      if (boutonInit) boutonInit.style.display = "inline-block";
-      jourContainer.querySelector(".actions")?.style.display = "block";
-      jourContainer.querySelector("details")?.style.display = "block";
-
-      if (checkbox24h) {
-        checkbox24h.checked = !!details.ouvert_24h;
-        checkbox24h.dispatchEvent(new Event("change"));
+      const titre = titreElem.textContent || "";
+      const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
+      if (!match || match.length < 3) {
+        console.warn("❌ Titre non conforme :", titre);
+        continue;
       }
 
-(details.plages || []).forEach((plage) => {
-  const debut = plage.debut;
-  const fin = plage.fin;
-  ajouterPlage(jour, debut, fin, jourContainer);
-});
+      const debutText = match[1];
+      const finText = match[2];
 
+      let joursData = null;
+      for (let k = 0; k < exceptionnels.length; k++) {
+        const ex = exceptionnels[k];
+        if (ex.debut === debutText && ex.fin === finText) {
+          joursData = ex.jours;
+          break;
+        }
+      }
 
-      majAffichageJour(jourContainer, details);
+      if (!joursData) {
+        console.warn("❌ Aucune correspondance trouvée pour les dates :", debutText, finText);
+        continue;
+      }
+
+      const jourKeys = Object.keys(joursData);
+      for (let m = 0; m < jourKeys.length; m++) {
+        const jourComplet = jourKeys[m];
+        const details = joursData[jourComplet];
+        const jour = jourComplet.trim();
+        const jourContainer = container.querySelector('.jour-container[data-jour="' + jour + '"]');
+
+        if (!jourContainer) {
+          console.warn("❌ Pas de conteneur exceptionnel trouvé pour", jour);
+          continue;
+        }
+
+        const boutonInit = jourContainer.querySelector(".init-ajouter");
+        const checkbox24h = jourContainer.querySelector(".ouvert24hCheck");
+
+        if (boutonInit) boutonInit.style.display = "inline-block";
+        const actions = jourContainer.querySelector(".actions");
+        const detailsEl = jourContainer.querySelector("details");
+
+        if (actions) actions.style.display = "block";
+        if (detailsEl) detailsEl.style.display = "block";
+
+        if (checkbox24h) {
+          checkbox24h.checked = !!details.ouvert_24h;
+          checkbox24h.dispatchEvent(new Event("change"));
+        }
+
+        const plages = details.plages || [];
+        for (let p = 0; p < plages.length; p++) {
+          const plage = plages[p];
+          const debut = plage.debut;
+          const fin = plage.fin;
+          ajouterPlage(jour, debut, fin, jourContainer);
+        }
+
+        majAffichageJour(jourContainer, details);
+      }
     }
-  }
-}, 150);  // petit délai pour laisser le temps au DOM de générer les blocs
-
+  }, 150);
 }
+
 
 
   console.log("✅ Hydratation terminée !");
