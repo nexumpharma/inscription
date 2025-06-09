@@ -213,6 +213,34 @@ if (data.ouvert) {
   } else {
 const hasPlages = data.plages && data.plages.length > 0;
 
+
+// 🔧 Corriger les doublons de bouton "Ajouter une plage"
+if (hasPlages) {
+  // Supprimer le bouton init s’il existe
+  if (boutonInit) boutonInit.remove();
+
+  // Assure que .actions est visible et contient un seul bouton
+  if (actions) {
+    actions.style.display = "flex";
+    const btns = actions.querySelectorAll("button");
+    if (btns.length > 1) {
+      // Supprime les doublons
+      btns.forEach((btn, i) => { if (i > 0) btn.remove(); });
+    }
+  }
+} else {
+  // Aucune plage => afficher le bouton init
+  if (boutonInit) boutonInit.style.display = "inline-block";
+  if (actions) actions.style.display = "none";
+}
+
+// Affichage des options avancées
+if (details) {
+  const afficherOptions = data.frequence !== "toutes" || hasPlages;
+  details.style.display = afficherOptions ? "block" : "none";
+}
+
+    
 // 🔧 Supprimer le bouton init si des plages existent déjà
 if (hasPlages && boutonInit) {
   boutonInit.remove();
