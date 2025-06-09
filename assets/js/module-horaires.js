@@ -202,27 +202,26 @@ console.log("✅ Entrées exceptionnels :", exceptionnels);
 if (data.ouvert) {
   divFerme.style.display = "none";
 
-  // Si aucune plage n’existe, on montre le bouton init pour en ajouter
-const actions = container.querySelector(".actions");
-const details = container.querySelector("details");
+  const actions = container.querySelector(".actions");
+  const details = container.querySelector("details");
 
-// Cas particulier : ouvert 24h/24
-if (data.ouvert_24h) {
-  boutonInit.style.display = "none";
-  actions.style.display = "none";
-  if (details) details.style.display = "none";
-} else {
-  const hasPlages = data.plages && data.plages.length > 0;
-  boutonInit.style.display = hasPlages ? "none" : "inline-block";
-  actions.style.display = hasPlages ? "flex" : "none";
+  // Cas particulier : ouvert 24h/24
+  if (data.ouvert_24h) {
+    boutonInit.style.display = "none";
+    if (actions) actions.style.display = "none";
+    if (details) details.style.display = "none";
+  } else {
+    const hasPlages = data.plages && data.plages.length > 0;
+    boutonInit.style.display = hasPlages ? "none" : "inline-block";
+    if (actions) actions.style.display = hasPlages ? "flex" : "none";
 
-  if (details) {
-    const afficherOptions = data.frequence !== "toutes" || hasPlages;
-    details.style.display = afficherOptions ? "block" : "none";
+    if (details) {
+      const afficherOptions = data.frequence !== "toutes" || hasPlages;
+      details.style.display = afficherOptions ? "block" : "none";
+    }
   }
 }
 
-}
 
 
     // Fréquence des semaines
