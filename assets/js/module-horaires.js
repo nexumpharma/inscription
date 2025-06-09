@@ -693,6 +693,7 @@ function attendreModulePretEtHydrater(horaires) {
 // 💡 Utilisation
 attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
   }
+}
 });
 
 let pharmacieId = null; // accessible globalement dans ce fichier
