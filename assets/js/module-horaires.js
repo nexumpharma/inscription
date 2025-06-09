@@ -322,34 +322,33 @@ for (const item of exceptionnels) {
   document.querySelector("#add-exception-button")?.click();
 
   // ⏱ Laisser le temps au DOM de générer les conteneurs exceptionnels
-  setTimeout(() => {
+setTimeout(() => {
   const exceptionContainers = document.querySelectorAll("#exceptions-list .exception-container");
 
-  for (const item of exceptionContainers) {
-    const titre = item.querySelector("strong")?.textContent || "";
+  for (const container of exceptionContainers) {
+    const titre = container.querySelector("strong")?.textContent || "";
     const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
     if (!match) continue;
 
     const [_, debut, fin] = match;
 
-    // Cherche si cette plage correspond à celle qu’on veut hydrater
-    if (debut !== item.debut || fin !== item.fin) continue;
+    const joursData = exceptionnels.find(e => e.debut === debut && e.fin === fin)?.jours;
+    if (!joursData) continue;
 
-    const joursHydratation = Object.entries(item.jours);
-    joursHydratation.forEach(([jourComplet, details]) => {
+    for (const [jourComplet, details] of Object.entries(joursData)) {
       const jour = jourComplet.trim();
-      const container = item.querySelector(`.jour-container[data-jour="${jour}"]`);
-      if (!container) {
+      const jourContainer = container.querySelector(`.jour-container[data-jour="${jour}"]`);
+      if (!jourContainer) {
         console.warn(`❌ Pas de conteneur exceptionnel trouvé pour ${jour}`);
-        return;
+        continue;
       }
 
-      const boutonInit = container.querySelector(".init-ajouter");
-      const checkbox24h = container.querySelector(".ouvert24hCheck");
+      const boutonInit = jourContainer.querySelector(".init-ajouter");
+      const checkbox24h = jourContainer.querySelector(".ouvert24hCheck");
 
       if (boutonInit) boutonInit.style.display = "inline-block";
-      container.querySelector(".actions").style.display = "block";
-      container.querySelector("details")?.style.display = "block";
+      jourContainer.querySelector(".actions")?.style.display = "block";
+      jourContainer.querySelector("details")?.style.display = "block";
 
       if (checkbox24h) {
         checkbox24h.checked = !!details.ouvert_24h;
@@ -357,13 +356,13 @@ for (const item of exceptionnels) {
       }
 
       (details.plages || []).forEach(({ debut, fin }) => {
-        ajouterPlage(jour, debut, fin, container);
+        ajouterPlage(jour, debut, fin, jourContainer);
       });
 
-      majAffichageJour(container, details);
-    });
+      majAffichageJour(jourContainer, details);
+    }
   }
-}, 150); // petit délai pour laisser le temps au DOM de générer les blocs
+}, 150);  // petit délai pour laisser le temps au DOM de générer les blocs
 
 }
 
