@@ -176,7 +176,6 @@ function hydrateModuleFromJson(json) {
   return;
 }
   
-  console.log("✅ hydrateModuleFromJson appelée avec :", json);
 
   const { habituels = {}, exceptionnels = [] } = json;
 console.log("✅ Entrées habituels :", Object.entries(habituels));
