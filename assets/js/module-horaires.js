@@ -254,9 +254,18 @@ for (const item of exceptionnels) {
 
   // ⏱ Laisser le temps au DOM de générer les conteneurs exceptionnels
   setTimeout(() => {
-    for (const [jourComplet, details] of Object.entries(item.jours)) {
-      const jourKey = jourComplet.split(" ")[0];
-      const container = document.querySelector(`.jour-container[data-jour="${jourKey}"]:last-of-type`);
+for (const [jourComplet, details] of Object.entries(item.jours)) {
+  const jourKey = jourComplet.split(" ")[0];
+  const normalizedKey = jourKey.charAt(0).toUpperCase() + jourKey.slice(1).toLowerCase();
+
+  // Simule l’ajout d’un bloc pour ce jour
+  document.querySelector("#add-exception-button")?.click();
+
+  // Donne un court délai au DOM pour créer le conteneur
+  await new Promise(resolve => setTimeout(resolve, 50));
+
+  const container = document.querySelector(`.jour-container[data-jour="${normalizedKey}"]:last-of-type`);
+
       if (!container) {
         console.warn(`❌ Pas de conteneur exceptionnel trouvé pour ${jourKey}`);
         continue;
