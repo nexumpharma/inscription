@@ -63,6 +63,8 @@ document.head.appendChild(style);
 
 function hydrateModuleFromJson(horairesJson) {
   console.log("🚀 Début de l'hydratation du module...");
+  console.log("✅ hydrateModuleFromJson appelée avec :", horairesJson);
+
   if (!horairesJson) {
     console.warn("❌ Aucune donnée à hydrater !");
     return;
@@ -191,6 +193,7 @@ function hydrateModuleFromJson(horairesJson) {
   console.log("✅ Hydratation terminée !");
 }
 
+window.hydrateModuleFromJson = hydrateModuleFromJson;
 
 
 // 👉 Tu peux maintenant continuer avec le reste de ton module (injection HTML, Flatpickr, creerBlocJour, makePlage, etc.)
