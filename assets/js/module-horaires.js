@@ -148,6 +148,7 @@ container.insertBefore(status, container.querySelector('.plages'));
 
     div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
     return div;
+    console.log("🧱 makePlage retourne :", div.outerHTML);
   }
 
 
@@ -155,7 +156,12 @@ function ajouterPlage(jour, debut, fin, container = null) {
   const jourContainer = container || document.querySelector(`.jour-container[data-jour="${jour}"]`);
   if (!jourContainer) return;
   const plagesContainer = jourContainer.querySelector(".plages");
-  plagesContainer.appendChild(makePlage(jourContainer, debut, fin));
+  const node = makePlage(jourContainer, debut, fin);
+console.log(`📌 Ajout manuel d'une plage dans ${jour} =>`, node.outerHTML);
+plagesContainer.appendChild(node);
+console.log(`📌 Après ajout, plagesContainer :`, plagesContainer.innerHTML);
+
+  console.log("📥 DOM après appendChild :", plagesContainer.innerHTML);
   plagesContainer.style.display = "block";
   jourContainer.querySelector(".actions").style.display = "flex";
 }
