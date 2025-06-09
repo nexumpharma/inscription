@@ -270,16 +270,19 @@ if (hasPlages && boutonInit) {
       checkbox24h.dispatchEvent(new Event("change")); // pour déclencher le bon comportement
     }
 
-    // Ajout des plages
-    if (data.plages && data.plages.length > 0) {
-      data.plages.forEach(({ debut, fin }) => {
-        console.log(`➕ Ajout plage ${debut} - ${fin} pour ${jour}`);
-        ajouterPlage(jour, debut, fin);
-      });
-    } else {
-      console.log(`ℹ️ Aucune plage à afficher pour ${jour}`);
-    }
-  }
+// Ajout des plages
+if (data.plages && data.plages.length > 0) {
+  data.plages.forEach(({ debut, fin }) => {
+    console.log(`➕ Ajout plage ${debut} - ${fin} pour ${jour}`);
+    ajouterPlage(jour, debut, fin);
+  });
+} else {
+  console.log(`ℹ️ Aucune plage à afficher pour ${jour}`);
+}
+
+// 🔄 Mise à jour des boutons après hydratation
+mettreAJourBoutonsAjout(container);
+
 
 // EXCEPTIONNELS
 console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
@@ -799,6 +802,36 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
 
 // Pour que le bouton fonctionne même si le script est en module
 window.enregistrerHoraires = enregistrerHoraires;
+
+
+function mettreAJourBoutonsAjout(container) {
+  const boutonInit = container.querySelector(".init-ajouter");
+  const actions = container.querySelector(".actions");
+  const plages = container.querySelectorAll(".plage");
+  const details = container.querySelector("details");
+
+  const hasPlages = plages.length > 0;
+
+  if (hasPlages) {
+    if (boutonInit) boutonInit.remove();
+    if (actions) {
+      actions.style.display = "flex";
+      const btns = actions.querySelectorAll("button");
+      if (btns.length > 1) {
+        btns.forEach((btn, i) => { if (i > 0) btn.remove(); });
+      }
+    }
+  } else {
+    if (boutonInit) boutonInit.style.display = "inline-block";
+    if (actions) actions.style.display = "none";
+  }
+
+  if (details) {
+    const frequence = container.querySelector("select.frequence")?.value || "toutes";
+    const afficherOptions = frequence !== "toutes" || hasPlages;
+    details.style.display = afficherOptions ? "block" : "none";
+  }
+}
 
 
 
