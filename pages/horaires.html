@@ -64,12 +64,32 @@
   </div>
 
   <!-- Initialisation de l'authentification -->
-  <script>
-    window.addEventListener("DOMContentLoaded", async () => {
-      const { user } = await window.initAuthPage();
-      if (!user) return;
-      document.getElementById("app").style.display = "block";
+<script>
+  window.addEventListener("DOMContentLoaded", async () => {
+    const { user } = await window.initAuthPage();
+    if (!user) return;
+
+    document.getElementById("app").style.display = "block";
+
+    // Appel à l’API Supabase pour récupérer la pharmacie et les horaires
+    const token = (await window.supabase.auth.getSession()).data.session.access_token;
+
+    const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-  </script>
+
+    const fullData = await res.json();
+    const data = fullData.records?.[0];
+
+    if (!data?.fields?.horaires) {
+      console.warn("⛔ Aucun horaire à hydrater");
+      return;
+    }
+
+    console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
+    hydrateModuleFromJson(data.fields.horaires);
+  });
+</script>
+
 </body>
 </html>
