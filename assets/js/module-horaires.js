@@ -296,7 +296,8 @@ window.hydrateModuleFromJson = hydrateModuleFromJson;
 
 
 // Inject HTML structure
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Partie 1 : injection HTML + module prêt
   const container = document.getElementById("module-horaires");
   if (!container) return;
 
@@ -540,12 +541,8 @@ check24h.addEventListener("change", () => {
   jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
 window.moduleHorairesReady = true;
-  
 
-
-
-
-  document.getElementById("ajouter-exception").addEventListener("click", () => {
+    document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("exception-start");
     const endInput = document.getElementById("exception-end");
     const start = flatpickr.parseDate(startInput.value, "d/m/Y");
@@ -583,53 +580,53 @@ window.moduleHorairesReady = true;
     endInput.value = "";
   });
 
+// Partie 2 : récupération Supabase
+  const token = (await window.supabase.auth.getSession()).data.session.access_token;
 
+  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
+  const fullData = await res.json();
+  const data = fullData.records?.[0];
+  if (!data?.id) {
+    console.error("❌ ID pharmacie introuvable");
+    return;
+  }
+
+  pharmacieId = data.id;
+  console.log("✅ ID pharmacie :", pharmacieId);
+
+  // Hydratation
+  if (data.fields?.horaires) {
+    await attendreModulePret();
+
+    // ✅ Attendre DOM prêt
+    await new Promise(resolve => {
+      const check = () => {
+        const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+        const tousLesConteneursSontPrets = jours.every(jour =>
+          document.querySelector(`[data-jour="${jour}"] .plages`)
+        );
+        if (tousLesConteneursSontPrets) return resolve();
+        setTimeout(check, 50);
+      };
+      check();
+    });
+
+    console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
+    hydrateModuleFromJson(data.fields.horaires);
+  }
 });
+
+
+
+
+
 
 let pharmacieId = null; // accessible globalement dans ce fichier
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const token = (await window.supabase.auth.getSession()).data.session.access_token;
 
-const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
-
-const fullData = await res.json();
-const data = fullData.records?.[0];
-if (!data?.id) {
-  console.error("❌ ID pharmacie introuvable");
-  return;
-}
-
-pharmacieId = data.id;
-console.log("✅ ID pharmacie :", pharmacieId);
-
-// Hydratation
-// Hydratation après injection HTML
-if (data.fields?.horaires) {
-  await attendreModulePret();
-
-// ✅ Attendre DOM prêt
-await new Promise(resolve => {
-  const check = () => {
-    const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-    const tousLesConteneursSontPrets = jours.every(jour =>
-      document.querySelector(`[data-jour="${jour}"] .plages`)
-    );
-    if (tousLesConteneursSontPrets) return resolve();
-    setTimeout(check, 50);
-  };
-  check();
-});
-
-  
-  console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
-  hydrateModuleFromJson(data.fields.horaires);
-}
-
-});
 
 
 
