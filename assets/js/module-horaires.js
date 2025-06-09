@@ -61,11 +61,8 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-// ... tout le code reste inchangé jusqu'à la fonction hydrateModuleFromJson
-
 function hydrateModuleFromJson(json) {
   console.log("Hydratation du module avec les données :", json);
-  // Hydrate horaires habituels
   if (json.habituels) {
     const horairesContainer = document.getElementById("horaires-habituels");
     horairesContainer.innerHTML = "";
@@ -79,8 +76,12 @@ function hydrateModuleFromJson(json) {
 
       if (data.ouvert) {
         if (data.ouvert_24h) {
-          // rien à faire, le checkbox 24h s'en charge
         } else if (Array.isArray(data.plages)) {
+          const initBtn = container.querySelector(".init-ajouter");
+          if (initBtn) initBtn.remove();
+          const status = container.querySelector(".ferme");
+          if (status) status.remove();
+
           data.plages.forEach(p => {
             const div = makePlage(container, p.debut, p.fin);
             container.querySelector(".plages").appendChild(div);
@@ -107,7 +108,6 @@ function hydrateModuleFromJson(json) {
     }
   }
 
-  // Hydrate horaires exceptionnels
   if (Array.isArray(json.exceptionnels)) {
     json.exceptionnels.forEach(({ debut, fin, jours }) => {
       document.getElementById("date-exception-start").value = debut;
@@ -135,6 +135,7 @@ function hydrateModuleFromJson(json) {
     });
   }
 }
+
 
 // 👉 Tu peux maintenant continuer avec le reste de ton module (injection HTML, Flatpickr, creerBlocJour, makePlage, etc.)
 // Assure-toi simplement d’appeler scheduleAutoSave() après chaque action utilisateur qui modifie les horaires.
