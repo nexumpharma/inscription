@@ -297,6 +297,8 @@ window.hydrateModuleFromJson = hydrateModuleFromJson;
 
 // Inject HTML structure
 document.addEventListener("DOMContentLoaded", async () => {
+  const session = await window.initAuthPage();
+  if (!session) return;
   // Partie 1 : injection HTML + module prêt
   const container = document.getElementById("module-horaires");
   if (!container) return;
@@ -743,10 +745,5 @@ function attendreModulePret() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const session = await window.initAuthPage(); // ⬅️ C’est ça qui manque
-  if (!session) return; // Redirige si non connecté
 
-  // Le reste est déjà géré par module-horaires.js
-});
 
