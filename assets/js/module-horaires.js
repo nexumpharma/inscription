@@ -542,6 +542,7 @@ check24h.addEventListener("change", () => {
   jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
 window.moduleHorairesReady = true;
+  document.dispatchEvent(new Event("moduleHorairesReady"));
 
     document.getElementById("ajouter-exception").addEventListener("click", () => {
     const startInput = document.getElementById("exception-start");
