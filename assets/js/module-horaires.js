@@ -236,23 +236,24 @@ if (data.ouvert) {
     }
   }
 
-  // EXCEPTIONNELS
-  console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
+// EXCEPTIONNELS
+console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
 
-  for (const item of exceptionnels) {
-    const startInput = document.getElementById("exception-start");
-    const endInput = document.getElementById("exception-end");
-    if (!startInput || !endInput) {
-      console.warn("❌ Impossible d'hydrater les exceptionnels, inputs manquants");
-      continue;
-    }
+for (const item of exceptionnels) {
+  const startInput = document.getElementById("exception-start");
+  const endInput = document.getElementById("exception-end");
+  if (!startInput || !endInput) {
+    console.warn("❌ Impossible d'hydrater les exceptionnels, inputs manquants");
+    continue;
+  }
 
-    // Remplit les dates puis simule un clic sur "Ajouter la période"
-    startInput.value = item.debut;
-    endInput.value = item.fin;
+  // Remplit les dates puis simule un clic sur "Ajouter la période"
+  startInput.value = item.debut;
+  endInput.value = item.fin;
+  document.querySelector("#add-exception-button")?.click();
 
-    document.querySelector("#add-exception-button")?.click();
-
+  // ⏱ Laisser le temps au DOM de générer les conteneurs exceptionnels
+  setTimeout(() => {
     for (const [jourComplet, details] of Object.entries(item.jours)) {
       const jourKey = jourComplet.split(" ")[0];
       const container = document.querySelector(`.jour-container[data-jour="${jourKey}"]:last-of-type`);
@@ -282,7 +283,9 @@ if (data.ouvert) {
         });
       }
     }
-  }
+  }, 100); // ou 50ms si le DOM est rapide
+}
+
 
   console.log("✅ Hydratation terminée !");
 }
