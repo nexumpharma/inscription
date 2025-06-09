@@ -232,14 +232,16 @@ if (data.ouvert) {
   if (data.ouvert_24h) {
   boutonInit.style.display = "none";
   if (actions) actions.style.display = "none";
-  if (details) details.style.display = "none";
 
-  // Affiche la ligne "Ouvert 24h/24" en italique grisé en haut
+  if (details) {
+    details.style.display = "none"; // ✅ cache
+    details.open = false;           // ✅ force la fermeture
+  }
+
   divFerme.textContent = "Ouvert 24h/24";
   divFerme.style.display = "block";
-
-  // ⚠️ Important : ne pas modifier le style ici (laisser le CSS `.ferme` gérer l’italique/gris)
 }
+
  else {
 const hasPlages = data.plages && data.plages.length > 0;
 
