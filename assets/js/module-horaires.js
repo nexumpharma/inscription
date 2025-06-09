@@ -743,4 +743,10 @@ function attendreModulePret() {
   });
 }
 
+window.addEventListener("DOMContentLoaded", async () => {
+  const session = await window.initAuthPage(); // ⬅️ C’est ça qui manque
+  if (!session) return; // Redirige si non connecté
+
+  // Le reste est déjà géré par module-horaires.js
+});
 
