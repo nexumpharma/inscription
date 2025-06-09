@@ -616,7 +616,21 @@ window.moduleHorairesReady = true;
     });
 
     console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
-    hydrateModuleFromJson(data.fields.horaires);
+function attendreModulePretEtHydrater(horaires) {
+  if (window.moduleHorairesReady) {
+    console.log("✅ Module prêt, on hydrate");
+    hydrateModuleFromJson(horaires);
+  } else {
+    console.warn("⏳ Module pas encore prêt, on attend...");
+    document.addEventListener("moduleHorairesReady", () => {
+      console.log("🟢 moduleHorairesReady détecté (via event)");
+      hydrateModuleFromJson(horaires);
+    }, { once: true });
+  }
+}
+
+// 💡 Utilisation
+attendreModulePretEtHydrater(data.fields.horaires);
   }
 });
 
