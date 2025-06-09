@@ -168,6 +168,29 @@ console.log(`📌 Après ajout, plagesContainer :`, plagesContainer.innerHTML);
 }
 
 
+function majAffichageJour(container, jourData) {
+  const hasPlages = jourData.plages && jourData.plages.length > 0;
+  const boutonInit = container.querySelector(".init-ajouter");
+  const actions = container.querySelector(".actions");
+  const details = container.querySelector("details");
+
+  if (jourData.ouvert_24h) {
+    if (boutonInit) boutonInit.style.display = "none";
+    if (actions) actions.style.display = "none";
+    if (details) details.style.display = "block";
+  } else if (hasPlages) {
+    if (boutonInit) boutonInit.remove();
+    if (actions) actions.style.display = "flex";
+    if (details) details.style.display = "block";
+  } else {
+    if (boutonInit) boutonInit.style.display = "inline-block";
+    if (actions) actions.style.display = "none";
+    if (details) details.style.display = "none";
+  }
+}
+
+
+
 async function hydrateModuleFromJson(json) {
  console.trace("📍 hydrateModuleFromJson appelée ici");
   
@@ -279,6 +302,7 @@ if (hasPlages && boutonInit) {
     } else {
       console.log(`ℹ️ Aucune plage à afficher pour ${jour}`);
     }
+    majAffichageJour(container, data);
   }
 
 // EXCEPTIONNELS
