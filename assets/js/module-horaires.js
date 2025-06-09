@@ -147,8 +147,9 @@ container.insertBefore(status, container.querySelector('.plages'));
 };
 
     div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
-    return div;
+ 
     console.log("🧱 makePlage retourne :", div.outerHTML);
+       return div;
   }
 
 
