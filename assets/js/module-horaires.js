@@ -289,7 +289,6 @@ if (data.ouvert) {
 }
 
 
-window.hydrateModuleFromJson = hydrateModuleFromJson;
 
 
 // 👉 Tu peux maintenant continuer avec le reste de ton module (injection HTML, Flatpickr, creerBlocJour, makePlage, etc.)
