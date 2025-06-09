@@ -298,32 +298,39 @@ if (hasPlages && boutonInit) {
 
     // Checkbox 24h
     if (checkbox24h) {
+  if (checkbox24h) {
   checkbox24h.checked = !!data.ouvert_24h;
 
   if (data.ouvert_24h) {
     const toggle24h = container.querySelector("label.toggle");
     const details = container.querySelector("details");
 
-    // 🔁 Déplace toggle24h hors de details AVANT d'appeler dispatchEvent
+    // Déplace le toggle hors de details si besoin
     if (toggle24h?.dataset.alone !== "true") {
       container.appendChild(toggle24h);
       toggle24h.dataset.alone = "true";
     }
 
-    // Maintenant on peut appeler l'événement proprement
-    checkbox24h.dispatchEvent(new Event("change"));
-
+    // Masque les options avancées AVANT le dispatch
     if (details) {
       details.style.display = "none";
       details.open = false;
     }
 
+    // Affiche le label "Ouvert 24h/24"
     const divFerme = container.querySelector(".ferme");
     if (divFerme) {
       divFerme.textContent = "Ouvert 24h/24";
       divFerme.style.display = "block";
     }
+
+    // Enfin, déclenche le comportement normal
+    checkbox24h.dispatchEvent(new Event("change"));
   } else {
+    checkbox24h.dispatchEvent(new Event("change"));
+  }
+}
+ else {
     checkbox24h.dispatchEvent(new Event("change"));
   }
 }
