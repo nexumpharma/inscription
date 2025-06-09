@@ -165,7 +165,9 @@ function hydrateModuleFromJson(json) {
   console.log("✅ hydrateModuleFromJson appelée avec :", json);
 
   const { habituels = {}, exceptionnels = [] } = json;
-
+console.log("✅ Entrées habituels :", Object.entries(habituels));
+console.log("✅ Entrées exceptionnels :", exceptionnels);
+  
   // HABITUELS
   console.log("📆 Hydratation des horaires habituels :", Object.entries(habituels));
 
