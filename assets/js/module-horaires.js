@@ -61,80 +61,136 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-function hydrateModuleFromJson(json) {
-  console.log("Hydratation du module avec les données :", json);
-  if (json.habituels) {
-    const horairesContainer = document.getElementById("horaires-habituels");
-    horairesContainer.innerHTML = "";
-    for (const jour in json.habituels) {
-      const data = json.habituels[jour];
-      const container = creerBlocJour(jour, horairesContainer);
+function hydrateModuleFromJson(horairesJson) {
+  console.log("🚀 Début de l'hydratation du module...");
+  if (!horairesJson) {
+    console.warn("❌ Aucune donnée à hydrater !");
+    return;
+  }
 
-      const check24 = container.querySelector("input.ouvert24hCheck");
-      if (data.ouvert_24h) check24.checked = true;
-      check24.dispatchEvent(new Event("change"));
+  // --- HABITUELS ---
+  const jours = Object.keys(horairesJson.habituels || {});
+  console.log("📆 Hydratation des horaires habituels :", jours);
 
-      if (data.ouvert) {
-        if (data.ouvert_24h) {
-        } else if (Array.isArray(data.plages)) {
-          const initBtn = container.querySelector(".init-ajouter");
-          if (initBtn) initBtn.remove();
-          const status = container.querySelector(".ferme");
-          if (status) status.remove();
+  jours.forEach(jour => {
+    const info = horairesJson.habituels[jour];
+    console.log(`➡️ Jour : ${jour}`, info);
 
-          data.plages.forEach(p => {
-            const div = makePlage(container, p.debut, p.fin);
-            container.querySelector(".plages").appendChild(div);
-          });
-          container.querySelector(".plages").style.display = "block";
-          container.querySelector(".actions").style.display = "flex";
-          if (container.querySelector("details")) {
-            container.querySelector("details").style.display = "block";
-          }
-        }
-      } else {
-        const plages = container.querySelector(".plages");
-        plages.innerHTML = "";
-        plages.style.display = "none";
-        const actions = container.querySelector(".actions");
-        if (actions) actions.style.display = "none";
+    const container = document.querySelector(`.jour-container[data-jour="${jour}"]`);
+    if (!container) {
+      console.warn(`⚠️ Conteneur introuvable pour ${jour}`);
+      return;
+    }
 
-        const status = container.querySelector(".ferme");
-        if (status) status.textContent = "Fermé";
+    if (info.ouvert) {
+      console.log(`✅ ${jour} est ouvert`);
+
+      const initBtn = container.querySelector(".init-ajouter");
+      if (initBtn) {
+        initBtn.remove();
+        console.log("🧹 Bouton '+ Ajouter une plage' retiré");
       }
 
-      const freq = container.querySelector("select.frequence");
-      if (freq && data.frequence) freq.value = data.frequence;
+      const status = container.querySelector(".ferme");
+      if (status) {
+        status.remove();
+        console.log("🧹 Étiquette 'Fermé' retirée");
+      }
+
+      creerBlocJour(jour, container, true);
+      console.log("🧱 Bloc jour recréé");
+
+      for (const plage of info.plages || []) {
+        console.log(`➕ Plage ajoutée : ${plage.debut} - ${plage.fin}`);
+        ajouterPlage(jour, plage.debut, plage.fin, info.frequence || "toutes");
+      }
+
+      const checkbox = container.querySelector(".ouvert24hCheck");
+      if (checkbox) {
+        checkbox.checked = !!info.ouvert_24h;
+        console.log("🕛 Checkbox 'Ouvert 24h/24' cochée :", checkbox.checked);
+      }
+
+      const select = container.querySelector(".frequence");
+      if (select && info.frequence) {
+        select.value = info.frequence;
+        console.log("🔁 Fréquence définie :", info.frequence);
+      }
+    } else {
+      console.log(`❌ ${jour} est fermé`);
+    }
+  });
+
+  // --- EXCEPTIONNELS ---
+  const exceptionnels = horairesJson.exceptionnels || [];
+  console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
+
+  for (const exception of exceptionnels) {
+    const { date_debut: start, date_fin: end, jours: journees } = exception;
+    console.log(`📅 Exception du ${start} au ${end}`, journees);
+
+    if (!start || !end) {
+      console.warn("⚠️ Exception ignorée : dates manquantes");
+      continue;
+    }
+
+    const startInput = document.getElementById("date-exception-start");
+    const endInput = document.getElementById("date-exception-end");
+
+    startInput.value = start;
+    endInput.value = end;
+
+    document.getElementById("ajouter-exception").click();
+    console.log("➕ Exception ajoutée à l'UI");
+
+    const lastContainer = document.querySelector("#exceptions-list > .exception-container:last-child");
+
+    if (!lastContainer) {
+      console.warn("❌ Conteneur d'exception non trouvé !");
+      continue;
+    }
+
+    for (const jour of Object.keys(journees)) {
+      const info = journees[jour];
+      const jourContainer = lastContainer.querySelector(`.jour-container[data-jour="${jour}"]`);
+
+      if (!jourContainer) {
+        console.warn(`⚠️ Jour ${jour} introuvable dans le conteneur d'exception`);
+        continue;
+      }
+
+      console.log(`🧩 Hydratation du jour ${jour} (exceptionnel)`, info);
+
+      const initBtn = jourContainer.querySelector(".init-ajouter");
+      if (initBtn) initBtn.remove();
+
+      const status = jourContainer.querySelector(".ferme");
+      if (status) status.remove();
+
+      creerBlocJour(jour, jourContainer, true);
+
+      for (const plage of info.plages || []) {
+        console.log(`➕ (Exceptionnel) ${jour} : ${plage.debut} - ${plage.fin}`);
+        ajouterPlage(jour, plage.debut, plage.fin, info.frequence || "toutes", jourContainer);
+      }
+
+      const checkbox = jourContainer.querySelector(".ouvert24hCheck");
+      if (checkbox) {
+        checkbox.checked = !!info.ouvert_24h;
+        console.log("🕛 (Exceptionnel) Checkbox 'Ouvert 24h/24' cochée :", checkbox.checked);
+      }
+
+      const select = jourContainer.querySelector(".frequence");
+      if (select && info.frequence) {
+        select.value = info.frequence;
+        console.log("🔁 (Exceptionnel) Fréquence définie :", info.frequence);
+      }
     }
   }
 
-  if (Array.isArray(json.exceptionnels)) {
-    json.exceptionnels.forEach(({ debut, fin, jours }) => {
-      document.getElementById("date-exception-start").value = debut;
-      document.getElementById("date-exception-end").value = fin;
-      document.getElementById("ajouter-exception").click();
-      const blocks = [...document.querySelectorAll("#exceptions-list .exception-container")].pop();
-      if (!blocks) return;
-      const allDays = blocks.querySelectorAll(".jour-container");
-      allDays.forEach(container => {
-        const jour = container.dataset.jour;
-        const def = jours[jour];
-        if (!def) return;
-        const check24 = container.querySelector("input.ouvert24hCheck");
-        if (def.ouvert_24h) check24.checked = true;
-        check24.dispatchEvent(new Event("change"));
-        if (!def.ouvert_24h && Array.isArray(def.plages)) {
-          def.plages.forEach(p => {
-            const div = makePlage(container, p.debut, p.fin);
-            container.querySelector(".plages").appendChild(div);
-          });
-          container.querySelector(".plages").style.display = "block";
-          container.querySelector(".actions").style.display = "flex";
-        }
-      });
-    });
-  }
+  console.log("✅ Hydratation terminée !");
 }
+
 
 
 // 👉 Tu peux maintenant continuer avec le reste de ton module (injection HTML, Flatpickr, creerBlocJour, makePlage, etc.)
