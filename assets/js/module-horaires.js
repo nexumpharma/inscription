@@ -677,6 +677,18 @@ window.moduleHorairesReady = true;
     });
 
     console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
+
+
+// 💡 Utilisation
+attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
+  }
+}
+});
+
+let pharmacieId = null; // accessible globalement dans ce fichier
+
+
+// 💧 Fonction à déplacer ici
 function attendreModulePretEtHydrater(horaires) {
   if (window.moduleHorairesReady) {
     console.log("✅ Module prêt, on hydrate");
@@ -690,14 +702,8 @@ function attendreModulePretEtHydrater(horaires) {
   }
 }
 
-// 💡 Utilisation
-attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
-  }
-}
-});
 
-let pharmacieId = null; // accessible globalement dans ce fichier
-
+  
 function collectHoraires() {
   const result = { habituels: {}, exceptionnels: [] };
 
