@@ -360,6 +360,7 @@ for (const [jourComplet, details] of Object.entries(item.jours)) {
           ajouterPlage(jourKey, debut, fin, container);
         });
       }
+  majAffichageJour(container, details); //S'il y a un pb c'est ça !!
     }
   }, 100); // ou 50ms si le DOM est rapide
 }
