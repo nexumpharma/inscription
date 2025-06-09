@@ -743,32 +743,4 @@ function attendreModulePret() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const { user } = await window.initAuthPage?.();
-  if (!user) return;
 
-  document.getElementById("app").style.display = "block";
-
-  const token = (await window.supabase.auth.getSession()).data.session.access_token;
-  const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  const fullData = await res.json();
-  const data = fullData.records?.[0];
-  if (!data?.fields?.horaires) return;
-
-  const attendreModulePret = () =>
-    new Promise(resolve => {
-      const check = () => {
-        if (window.moduleHorairesReady) return resolve();
-        setTimeout(check, 50);
-      };
-      check();
-    });
-
-  await attendreModulePret();
-
-  console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
-  hydrateModuleFromJson(data.fields.horaires);
-});
