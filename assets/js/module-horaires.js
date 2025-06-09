@@ -337,7 +337,8 @@ setTimeout(() => {
     const joursData = exceptionnels.find(e => e.debut === debut && e.fin === fin)?.jours;
     if (!joursData) continue;
 
-    for (const [jourComplet, details] of Object.entries(joursData)) {
+    Object.keys(joursData).forEach(jourComplet => {
+  const details = joursData[jourComplet];
       const jour = jourComplet.trim();
       const jourContainer = container.querySelector(`.jour-container[data-jour="${jour}"]`);
       if (!jourContainer) {
