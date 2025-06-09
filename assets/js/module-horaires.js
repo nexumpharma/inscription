@@ -573,7 +573,10 @@ pharmacieId = data.id;
 console.log("✅ ID pharmacie :", pharmacieId);
 
 // Hydratation
+// Hydratation après injection HTML
 if (data.fields?.horaires) {
+  await attendreModulePret();
+  console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
   hydrateModuleFromJson(data.fields.horaires);
 }
 
@@ -677,3 +680,20 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
 
 // Pour que le bouton fonctionne même si le script est en module
 window.enregistrerHoraires = enregistrerHoraires;
+
+
+
+function attendreModulePret() {
+  return new Promise(resolve => {
+    const check = () => {
+      if (window.moduleHorairesReady) {
+        console.log("🟢 moduleHorairesReady détecté");
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
