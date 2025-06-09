@@ -695,18 +695,7 @@ attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
   }
 });
 
-
-
-
-
-
 let pharmacieId = null; // accessible globalement dans ce fichier
-
-
-
-
-
-
 
 function collectHoraires() {
   const result = { habituels: {}, exceptionnels: [] };
