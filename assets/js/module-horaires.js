@@ -61,6 +61,22 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
+  function initFlatpickrHeure(input) {
+    return flatpickr(input, {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      locale: "fr",
+      allowInput: true,
+      defaultDate: null,
+      onOpen(selectedDates, dateStr, instance) {
+        if (!instance.input.value) {
+          instance.setDate("12:00", true, "H:i");
+        }
+      }
+    });
+  }
 
   function makePlage(container, debut = "", fin = "") {
       console.log("🧩 makePlage appelée avec :", { debut, fin });
@@ -309,22 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  function initFlatpickrHeure(input) {
-    return flatpickr(input, {
-      enableTime: true,
-      noCalendar: true,
-      dateFormat: "H:i",
-      time_24hr: true,
-      locale: "fr",
-      allowInput: true,
-      defaultDate: null,
-      onOpen(selectedDates, dateStr, instance) {
-        if (!instance.input.value) {
-          instance.setDate("12:00", true, "H:i");
-        }
-      }
-    });
-  }
+
 
   document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
