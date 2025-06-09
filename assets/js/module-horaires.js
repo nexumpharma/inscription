@@ -183,13 +183,21 @@ function hydrateModuleFromJson(json) {
     const checkbox24h = container.querySelector(".ouvert24hCheck");
     const selectFrequence = container.querySelector(".frequence");
 
-    // Affiche les bonnes options si ouvert
-    if (data.ouvert) {
-      divFerme.style.display = "none";
-      boutonInit.style.display = "inline-block";
-      container.querySelector(".actions").style.display = "block";
-      container.querySelector("details").style.display = "block";
-    }
+// Affiche les bonnes options si ouvert
+if (data.ouvert) {
+  divFerme.style.display = "none";
+
+  // Si aucune plage n’existe, on montre le bouton init pour en ajouter
+  if (!data.plages || data.plages.length === 0) {
+    boutonInit.style.display = "inline-block";
+  } else {
+    boutonInit.style.display = "none";
+  }
+
+  container.querySelector(".actions").style.display = "block";
+  container.querySelector("details").style.display = "block";
+}
+
 
     // Fréquence des semaines
     if (selectFrequence && data.frequence) {
@@ -582,6 +590,21 @@ console.log("✅ ID pharmacie :", pharmacieId);
 // Hydratation après injection HTML
 if (data.fields?.horaires) {
   await attendreModulePret();
+
+// ✅ Attendre DOM prêt
+await new Promise(resolve => {
+  const check = () => {
+    const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+    const tousLesConteneursSontPrets = jours.every(jour =>
+      document.querySelector(`[data-jour="${jour}"] .plages`)
+    );
+    if (tousLesConteneursSontPrets) return resolve();
+    setTimeout(check, 50);
+  };
+  check();
+});
+
+  
   console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
   hydrateModuleFromJson(data.fields.horaires);
 }
