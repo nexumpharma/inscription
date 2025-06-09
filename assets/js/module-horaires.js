@@ -330,7 +330,9 @@ setTimeout(() => {
     const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
     if (!match) continue;
 
-    const [_, debut, fin] = match;
+    const debut = match[1];
+    const fin = match[2];
+
 
     const joursData = exceptionnels.find(e => e.debut === debut && e.fin === fin)?.jours;
     if (!joursData) continue;
