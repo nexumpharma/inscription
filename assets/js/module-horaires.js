@@ -211,8 +211,15 @@ if (data.ouvert) {
     if (actions) actions.style.display = "none";
     if (details) details.style.display = "none";
   } else {
-    const hasPlages = data.plages && data.plages.length > 0;
-    boutonInit.style.display = hasPlages ? "none" : "inline-block";
+const hasPlages = data.plages && data.plages.length > 0;
+
+// 🔧 Supprimer le bouton init si des plages existent déjà
+if (hasPlages && boutonInit) {
+  boutonInit.remove();
+} else {
+  boutonInit.style.display = "inline-block";
+}
+
     if (actions) actions.style.display = hasPlages ? "flex" : "none";
 
     if (details) {
