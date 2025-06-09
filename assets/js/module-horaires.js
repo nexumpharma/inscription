@@ -253,7 +253,7 @@ for (const item of exceptionnels) {
   document.querySelector("#add-exception-button")?.click();
 
   // ⏱ Laisser le temps au DOM de générer les conteneurs exceptionnels
-  setTimeout(() => {
+  setTimeout(async () => {
 for (const [jourComplet, details] of Object.entries(item.jours)) {
   const jourKey = jourComplet.split(" ")[0];
   const normalizedKey = jourKey.charAt(0).toUpperCase() + jourKey.slice(1).toLowerCase();
