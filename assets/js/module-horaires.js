@@ -61,6 +61,16 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
+function ajouterPlage(jour, debut, fin, container = null) {
+  const jourContainer = container || document.querySelector(`.jour-container[data-jour="${jour}"]`);
+  if (!jourContainer) return;
+  const plagesContainer = jourContainer.querySelector(".plages");
+  plagesContainer.appendChild(makePlage(jourContainer, debut, fin));
+  plagesContainer.style.display = "block";
+  jourContainer.querySelector(".actions").style.display = "flex";
+}
+
+
 function hydrateModuleFromJson(json) {
   console.log("✅ hydrateModuleFromJson appelée avec :", json);
 
@@ -188,8 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="tab-content" id="tab-exceptionnels">
       <div class="exception-controls">
         <strong>Plage de dates :</strong>
-        <input type="text" class="date" id="date-exception-start" placeholder="JJ/MM/AAAA"> au
-        <input type="text" class="date" id="date-exception-end" placeholder="JJ/MM/AAAA">
+        <input type="text" class="date" id="exception-start" placeholder="JJ/MM/AAAA"> au
+        <input type="text" class="date" id="exception-end" placeholder="JJ/MM/AAAA">
         <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
       </div>
       <div id="exceptions-list"></div>
