@@ -162,6 +162,12 @@ function ajouterPlage(jour, debut, fin, container = null) {
 
 
 function hydrateModuleFromJson(json) {
+ 
+  if (!window.moduleHorairesReady) {
+  console.warn("⏳ Module non prêt, hydratation annulée");
+  return;
+}
+  
   console.log("✅ hydrateModuleFromJson appelée avec :", json);
 
   const { habituels = {}, exceptionnels = [] } = json;
@@ -309,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // === Logique complète du module ===
   flatpickr.localize(flatpickr.l10ns.fr);
 
-  flatpickr("#date-exception-start", {
+  flatpickr("#exception-start", {
     dateFormat: "d/m/Y",
     locale: "fr",
     allowInput: true,
@@ -322,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  flatpickr("#date-exception-end", {
+  flatpickr("#exception-end", {
     dateFormat: "d/m/Y",
     locale: "fr",
     allowInput: true,
@@ -350,6 +356,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const horairesContainer = document.getElementById("horaires-habituels");
   jours.forEach(jour => creerBlocJour(jour, horairesContainer));
 
+window.moduleHorairesReady = true;
+  
   function creerBlocJour(jour, parentContainer, isException = false) {
     const container = document.createElement("div");
     container.className = "jour-container";
@@ -528,7 +536,7 @@ check24h.addEventListener("change", () => {
 
 
   document.getElementById("ajouter-exception").addEventListener("click", () => {
-    const startInput = document.getElementById("date-exception-start");
+    const startInput = document.getElementById("exception-start");
     const endInput = document.getElementById("date-exception-end");
     const start = flatpickr.parseDate(startInput.value, "d/m/Y");
     const end = flatpickr.parseDate(endInput.value, "d/m/Y");
@@ -565,7 +573,7 @@ check24h.addEventListener("change", () => {
     endInput.value = "";
   });
 
-  window.moduleHorairesReady = true;
+
 
 });
 
