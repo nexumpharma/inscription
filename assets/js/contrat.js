@@ -84,7 +84,7 @@ async function run() {
     if (statusRes.ok && statusData?.status === "completed") {
 setStepStatus(step2, "done");
 step2.innerHTML = "✅ Contrat déjà signé.";
-signButton.querySelector("button").textContent = "Voir le contrat signé";
+signButton.textContent = "📄 Voir le contrat signé"; // au lieu de querySelector
 signButton.href = signUrl;
 signButton.style.display = "inline-block";
 actionButtons.style.display = "flex";
@@ -167,6 +167,8 @@ actionButtons.style.display = "flex";
     signButton.href = normalizeUrl(openSignUrl);
     signButton.style.display = "inline-block";
     actionButtons.style.display = "flex";
+    signButton.textContent = "🖊️ Signer le contrat";
+
   } else {
     setStepStatus(step3, "error");
     setStepStatus(step4, "error");
