@@ -128,7 +128,7 @@ function hydrateModuleFromJson(horairesJson) {
   console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
 
   for (const exception of exceptionnels) {
-    const { date_debut: start, date_fin: end, jours: journees } = exception;
+    const { debut: start, fin: end, jours: journees } = exception;
     console.log(`📅 Exception du ${start} au ${end}`, journees);
 
     if (!start || !end) {
