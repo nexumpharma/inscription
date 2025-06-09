@@ -357,9 +357,12 @@ setTimeout(() => {
         checkbox24h.dispatchEvent(new Event("change"));
       }
 
-      (details.plages || []).forEach(({ debut, fin }) => {
-        ajouterPlage(jour, debut, fin, jourContainer);
-      });
+(details.plages || []).forEach((plage) => {
+  const debut = plage.debut;
+  const fin = plage.fin;
+  ajouterPlage(jour, debut, fin, jourContainer);
+});
+
 
       majAffichageJour(jourContainer, details);
     }
