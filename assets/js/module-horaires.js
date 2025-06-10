@@ -50,12 +50,10 @@ label.toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-label.toggle {
+  margin: 0.5rem 0;
   width: fit-content;
 }
+
 
 .exception-container {
   border: 1px solid #ccc;
