@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     if (saveRes.ok) {
-      window.location.href = "rib.html";
+      window.location.href = "contrat.html";
     } else {
       alert("❌ Une erreur est survenue lors de l'enregistrement.");
     }
