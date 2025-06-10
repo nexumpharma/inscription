@@ -53,9 +53,6 @@ label.toggle {
   margin: 0.5rem 0;
   width: fit-content;
 }
-
-
-
 .exception-container {
   border: 1px solid #ccc;
   padding: 1rem;
@@ -65,6 +62,13 @@ label.toggle {
 .exception-controls { margin-bottom: 1rem; }
 .exception-container input[type="text"].date {
   margin-right: 0.5rem;
+}
+label.toggle[data-alone="true"] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  margin: 0.25rem 0;
 }`;
 document.head.appendChild(style);
 
