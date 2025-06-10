@@ -414,9 +414,17 @@ if (addBtn) {
           checkbox.dispatchEvent(new Event("change"));
         }
 
-        (jourData.plages || []).forEach(p => {
-          ajouterPlage(jourKey, p.debut, p.fin, containerJour);
-        });
+        // Vider les anciennes plages pour éviter les doublons
+const plagesContainer = containerJour.querySelector(".plages");
+if (plagesContainer) {
+  plagesContainer.innerHTML = "";
+}
+
+// Ajouter les plages de l'exception
+(jourData.plages || []).forEach(p => {
+  ajouterPlage(jourKey, p.debut, p.fin, containerJour);
+});
+
 
         majAffichageJour(containerJour, jourData);
       });
