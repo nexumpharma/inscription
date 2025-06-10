@@ -54,10 +54,35 @@
     </footer>
   </div>
 
+  <!-- Auth inline handling -->
   <script defer>
-    window.addEventListener("DOMContentLoaded", () => {
-      // Init auth: defined in auth.js
-      initAuth();
+    window.addEventListener('DOMContentLoaded', () => {
+      (async () => {
+        // Récupère la session actuelle
+        const { data: { session } } = await supabase.auth.getSession();
+        // Affiche ou redirige
+        if (session) {
+          document.getElementById('status-container').style.display = 'block';
+          document.getElementById('app').style.display = 'block';
+        } else {
+          window.location.replace('../login.html');
+          return;
+        }
+        // Écoute les changements de session
+        supabase.auth.onAuthStateChange((event, newSession) => {
+          if (newSession) {
+            document.getElementById('status-container').style.display = 'block';
+            document.getElementById('app').style.display = 'block';
+          } else {
+            window.location.replace('../index.html');
+          }
+        });
+        // Bouton déconnexion
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          window.location.replace('../index.html');
+        });
+      })();
     });
   </script>
 </body>
