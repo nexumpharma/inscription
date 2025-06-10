@@ -797,7 +797,7 @@ document.getElementById("prevBtn").addEventListener("click", () => {
 
 document.getElementById("nextBtn").addEventListener("click", () => {
   enregistrerHoraires();
-  window.location.href = "index.html"; // 🔁 ou page suivante
+  window.location.href = "formation.html"; // 🔁 ou page suivante
 });
   
 });
