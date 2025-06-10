@@ -54,6 +54,16 @@ label.toggle {
   width: fit-content;
 }
 
+label.toggle[data-alone="true"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  width: fit-content;
+  position: relative;
+  top: -0.5rem;
+}
+
 
 .exception-container {
   border: 1px solid #ccc;
