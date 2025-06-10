@@ -5,14 +5,15 @@
   <title>Vidéo de formation</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
 
-  <!-- Supabase Auth -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
   <script src="../assets/js/config.js" defer></script>
   <script src="../assets/js/auth.js" defer></script>
+  <script src="../assets/js/infos.js" defer></script>
 </head>
 <body>
-  <div id="app" data-page="formation" style="display: none;">
-    <!-- Header -->
+  <div id="app" data-page="formation">
+
+    <!-- component:Header -->
     <header>
       <h1>
         <a href="../index.html" style="color: inherit; text-decoration: none;">
@@ -21,15 +22,15 @@
       </h1>
     </header>
 
-    <!-- Status / Logout -->
-    <div id="status-container" style="display: none; text-align: center; margin: 2rem 0;">
+    <!-- component:Status -->
+    <div id="status-container" style="display: none;">
       <div id="status">Chargement...</div>
       <button id="logoutBtn">Se déconnecter</button>
     </div>
 
-    <!-- Main Content -->
+    <!-- component:Main -->
     <main>
-      <div class="content">
+      <div id="formationContent" style="display: none;" class="content">
         <h2>Vidéo de formation</h2>
         <p>Voici une vidéo de démonstration pour comprendre comment utiliser la plateforme Nexum Pharma.</p>
 
@@ -48,42 +49,12 @@
       </div>
     </main>
 
-    <!-- Footer -->
+    <!-- component:Footer -->
     <footer>
       <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
     </footer>
   </div>
 
-  <!-- Auth inline handling -->
-  <script defer>
-    window.addEventListener('DOMContentLoaded', () => {
-      (async () => {
-        // Récupère la session actuelle
-        const { data: { session } } = await supabase.auth.getSession();
-        // Affiche ou redirige
-        if (session) {
-          document.getElementById('status-container').style.display = 'block';
-          document.getElementById('app').style.display = 'block';
-        } else {
-          window.location.replace('../login.html');
-          return;
-        }
-        // Écoute les changements de session
-        supabase.auth.onAuthStateChange((event, newSession) => {
-          if (newSession) {
-            document.getElementById('status-container').style.display = 'block';
-            document.getElementById('app').style.display = 'block';
-          } else {
-            window.location.replace('../index.html');
-          }
-        });
-        // Bouton déconnexion
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-          await supabase.auth.signOut();
-          window.location.replace('../index.html');
-        });
-      })();
-    });
-  </script>
+  <!-- Initialization: handled by auth.js & infos.js -->
 </body>
 </html>
