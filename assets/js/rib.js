@@ -170,8 +170,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.target.value = formatIban(value);
   });
 
-  document.getElementById("prevBtn").addEventListener("click", () => saveDataAndNavigate("infos.html"));
-  document.getElementById("nextBtn").addEventListener("click", () => saveDataAndNavigate("contrat.html"));
+  document.getElementById("prevBtn").addEventListener("click", () => saveDataAndNavigate("contrat.html"));
+  document.getElementById("nextBtn").addEventListener("click", () => saveDataAndNavigate("horaires.html"));
 
   // 🔄 Chargement des données initiales
   const record = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
