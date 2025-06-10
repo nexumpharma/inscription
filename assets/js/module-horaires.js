@@ -639,9 +639,11 @@ check24h.addEventListener("change", () => {
     <div class="tab-content" id="tab-exceptionnels">
       <div class="exception-controls">
         <strong>Plage de dates :</strong>
-        <input type="text" class="date" id="exception-start" placeholder="JJ/MM/AAAA"> au
-        <input type="text" class="date" id="exception-end" placeholder="JJ/MM/AAAA">
-        <button type="button" id="ajouter-exception">+ Ajouter une exception</button>
+<input type="text" class="date flatpickr-input" id="exception-start" placeholder="JJ/MM/AAAA"> au
+<input type="text" class="date flatpickr-input" id="exception-end" placeholder="JJ/MM/AAAA">
+<br>
+<button type="button" id="ajouter-exception" style="margin-top: 0.5rem;">+ Ajouter une exception</button>
+
       </div>
       <div id="exceptions-list"></div>
     </div>
