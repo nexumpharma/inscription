@@ -782,7 +782,14 @@ function attendreModulePretEtHydrater(horaires) {
   }
 }
 
-    // Navigation avec sauvegarde
+
+
+
+// 💡 Utilisation
+attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
+  }
+
+      // Navigation avec sauvegarde
 document.getElementById("prevBtn").addEventListener("click", () => {
   enregistrerHoraires();
   window.location.href = "rib.html"; // 🔁 ou autre page précédente
@@ -792,11 +799,7 @@ document.getElementById("nextBtn").addEventListener("click", () => {
   enregistrerHoraires();
   window.location.href = "index.html"; // 🔁 ou page suivante
 });
-
-
-// 💡 Utilisation
-attendreModulePretEtHydrater(JSON.parse(data.fields.horaires));
-  }
+  
 });
 
 
