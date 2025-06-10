@@ -50,12 +50,9 @@ label.toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  margin: 0.5rem 0;
   font-weight: normal;
-  margin: 0;
-  vertical-align: middle;
-}
-.inline-block {
-  display: inline-block;
+  cursor: pointer;
 }
 .exception-container {
   border: 1px solid #ccc;
@@ -529,12 +526,9 @@ check24h.addEventListener("change", () => {
 
     // Déplace le label toggle24h en dehors des options avancées si besoin
     if (toggle24h.dataset.alone !== "true") {
-  const wrapper = document.createElement("div");
-  wrapper.className = "inline-block";
-  wrapper.appendChild(toggle24h);
-  container.appendChild(wrapper);
-  toggle24h.dataset.alone = "true";
-}
+      container.appendChild(toggle24h);
+      toggle24h.dataset.alone = "true";
+    }
 
 } else {
   // Retour à "Fermé"
