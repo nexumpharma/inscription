@@ -14,7 +14,11 @@
         </a>
       </h1>
     </header>
-
+    <!-- component:Status -->
+    <div id="status-container" style="display: none;" class="status-container">
+      <div id="status">Chargement...</div>
+      <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
+    </div>
     <main>
       <div class="content">
         <h2>Vidéo de formation</h2>
@@ -46,6 +50,9 @@
     window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("app").style.display = "block";
     });
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
   </script>
 </body>
 </html>
