@@ -47,8 +47,16 @@ style.textContent = `
   background: #f0f0f0;
 }
 label.toggle {
-  display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
+label.toggle {
+  width: fit-content;
+}
+
 .exception-container {
   border: 1px solid #ccc;
   padding: 1rem;
@@ -571,8 +579,8 @@ check24h.addEventListener("change", () => {
 
 
       
-      toggle24h.appendChild(check24h);
-      toggle24h.append("Ouvert 24h/24");
+      toggle24h.append(check24h, "Ouvert 24h/24");
+
 
       advancedOptions.appendChild(freqLabel);
       advancedOptions.appendChild(toggle24h);
