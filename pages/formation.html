@@ -46,17 +46,17 @@
     </footer>
   </div>
 
-  <script>
-  // Juste afficher #app quand tout est prêt
-  window.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("app").style.display = "block";
+<script>
+  window.addEventListener("DOMContentLoaded", async () => {
+    const result = await window.initAuthPage();
+    if (!result) return;
   });
 </script>
 
-<!-- Scripts dans le bon ordre, avec `defer` pour qu'ils s'exécutent dans l’ordre -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
 <script src="../assets/js/config.js" defer></script>
 <script src="../assets/js/auth.js" defer></script>
+
 
 </body>
 </html>
