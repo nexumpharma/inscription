@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <title>Vidéo de formation</title>
   <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <!-- Supabase Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
+
 </head>
 <body>
   <div id="app" data-page="formation" style="display: none;">
@@ -30,11 +36,9 @@
         </iframe>
       </div>
 
-<div class="button-container" style="display: flex; justify-content: space-between; max-width: 700px; margin: 2rem auto;">
-  <button type="button" onclick="window.location.href = 'horaires.html'">Précédent</button>
-</div>
-
-      
+      <div class="button-container" style="display: flex; justify-content: space-between; max-width: 700px; margin: 2rem auto;">
+        <button type="button" onclick="window.location.href = 'horaires.html'">Précédent</button>
+      </div>
     </main>
 
     <footer>
@@ -42,9 +46,31 @@
     </footer>
   </div>
 
+  <div id="status-container" style="display: none; text-align:center; margin-top:2rem;">
+    <div id="status">Chargement...</div>
+    <button id="logoutBtn">Se déconnecter</button>
+  </div>
+
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("app").style.display = "block";
+      // Initialise l'auth et gère l'affichage
+      initAuth();
+      // Sur changement de session Supabase
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          document.getElementById('status-container').style.display = 'block';
+          document.getElementById('app').style.display = 'block';
+        } else {
+          document.getElementById('app').style.display = 'none';
+          document.getElementById('status-container').style.display = 'none';
+        }
+      });
+
+      // Bouton déconnexion
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('../index.html');
+      });
     });
   </script>
 </body>
