@@ -47,12 +47,13 @@ style.textContent = `
   background: #f0f0f0;
 }
 label.toggle {
-  display: inline-flex;
+  display: inline-flex !important;
+  flex-direction: row !important;
   align-items: center;
   gap: 0.5rem;
-  margin: 0.5rem 0;
   font-weight: normal;
-  cursor: pointer;
+  margin: 0.5rem 0;
+  vertical-align: middle;
 }
 .exception-container {
   border: 1px solid #ccc;
