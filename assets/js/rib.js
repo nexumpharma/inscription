@@ -188,5 +188,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     await displayPreview(ribStoragePath, type);
   }
 
-  form.style.display = "flex";
+  form.style.removeProperty("display");
 });
