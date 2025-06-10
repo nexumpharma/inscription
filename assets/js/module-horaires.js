@@ -47,11 +47,7 @@ style.textContent = `
   background: #f0f0f0;
 }
 label.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-  width: fit-content;
+  display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
 }
 .exception-container {
   border: 1px solid #ccc;
@@ -62,13 +58,6 @@ label.toggle {
 .exception-controls { margin-bottom: 1rem; }
 .exception-container input[type="text"].date {
   margin-right: 0.5rem;
-}
-label.toggle[data-alone="true"] {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: normal;
-  margin: 0.25rem 0;
 }`;
 document.head.appendChild(style);
 
@@ -532,7 +521,7 @@ check24h.addEventListener("change", () => {
 
     // Déplace le label toggle24h en dehors des options avancées si besoin
     if (toggle24h.dataset.alone !== "true") {
-      container.insertBefore(toggle24h, status);
+      container.appendChild(toggle24h);
       toggle24h.dataset.alone = "true";
     }
 
@@ -582,8 +571,8 @@ check24h.addEventListener("change", () => {
 
 
       
-      toggle24h.append(check24h, "Ouvert 24h/24");
-
+      toggle24h.appendChild(check24h);
+      toggle24h.append("Ouvert 24h/24");
 
       advancedOptions.appendChild(freqLabel);
       advancedOptions.appendChild(toggle24h);
