@@ -2,7 +2,11 @@
 
 const supabase = window.supabase;
 const SUPABASE_FUNCTION_BASE = window.config.SUPABASE_FUNCTION_BASE;
-const logout = window.logout;
+const logout = async () => {
+  await supabase.auth.signOut();
+  window.location.href = "connexion.html";
+};
+
 
 const signButton = document.getElementById("sign-button");
 const statusContainer = document.getElementById("status-container");
