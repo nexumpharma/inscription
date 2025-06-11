@@ -67,22 +67,31 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-  function initFlatpickrHeure(input) {
-    return flatpickr(input, {
-      enableTime: true,
-      noCalendar: true,
-      dateFormat: "H:i",
-      time_24hr: true,
-      locale: "fr",
-      allowInput: true,
-      defaultDate: null,
-      onOpen(selectedDates, dateStr, instance) {
-        if (!instance.input.value) {
-          instance.setDate("12:00", true, "H:i");
-        }
+function initFlatpickrHeure(input) {
+  const fp = flatpickr(input, {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true,
+    locale: "fr",
+    allowInput: true,
+    defaultDate: null,
+    onOpen(selectedDates, dateStr, instance) {
+      if (!instance.input.value) {
+        instance.setDate("12:00", true, "H:i");
+        instance.input.value = "12:00"; // ⬅️ On force la valeur dans l'input
       }
-    });
+    }
+  });
+
+  // ⬅️ Pour les cas où l'utilisateur ne touche pas l'input après ajout
+  if (!input.value) {
+    input.value = "12:00";
   }
+
+  return fp;
+}
+
 
   function makePlage(container, debut = "", fin = "") {
       console.log("🧩 makePlage appelée avec :", { debut, fin });
