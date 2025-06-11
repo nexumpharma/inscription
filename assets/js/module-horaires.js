@@ -870,9 +870,21 @@ function enregistrerHoraires() {
 
 
 async function sauvegarderDansAirtable(data, afficherMessage = false) {
-  const payload = {
-    id: pharmacieId,
-    fields: { horaires: JSON.stringify(data) }
+let cleanData;
+
+try {
+  cleanData = JSON.parse(JSON.stringify(data)); // supprime undefined, DOM nodes, fonctions...
+} catch (err) {
+  console.error("❌ Erreur lors du nettoyage JSON :", err);
+  alert("❌ Les horaires contiennent des données non valides. Veuillez vérifier.");
+  return;
+}
+
+const payload = {
+  id: pharmacieId,
+  fields: { horaires: JSON.stringify(cleanData) }
+};
+
 
   };
   console.log("📦 Payload envoyé à Supabase :", payload);
