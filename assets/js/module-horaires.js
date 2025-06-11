@@ -886,7 +886,7 @@ const payload = {
 };
 
 
-  };
+
   console.log("📦 Payload envoyé à Supabase :", payload);
 
   const token = (await window.supabase.auth.getSession()).data.session.access_token;
