@@ -93,20 +93,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       invalidate("Téléphone de la pharmacie", "Téléphone invalide");
     }
 
-    const cip = formData["CIP"]?.trim();
-    if (cip && /^\d{7}$/.test(cip)) {
-      const base = cip.slice(0, 6).split("").map(Number);
-      const key = parseInt(cip[6], 10);
-      const sum = base.reduce((acc, d, i) => acc + d * (6 - i), 0);
-      const check = sum % 11;
-      if (check === 10) {
-        invalidate("CIP", "CIP invalide : la clé ne peut être 10");
-      } else if (check !== key) {
-        invalidate("CIP", `CIP invalide (clé attendue : ${check})`);
-      }
-    } else {
-      invalidate("CIP", "Le CIP doit contenir 7 chiffres et commencer par 2");
+    
+const cip = formData["CIP"]?.trim();
+if (cip) {
+  if (/^\d{7}$/.test(cip)) {
+    const base = cip.slice(0, 6).split("").map(Number);
+    const key = parseInt(cip[6], 10);
+    const sum = base.reduce((acc, d, i) => acc + d * (6 - i), 0);
+    const check = sum % 11;
+    if (check === 10) {
+      invalidate("CIP", "CIP invalide : la clé ne peut être 10");
+    } else if (check !== key) {
+      invalidate("CIP", `CIP invalide (clé attendue : ${check})`);
     }
+  } else {
+    invalidate("CIP", "Le CIP doit contenir 7 chiffres");
+  }
+}
+
 
     const finess = formData["FINESS"]?.trim();
     if (finess && !regex.finess.test(finess)) {
