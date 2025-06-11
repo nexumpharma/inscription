@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       invalidate("FINESS", "Numéro FINESS invalide");
     }
 
-    const siren = formData["RCS (SIREN)"]?.trim();
+    const siren = formData["SIREN"]?.trim();
     if (siren && /^\d{9}$/.test(siren)) {
       const key = siren.split('').reverse().reduce((acc, d, i) => {
         let n = parseInt(d, 10);
@@ -122,10 +122,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         return acc + n;
       }, 0) % 10;
       if (key !== 0) {
-        invalidate("RCS (SIREN)", "SIREN invalide : clé de contrôle incorrecte");
+        invalidate("SIREN", "SIREN invalide : clé de contrôle incorrecte");
       }
     } else {
-      invalidate("RCS (SIREN)", "Le SIREN doit comporter 9 chiffres");
+      invalidate("SIREN", "Le SIREN doit comporter 9 chiffres");
     }
 
     if (!regex.codePostal.test(formData["Code postal"])) {
