@@ -873,35 +873,48 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
   const payload = {
     id: pharmacieId,
     fields: { horaires: JSON.stringify(data) }
-
   };
+
+  console.log("📤 Payload prêt à envoyer :", payload);
+console.log("📤 Payload stringifié :", JSON.stringify(payload));
+
+  
   console.log("📦 Payload envoyé à Supabase :", payload);
 
   const token = (await window.supabase.auth.getSession()).data.session.access_token;
 
-  fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload)
-  })
-    .then(res => {
-      if (!res.ok) throw new Error("Erreur HTTP " + res.status);
-      return res.json();
-    })
-    .then(json => {
-      console.log("✅ Enregistrement réussi via Supabase :", json);
-      if (json.error) {
-        console.error("❌ Erreur retournée par Supabase :", json.error);
-      }
-      if (afficherMessage) alert("✅ Enregistrement effectué !");
-    })
-    .catch(err => {
-      console.error("❌ Erreur update-pharmacie :", err);
+fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify(payload)
+})
+  .then(async res => {
+    let responseJson;
+    try {
+      responseJson = await res.json();
+    } catch (e) {
+      console.warn("⚠️ Réponse non JSON :", await res.text());
+      responseJson = {};
+    }
+
+    if (!res.ok) {
+      console.error("❌ Erreur HTTP Supabase :", res.status);
+      console.error("📥 Réponse d'erreur :", responseJson);
       if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
-    });
+      return;
+    }
+
+    console.log("✅ Réponse Supabase/Airtable :", responseJson);
+    if (afficherMessage) alert("✅ Enregistrement effectué !");
+  })
+  .catch(err => {
+    console.error("❌ Exception fetch() :", err);
+    if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
+  });
+
 }
 
 
