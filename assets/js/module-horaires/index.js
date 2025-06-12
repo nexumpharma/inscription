@@ -1,7 +1,7 @@
 import { injectUI, attendreModulePret } from './ui.js';
 import { hydrate } from './hydrate.js';
 import { enregistrerHoraires } from './collect.js';
-import { initAuthPage } from './auth.js'; // si tu centralises l’auth
+import { initAuthPage } from '../auth.js'; // si tu centralises l’auth
 import { getPharmacie } from './supabase.js'; // abstraction de get-pharmacie
 
 let pharmacieId = null;
