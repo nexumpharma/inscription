@@ -1,7 +1,8 @@
-import { injectUI, attendreModulePret } from './ui.js';
-import { hydrate } from './hydrate.js';
-import { enregistrerHoraires } from './collect.js';
-import { getPharmacie } from './supabase.js'; // abstraction de get-pharmacie
+const injectUI = window.injectUI;
+const attendreModulePret = window.attendreModulePret;
+const hydrate = window.hydrate;
+const enregistrerHoraires = window.enregistrerHoraires;
+const getPharmacie = window.getPharmacie;
 
 let pharmacieId = null;
 
