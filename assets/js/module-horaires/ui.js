@@ -1,6 +1,10 @@
 import { makePlage } from './plages.js';
 import { joursSemaine } from './utils.js'; // ["Lundi", "Mardi", ...]
-flatpickr.localize(flatpickr.l10ns.fr);
+import flatpickr from "flatpickr";
+import { French } from "flatpickr/dist/l10n/fr.js";
+
+flatpickr.localize(French);
+
 
 
 export function injectHorairesStyles() {
@@ -182,7 +186,7 @@ export function creerBlocJour(jour, parentContainer, isException = false) {
           initBtn.onclick = () => {
             initBtn.remove();
             status.remove();
-            plages.appendChild(window.makePlage(container));
+            plages.appendChild(makePlage(container));
             plages.style.display = "block";
             actions.style.display = "flex";
             if (advanced) {
@@ -215,7 +219,7 @@ export function creerBlocJour(jour, parentContainer, isException = false) {
   addBtn.type = "button";
   addBtn.textContent = "+ Ajouter une plage";
   addBtn.onclick = () => {
-    plages.appendChild(window.makePlage(container));
+    plages.appendChild(makePlage(container));
     plages.style.display = "block";
     actions.style.display = "flex";
     if (advancedOptions) {
@@ -232,7 +236,7 @@ export function creerBlocJour(jour, parentContainer, isException = false) {
   initBtn.onclick = () => {
     initBtn.remove();
     status.remove();
-    plages.appendChild(window.makePlage(container));
+    plages.appendChild(makePlage(container));
     plages.style.display = "block";
     actions.style.display = "flex";
     if (advancedOptions) {
