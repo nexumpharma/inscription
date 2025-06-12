@@ -4,18 +4,21 @@
   <meta charset="UTF-8" />
   <title>Horaires</title>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="../assets/css/style.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css" />
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
+<script src="../assets/js/config.js" defer></script>
+<script src="../assets/js/auth.js" defer></script>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-  <script src="../assets/js/config.js" defer></script>
-  <script src="../assets/js/auth.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-  <script src="../assets/js/module-horaires/index.js" defer></script>
+<!-- Flatpickr (non-ESM) -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+
+<!-- Module horaires (UMD-ready) -->
+<script src="../assets/js/module-horaires/utils.js" defer></script>
+<script src="../assets/js/module-horaires/plages.js" defer></script>
+<script src="../assets/js/module-horaires/ui.js" defer></script>
+<script src="../assets/js/module-horaires/index.js" defer></script>
+
 
 </head>
 
