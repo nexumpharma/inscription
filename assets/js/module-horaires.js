@@ -886,6 +886,9 @@ debug("📤 Payload stringifié :", JSON.stringify(payload));
 
   const token = (await window.supabase.auth.getSession()).data.session.access_token;
 
+// ⚠️ Attendre un peu avant fetch pour éviter un bug Chrome sur les headers ou CORS
+await new Promise(resolve => setTimeout(resolve, 10));
+  
   try {
     const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
       method: 'POST',
