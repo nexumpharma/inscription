@@ -893,6 +893,7 @@ debug("📤 Payload stringifié :", JSON.stringify(payload));
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
+        credentials: "include", // ✅ ajoute ceci
       body: JSON.stringify(payload)
     });
 
