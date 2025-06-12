@@ -67,31 +67,22 @@ label.toggle {
 }`;
 document.head.appendChild(style);
 
-function initFlatpickrHeure(input) {
-  const fp = flatpickr(input, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    time_24hr: true,
-    locale: "fr",
-    allowInput: true,
-    defaultDate: null,
-    onOpen(selectedDates, dateStr, instance) {
-      if (!instance.input.value) {
-        instance.setDate("12:00", true, "H:i");
-        instance.input.value = "12:00"; // ⬅️ On force la valeur dans l'input
+  function initFlatpickrHeure(input) {
+    return flatpickr(input, {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      locale: "fr",
+      allowInput: true,
+      defaultDate: null,
+      onOpen(selectedDates, dateStr, instance) {
+        if (!instance.input.value) {
+          instance.setDate("12:00", true, "H:i");
+        }
       }
-    }
-  });
-
-  // ⬅️ Pour les cas où l'utilisateur ne touche pas l'input après ajout
-  if (!input.value) {
-    input.value = "12:00";
+    });
   }
-
-  return fp;
-}
-
 
   function makePlage(container, debut = "", fin = "") {
       console.log("🧩 makePlage appelée avec :", { debut, fin });
@@ -879,23 +870,11 @@ function enregistrerHoraires() {
 
 
 async function sauvegarderDansAirtable(data, afficherMessage = false) {
-let cleanData;
+  const payload = {
+    id: pharmacieId,
+    fields: { horaires: JSON.stringify(data) }
 
-try {
-  cleanData = JSON.parse(JSON.stringify(data)); // supprime undefined, DOM nodes, fonctions...
-} catch (err) {
-  console.error("❌ Erreur lors du nettoyage JSON :", err);
-  alert("❌ Les horaires contiennent des données non valides. Veuillez vérifier.");
-  return;
-}
-
-const payload = {
-  id: pharmacieId,
-  fields: { horaires: JSON.stringify(cleanData) }
-};
-
-
-
+  };
   console.log("📦 Payload envoyé à Supabase :", payload);
 
   const token = (await window.supabase.auth.getSession()).data.session.access_token;
