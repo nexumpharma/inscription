@@ -100,3 +100,6 @@
 
   global.hydrate = hydrate;
 })(window);
+
+window.attendreModulePret = attendreModulePret;
+window.hydrate = hydrate;
