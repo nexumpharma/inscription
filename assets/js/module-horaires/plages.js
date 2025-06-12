@@ -1,8 +1,7 @@
-import flatpickr from "flatpickr";
-import { French } from "flatpickr/dist/l10n/fr.js";
-flatpickr.localize(French);
-
 export function initFlatpickrHeure(input) {
+  const flatpickr = window.flatpickr;
+  flatpickr.localize(flatpickr.l10ns.fr);
+
   return flatpickr(input, {
     enableTime: true,
     noCalendar: true,
@@ -33,7 +32,6 @@ export function makePlage(container, debut = "", fin = "") {
     div.remove();
     const plages = container.querySelectorAll('.plage');
     if (plages.length === 0) {
-      // Réaffiche "Fermé" si plus aucune plage
       let status = container.querySelector('.ferme');
       if (!status) {
         status = document.createElement("div");
@@ -42,7 +40,6 @@ export function makePlage(container, debut = "", fin = "") {
       }
       container.insertBefore(status, container.querySelector('.plages'));
 
-      // Réaffiche bouton initial
       const initBtn = document.createElement("button");
       initBtn.type = "button";
       initBtn.textContent = "+ Ajouter une plage";
@@ -62,7 +59,6 @@ export function makePlage(container, debut = "", fin = "") {
       };
       container.insertBefore(initBtn, container.querySelector('.plages'));
 
-      // Réinitialise options
       const advanced = container.querySelector("details");
       if (advanced) {
         advanced.style.display = "none";
