@@ -1,7 +1,60 @@
 import { makePlage } from './plages.js';
-import { joursSemaine } from './utils.js';
+import { joursSemaine } from './utils.js'; // ["Lundi", "Mardi", ...]
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import { French } from "flatpickr/dist/l10n/fr.js";
+
+flatpickr.localize(French);
+
+export function injectHorairesStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+#module-horaires { max-width: 700px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
+.tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
+.tab-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+}
+.tab-button.active {
+  background: #fff;
+  border-bottom: none;
+  font-weight: bold;
+}
+.tab-content {
+  display: none;
+  border: 1px solid #ccc;
+  border-top: none;
+  padding: 1rem;
+  border-radius: 0 0 6px 6px;
+}
+.tab-content.active { display: block; }
+.jour-container {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+.plage { display: flex; gap: 1rem; margin-bottom: 0.5rem; align-items: center; }
+.ferme { color: #777; font-style: italic; margin: 0.5rem 0; }
+.toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.actions { margin-top: 1rem; }
+details { margin-top: 1rem; }
+details summary { cursor: pointer; font-weight: bold; }
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+  `;
+  document.head.appendChild(style);
+}
 
 export async function injectUI() {
+  injectHorairesStyles();
+
   const container = document.getElementById("module-horaires");
   if (!container) {
     console.error("❌ Élément #module-horaires introuvable");
@@ -42,62 +95,6 @@ export async function injectUI() {
     creerBlocJour(jour, container, false);
   });
 
-  const flatpickr = window.flatpickr;
-  flatpickr.localize(flatpickr.l10ns.fr);
-
-  flatpickr("#exception-start", {
-    dateFormat: "d/m/Y",
-    allowInput: true,
-    defaultDate: null,
-  });
-
-  flatpickr("#exception-end", {
-    dateFormat: "d/m/Y",
-    allowInput: true,
-    defaultDate: null,
-  });
-
-  window.moduleHorairesReady = true;
-  document.dispatchEvent(new Event("moduleHorairesReady"));
-}
-
-export function attendreModulePret() {
-  return new Promise(resolve => {
-    if (window.moduleHorairesReady) return resolve();
-    document.addEventListener("moduleHorairesReady", resolve, { once: true });
-  });
-}
-
-function creerBlocJour(jour, parentContainer, isException = false) {
-  const container = document.createElement("div");
-  container.className = "jour-container";
-  container.dataset.jour = jour;
-
-  const title = document.createElement("h3");
-  title.textContent = jour;
-
-  const status = document.createElement("div");
-  status.className = "ferme";
-  status.textContent = "Fermé";
-
-  const plages = document.createElement("div");
-  plages.className = "plages";
-  plages.style.display = "none";
-
-  const actions = document.createElement("div");
-  actions.className = "actions";
-  actions.style.display = "none";
-
-  const addBtn = document.createElement("button");
-  addBtn.type = "button";
-  addBtn.textContent = "+ Ajouter une plage";
-  addBtn.addEventListener("click", () => {
-    plages.appendChild(makePlage(container));
-    plages.style.display = "block";
-    actions.style.display = "flex";
-  });
-
-  actions.appendChild(addBtn);
-  container.append(title, status, plages, actions);
-  parentContainer.appendChild(container);
+  flatpickr("#exception-start", { dateFormat: "d/m/Y" });
+  flatpickr("#exception-end", { dateFormat: "d/m/Y" });
 }
