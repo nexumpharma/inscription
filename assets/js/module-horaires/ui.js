@@ -1,13 +1,18 @@
-import { makePlage } from './plages.js';
-import { joursSemaine } from './utils.js'; // ["Lundi", "Mardi", ...]
-import flatpickr from "https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/esm/index.js";
-import { French } from "https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/esm/l10n/fr.js";
+// Utilisation en mode UMD
+const makePlage = window.makePlage;
+const joursSemaine = window.joursSemaine;
+
+// Flatpickr global (via <script> non-ESM)
+if (window.flatpickr && window.flatpickr.l10ns) {
+  window.flatpickr.localize(window.flatpickr.l10ns.fr);
+}
+
 
 flatpickr.localize(French);
 
 
 
-export function injectHorairesStyles() {
+function injectHorairesStyles() {
   const style = document.createElement('style');
   style.textContent = `
 #module-horaires { max-width: 700px; margin: 2rem auto; font-family: 'Segoe UI', sans-serif; }
@@ -53,7 +58,7 @@ details summary { cursor: pointer; font-weight: bold; }
   document.head.appendChild(style);
 }
 
-export async function injectUI() {
+async function injectUI() {
   injectHorairesStyles();
 
   const container = document.getElementById("module-horaires");
@@ -100,7 +105,7 @@ export async function injectUI() {
   flatpickr("#exception-end", { dateFormat: "d/m/Y" });
 }
 
-export function creerBlocJour(jour, parentContainer, isException = false) {
+function creerBlocJour(jour, parentContainer, isException = false) {
   const container = document.createElement("div");
   container.className = "jour-container";
   container.dataset.jour = jour;
@@ -249,3 +254,6 @@ export function creerBlocJour(jour, parentContainer, isException = false) {
   if (advancedOptions) container.appendChild(advancedOptions);
   parentContainer.appendChild(container);
 }
+
+window.injectUI = injectUI;
+window.creerBlocJour = creerBlocJour;
