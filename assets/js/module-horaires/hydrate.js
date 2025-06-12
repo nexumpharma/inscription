@@ -30,9 +30,27 @@ function hydrateHorairesHabituels(habituels) {
     }
 
     if (Array.isArray(info.plages)) {
+      const initBtn = container.querySelector(".init-ajouter");
+      if (initBtn) initBtn.remove();
+
+      const status = container.querySelector(".ferme");
+      if (status) status.remove();
+
+      const plagesContainer = container.querySelector(".plages");
+      const actionsContainer = container.querySelector(".actions");
+
       info.plages.forEach(({ debut, fin }) => {
         ajouterPlage(jour, debut, fin, container);
       });
+
+      plagesContainer.style.display = "block";
+      actionsContainer.style.display = "flex";
+
+      const advanced = container.querySelector("details");
+      if (advanced) {
+        advanced.style.display = "block";
+        advanced.open = false;
+      }
     }
   });
 }
