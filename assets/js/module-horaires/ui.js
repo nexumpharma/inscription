@@ -1,10 +1,7 @@
 import { makePlage } from './plages.js';
 import { joursSemaine } from './utils.js'; // ["Lundi", "Mardi", ...]
-import flatpickr from "flatpickr";
-import "flatpickr/dist/flatpickr.css";
-import { French } from "flatpickr/dist/l10n/fr.js";
+flatpickr.localize(flatpickr.l10ns.fr);
 
-flatpickr.localize(French);
 
 export function injectHorairesStyles() {
   const style = document.createElement('style');
