@@ -9,17 +9,37 @@ console.log("initAuthPage", window.initAuthPage);
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("✅ DOM ready");
 
-  if (
+  const allReady =
     window.injectUI &&
     window.attendreModulePret &&
     window.hydrate &&
     window.enregistrerHoraires &&
     window.getPharmacie &&
-    window.initAuthPage
-  ) {
-    await lancerModuleHoraires();
+    window.initAuthPage;
+
+  if (allReady) {
+    await window.lancerModuleHoraires();
   } else {
     console.error("❌ Certains modules UMD ne sont pas chargés correctement au moment du DOMContentLoaded.");
+
+    // 💤 Tentative de relancer après un petit délai (par sécurité)
+    setTimeout(async () => {
+      const stillMissing = [
+        !window.injectUI && "injectUI",
+        !window.attendreModulePret && "attendreModulePret",
+        !window.hydrate && "hydrate",
+        !window.enregistrerHoraires && "enregistrerHoraires",
+        !window.getPharmacie && "getPharmacie",
+        !window.initAuthPage && "initAuthPage",
+      ].filter(Boolean);
+
+      if (stillMissing.length === 0) {
+        console.warn("⏳ Modules UMD présents après délai, on tente un lancement");
+        await window.lancerModuleHoraires();
+      } else {
+        console.error("❌ Modules toujours manquants :", stillMissing.join(", "));
+      }
+    }, 300);
   }
 });
 
