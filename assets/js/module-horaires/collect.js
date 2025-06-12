@@ -16,7 +16,11 @@ export function collectHoraires() {
     });
 
     const ouvert = ouvert24h || plages.length > 0;
-    result.habituels[jour] = { ouvert, ouvert_24h: ouvert24h, frequence, plages };
+result.habituels[jour] = {
+  ...(ouvert ? { plages } : {}),
+  ouvert_24h: ouvert24h,
+  frequence
+};
   });
 
   // ➕ Horaires exceptionnels
@@ -75,7 +79,12 @@ export async function enregistrerHoraires(pharmacieId) {
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || `Erreur HTTP ${res.status}`);
     console.log("✅ Enregistrement Supabase réussi :", json);
-    alert("✅ Horaires enregistrés avec succès !");
+    const statusDiv = document.getElementById("save-status");
+if (statusDiv) {
+  statusDiv.style.display = "block";
+  setTimeout(() => statusDiv.style.display = "none", 3000);
+}
+
   } catch (err) {
     console.error("❌ Erreur lors de l'enregistrement :", err);
     alert("❌ Erreur lors de l'enregistrement des horaires");
