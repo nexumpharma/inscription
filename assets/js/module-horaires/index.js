@@ -1,7 +1,6 @@
 import { injectUI, attendreModulePret } from './ui.js';
 import { hydrate } from './hydrate.js';
 import { enregistrerHoraires } from './collect.js';
-import { initAuthPage } from '../auth.js'; // si tu centralises l’auth
 import { getPharmacie } from './supabase.js'; // abstraction de get-pharmacie
 
 let pharmacieId = null;
@@ -9,9 +8,12 @@ let pharmacieId = null;
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Initialisation du module horaires...");
 
-  // 1. Authentification
-  const session = await initAuthPage();
-  if (!session) return;
+  // 1. Authentification via window (UMD)
+  const session = await window.initAuthPage?.();
+  if (!session) {
+    console.warn("❌ Utilisateur non authentifié");
+    return;
+  }
 
   // 2. Injection UI & DOM ready
   await injectUI();
