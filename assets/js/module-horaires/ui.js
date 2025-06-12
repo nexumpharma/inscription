@@ -255,5 +255,6 @@ function creerBlocJour(jour, parentContainer, isException = false) {
   parentContainer.appendChild(container);
 }
 
-window.injectUI = injectUI;
-window.creerBlocJour = creerBlocJour;
+if (!window.injectUI) window.injectUI = injectUI;
+if (!window.creerBlocJour) window.creerBlocJour = creerBlocJour;
+
