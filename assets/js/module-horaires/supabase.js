@@ -32,3 +32,7 @@ export async function getPharmacie() {
     return { id: null, horaires: null };
   }
 }
+
+window.getAuthToken = getAuthToken;
+window.getPharmacie = getPharmacie;
+
