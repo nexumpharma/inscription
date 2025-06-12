@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <title>Horaires</title>
-  <link rel="stylesheet" href="../assets/css/style.css" />
 
-  <!-- Flatpickr -->
+  <!-- Styles -->
+  <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css" />
 
-  <!-- Supabase -->
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-
-  <!-- Flatpickr -->
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
-
-  <!-- Config + Auth -->
   <script src="../assets/js/config.js" defer></script>
   <script src="../assets/js/auth.js" defer></script>
-  <script type="module" src="../assets/js/module-horaires/index.js"></script>
+  <script src="../assets/js/module-horaires/index.js" defer></script>
 </head>
+
 <body>
   <div id="app" data-page="horaires" style="display: none;">
 
