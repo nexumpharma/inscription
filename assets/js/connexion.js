@@ -1,5 +1,8 @@
 // assets/js/connexion.js
 
+const DEBUG = false;
+function debug(...args) { if (DEBUG) console.log(...args); }
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById('login-form');
   const emailInput = document.getElementById('email');
@@ -24,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const result = await response.json();
-      console.log('Réponse backend:', result);
+      debug('Réponse backend:', result);
 
       if (response.ok) {
         messageEl.textContent = 'Consultez votre boîte mail pour vous connecter.';

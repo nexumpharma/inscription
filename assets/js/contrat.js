@@ -2,6 +2,8 @@
 
 const supabase = window.supabase;
 const SUPABASE_FUNCTION_BASE = window.config.SUPABASE_FUNCTION_BASE;
+const DEBUG = false;
+function debug(...args) { if (DEBUG) console.log(...args); }
 const logout = async () => {
   await supabase.auth.signOut();
   window.location.href = "connexion.html";
@@ -38,7 +40,7 @@ function setStepStatus(stepElement, status) {
   stepElement.classList.remove("pending", "done", "error");
   if (status) stepElement.classList.add(status);
 
-  console.log(`⏱ Étape [${stepElement.id}] → ${status}`);
+  debug(`⏱ Étape [${stepElement.id}] → ${status}`);
 }
 
 
@@ -56,9 +58,17 @@ async function run() {
   statusContainer.style.display = "flex";
   logoutBtn.style.display = "inline-block";
 
-  const record = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(r => r.json());
+  let record;
+  try {
+    const recordRes = await fetch(`${SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    record = await recordRes.json();
+  } catch (err) {
+    console.error("❌ Exception fetch() :", err.message);
+    alert(`❌ Impossible de récupérer les informations : ${err.message}`);
+    return;
+  }
 
   const fields = record?.records?.[0]?.fields;
   const recordId = record?.records?.[0]?.id;
