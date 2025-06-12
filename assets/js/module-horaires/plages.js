@@ -1,4 +1,4 @@
-export function initFlatpickrHeure(input) {
+window.initFlatpickrHeure = function (input) {
   const flatpickr = window.flatpickr;
   flatpickr.localize(flatpickr.l10ns.fr);
 
@@ -18,7 +18,7 @@ export function initFlatpickrHeure(input) {
   });
 }
 
-export function makePlage(container, debut = "", fin = "") {
+window.makePlage = function (container, debut = "", fin = "") {
   const div = document.createElement("div");
   div.className = "plage";
   div.innerHTML = `
@@ -80,7 +80,7 @@ export function makePlage(container, debut = "", fin = "") {
   return div;
 }
 
-export function ajouterPlage(jour, debut, fin, container = null) {
+window.ajouterPlage = function (jour, debut, fin, container = null) {
   const jourContainer = container || document.querySelector(`.jour-container[data-jour="${jour}"]`);
   if (!jourContainer) return;
 
