@@ -1,6 +1,6 @@
 // Utilise window.supabase qui est déjà initialisé globalement
 
-export async function getAuthToken() {
+async function getAuthToken() {
   try {
     const { data } = await window.supabase.auth.getSession();
     return data?.session?.access_token || null;
@@ -10,7 +10,7 @@ export async function getAuthToken() {
   }
 }
 
-export async function getPharmacie() {
+async function getPharmacie() {
   const token = await getAuthToken();
   if (!token) return { id: null, horaires: null };
 
