@@ -1,5 +1,8 @@
 // module-horaires.js
 
+const DEBUG = false;
+function debug(...args) { if (DEBUG) console.log(...args); }
+
 // Inject styles
 const style = document.createElement('style');
 style.textContent = `
@@ -85,7 +88,7 @@ document.head.appendChild(style);
   }
 
   function makePlage(container, debut = "", fin = "") {
-      console.log("🧩 makePlage appelée avec :", { debut, fin });
+      debug("🧩 makePlage appelée avec :", { debut, fin });
     const div = document.createElement("div");
     div.className = "plage";
     div.innerHTML = `
@@ -154,7 +157,7 @@ container.insertBefore(status, container.querySelector('.plages'));
 
     div.querySelectorAll(".heure").forEach(input => initFlatpickrHeure(input));
  
-    console.log("🧱 makePlage retourne :", div.outerHTML);
+    debug("🧱 makePlage retourne :", div.outerHTML);
        return div;
   }
 
@@ -164,11 +167,11 @@ function ajouterPlage(jour, debut, fin, container = null) {
   if (!jourContainer) return;
   const plagesContainer = jourContainer.querySelector(".plages");
   const node = makePlage(jourContainer, debut, fin);
-console.log(`📌 Ajout manuel d'une plage dans ${jour} =>`, node.outerHTML);
+debug(`📌 Ajout manuel d'une plage dans ${jour} =>`, node.outerHTML);
 plagesContainer.appendChild(node);
-console.log(`📌 Après ajout, plagesContainer :`, plagesContainer.innerHTML);
+debug(`📌 Après ajout, plagesContainer :`, plagesContainer.innerHTML);
 
-  console.log("📥 DOM après appendChild :", plagesContainer.innerHTML);
+  debug("📥 DOM après appendChild :", plagesContainer.innerHTML);
   plagesContainer.style.display = "block";
   jourContainer.querySelector(".actions").style.display = "flex";
 }
@@ -211,11 +214,11 @@ async function hydrateModuleFromJson(json) {
   
 
   const { habituels = {}, exceptionnels = [] } = json;
-console.log("✅ Entrées habituels :", Object.entries(habituels));
-console.log("✅ Entrées exceptionnels :", exceptionnels);
+debug("✅ Entrées habituels :", Object.entries(habituels));
+debug("✅ Entrées exceptionnels :", exceptionnels);
   
   // HABITUELS
-  console.log("📆 Hydratation des horaires habituels :", Object.entries(habituels));
+  debug("📆 Hydratation des horaires habituels :", Object.entries(habituels));
 
   for (const [jour, data] of Object.entries(habituels)) {
     const container = document.querySelector(`.jour-container[data-jour="${jour}"]`);
@@ -224,7 +227,7 @@ console.log("✅ Entrées exceptionnels :", exceptionnels);
       continue;
     }
 
-    console.log(`🔧 Hydratation de ${jour} avec :`, data);
+    debug(`🔧 Hydratation de ${jour} avec :`, data);
 
     const boutonInit = container.querySelector(".init-ajouter");
     const divFerme = container.querySelector(".ferme");
@@ -350,17 +353,17 @@ if (hasPlages && boutonInit) {
     // Ajout des plages
     if (data.plages && data.plages.length > 0) {
       data.plages.forEach(({ debut, fin }) => {
-        console.log(`➕ Ajout plage ${debut} - ${fin} pour ${jour}`);
+        debug(`➕ Ajout plage ${debut} - ${fin} pour ${jour}`);
         ajouterPlage(jour, debut, fin);
       });
     } else {
-      console.log(`ℹ️ Aucune plage à afficher pour ${jour}`);
+      debug(`ℹ️ Aucune plage à afficher pour ${jour}`);
     }
     majAffichageJour(container, data);
   }
 
 // EXCEPTIONNELS
-console.log("📆 Hydratation des horaires exceptionnels :", exceptionnels);
+debug("📆 Hydratation des horaires exceptionnels :", exceptionnels);
 
 for (let i = 0; i < exceptionnels.length; i++) {
   const item = exceptionnels[i];
@@ -434,7 +437,7 @@ if (plagesContainer) {
 
 
 
-  console.log("✅ Hydratation terminée !");
+  debug("✅ Hydratation terminée !");
 }
 
 
@@ -749,7 +752,7 @@ window.moduleHorairesReady = true;
   }
 
   pharmacieId = data.id;
-  console.log("✅ ID pharmacie :", pharmacieId);
+  debug("✅ ID pharmacie :", pharmacieId);
 
   // Hydratation
   if (data.fields?.horaires) {
@@ -768,15 +771,15 @@ window.moduleHorairesReady = true;
       check();
     });
 
-    console.log("✅ Hydratation du module avec les données :", data.fields.horaires);
+    debug("✅ Hydratation du module avec les données :", data.fields.horaires);
 function attendreModulePretEtHydrater(horaires) {
   if (window.moduleHorairesReady) {
-    console.log("✅ Module prêt, on hydrate");
+    debug("✅ Module prêt, on hydrate");
     hydrateModuleFromJson(horaires);
   } else {
     console.warn("⏳ Module pas encore prêt, on attend...");
     document.addEventListener("moduleHorairesReady", () => {
-      console.log("🟢 moduleHorairesReady détecté (via event)");
+      debug("🟢 moduleHorairesReady détecté (via event)");
       hydrateModuleFromJson(horaires);
     }, { once: true });
   }
@@ -864,7 +867,7 @@ function collectHoraires() {
 
 function enregistrerHoraires() {
   const data = collectHoraires();
-  console.log("➡️ Données à enregistrer :", data);
+  debug("➡️ Données à enregistrer :", data);
   sauvegarderDansAirtable(data, true); // true = affichage du message "Enregistrement réussi"
 }
 
@@ -875,23 +878,24 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
     fields: { horaires: JSON.stringify(data) }
   };
 
-  console.log("📤 Payload prêt à envoyer :", payload);
-console.log("📤 Payload stringifié :", JSON.stringify(payload));
+  debug("📤 Payload prêt à envoyer :", payload);
+debug("📤 Payload stringifié :", JSON.stringify(payload));
 
   
-  console.log("📦 Payload envoyé à Supabase :", payload);
+  debug("📦 Payload envoyé à Supabase :", payload);
 
   const token = (await window.supabase.auth.getSession()).data.session.access_token;
 
-fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  },
-  body: JSON.stringify(payload)
-})
-  .then(async res => {
+  try {
+    const res = await fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload)
+    });
+
     let responseJson;
     try {
       responseJson = await res.json();
@@ -903,17 +907,16 @@ fetch(`${window.config.SUPABASE_FUNCTION_BASE}/update-pharmacie`, {
     if (!res.ok) {
       console.error("❌ Erreur HTTP Supabase :", res.status);
       console.error("📥 Réponse d'erreur :", responseJson);
-      if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
+      if (afficherMessage) alert(`❌ Erreur lors de l'enregistrement : ${responseJson.error || res.statusText}`);
       return;
     }
 
-    console.log("✅ Réponse Supabase/Airtable :", responseJson);
+    debug("✅ Réponse Supabase/Airtable :", responseJson);
     if (afficherMessage) alert("✅ Enregistrement effectué !");
-  })
-  .catch(err => {
-    console.error("❌ Exception fetch() :", err);
-    if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
-  });
+  } catch (err) {
+    console.error("❌ Exception fetch() :", err.message);
+    if (afficherMessage) alert(`❌ Erreur lors de l'enregistrement : ${err.message}`);
+  }
 
 }
 
@@ -929,7 +932,7 @@ function attendreModulePret() {
   return new Promise(resolve => {
     const check = () => {
       if (window.moduleHorairesReady) {
-        console.log("🟢 moduleHorairesReady détecté");
+        debug("🟢 moduleHorairesReady détecté");
         resolve();
       } else {
         setTimeout(check, 100);

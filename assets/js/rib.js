@@ -174,9 +174,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("nextBtn").addEventListener("click", () => saveDataAndNavigate("horaires.html"));
 
   // 🔄 Chargement des données initiales
-  const record = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(r => r.json());
+  let record;
+  try {
+    const recordRes = await fetch(`${config.SUPABASE_FUNCTION_BASE}/get-pharmacie`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    record = await recordRes.json();
+  } catch (err) {
+    console.error("❌ Exception fetch() :", err.message);
+    alert(`❌ Erreur lors du chargement : ${err.message}`);
+    return;
+  }
 
   const fields = record?.records?.[0]?.fields;
   recordId = record?.records?.[0]?.id;
