@@ -98,3 +98,153 @@ export async function injectUI() {
   flatpickr("#exception-start", { dateFormat: "d/m/Y" });
   flatpickr("#exception-end", { dateFormat: "d/m/Y" });
 }
+
+export function creerBlocJour(jour, parentContainer, isException = false) {
+  const container = document.createElement("div");
+  container.className = "jour-container";
+  container.dataset.jour = jour;
+
+  const title = document.createElement("h3");
+  title.textContent = jour.charAt(0).toUpperCase() + jour.slice(1);
+
+  const status = document.createElement("div");
+  status.className = "ferme";
+  status.textContent = "Fermé";
+
+  const plages = document.createElement("div");
+  plages.className = "plages";
+  plages.style.display = "none";
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.style.display = "none";
+
+  let advancedOptions = null;
+  let toggle24h, check24h;
+
+  if (!isException) {
+    advancedOptions = document.createElement("details");
+    advancedOptions.style.display = "none";
+
+    const summary = document.createElement("summary");
+    summary.textContent = "Options avancées";
+    advancedOptions.appendChild(summary);
+
+    const freqLabel = document.createElement("label");
+    freqLabel.innerHTML = `Semaine : <select class='frequence'>
+      <option value='toutes'>Toutes les semaines</option>
+      <option value='paire'>Semaines paires</option>
+      <option value='impaire'>Semaines impaires</option>
+    </select>`;
+
+    toggle24h = document.createElement("label");
+    toggle24h.className = "toggle";
+    toggle24h.style.marginBottom = "1rem";
+    toggle24h.dataset.alone = "false";
+
+    check24h = document.createElement("input");
+    check24h.type = "checkbox";
+    check24h.className = "ouvert24hCheck";
+
+    check24h.addEventListener("change", () => {
+      let status = container.querySelector(".ferme");
+      const plages = container.querySelector(".plages");
+      const actions = container.querySelector(".actions");
+      const initBtn = container.querySelector(".init-ajouter");
+      const advanced = container.querySelector("details");
+      const freq = container.querySelector("select.frequence");
+
+      if (!status) {
+        status = document.createElement("div");
+        status.className = "ferme";
+        container.insertBefore(status, plages);
+      }
+
+      if (check24h.checked) {
+        status.textContent = "Ouvert 24h/24";
+        plages.innerHTML = "";
+        plages.style.display = "none";
+        actions.style.display = "none";
+        if (initBtn) initBtn.style.display = "none";
+        if (advanced) advanced.style.display = "none";
+        if (freq) freq.value = "toutes";
+        if (toggle24h.dataset.alone !== "true") {
+          container.appendChild(toggle24h);
+          toggle24h.dataset.alone = "true";
+        }
+      } else {
+        status.textContent = "Fermé";
+        plages.style.display = "none";
+        actions.style.display = "none";
+        let initBtn = container.querySelector(".init-ajouter");
+        if (!initBtn) {
+          initBtn = document.createElement("button");
+          initBtn.type = "button";
+          initBtn.className = "init-ajouter";
+          initBtn.textContent = "+ Ajouter une plage";
+          initBtn.onclick = () => {
+            initBtn.remove();
+            status.remove();
+            plages.appendChild(window.makePlage(container));
+            plages.style.display = "block";
+            actions.style.display = "flex";
+            if (advanced) {
+              advanced.style.display = "block";
+              advanced.open = false;
+            }
+          };
+          container.insertBefore(initBtn, plages);
+        } else {
+          initBtn.style.display = "inline-block";
+        }
+
+        if (toggle24h.dataset.alone === "true" && advanced) {
+          advanced.appendChild(toggle24h);
+          toggle24h.dataset.alone = "false";
+        }
+
+        if (advanced) advanced.style.display = "none";
+      }
+    });
+
+    toggle24h.appendChild(check24h);
+    toggle24h.append("Ouvert 24h/24");
+
+    advancedOptions.appendChild(freqLabel);
+    advancedOptions.appendChild(toggle24h);
+  }
+
+  const addBtn = document.createElement("button");
+  addBtn.type = "button";
+  addBtn.textContent = "+ Ajouter une plage";
+  addBtn.onclick = () => {
+    plages.appendChild(window.makePlage(container));
+    plages.style.display = "block";
+    actions.style.display = "flex";
+    if (advancedOptions) {
+      advancedOptions.style.display = "block";
+      advancedOptions.open = false;
+    }
+  };
+  actions.appendChild(addBtn);
+
+  const initBtn = document.createElement("button");
+  initBtn.type = "button";
+  initBtn.className = "init-ajouter";
+  initBtn.textContent = "+ Ajouter une plage";
+  initBtn.onclick = () => {
+    initBtn.remove();
+    status.remove();
+    plages.appendChild(window.makePlage(container));
+    plages.style.display = "block";
+    actions.style.display = "flex";
+    if (advancedOptions) {
+      advancedOptions.style.display = "block";
+      advancedOptions.open = false;
+    }
+  };
+
+  container.append(title, status, initBtn, plages, actions);
+  if (advancedOptions) container.appendChild(advancedOptions);
+  parentContainer.appendChild(container);
+}
