@@ -7,7 +7,7 @@ if (window.flatpickr && window.flatpickr.l10ns) {
   window.flatpickr.localize(window.flatpickr.l10ns.fr);
 }
 
-
+const French = window.flatpickr.l10ns.fr;
 flatpickr.localize(French);
 
 
