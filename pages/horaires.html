@@ -2,70 +2,29 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Horaires</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module Horaires</title>
+  <!-- 1. Supabase client et config/auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.x/dist/umd/supabase.js" defer></script>
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-<script src="../assets/js/config.js" defer></script>
-<script src="../assets/js/auth.js" defer></script>
+  <!-- 2. Wrapper cloud pour get-pharmacie -->
+  <script src="../assets/js/module-horaires/supabase.js" defer></script>
 
-<!-- Flatpickr -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+  <!-- 3. Modules utilitaires -->
+  <script src="../assets/js/module-horaires/utils.js" defer></script>
+  <script src="../assets/js/module-horaires/plages.js" defer></script>
+  <script src="../assets/js/module-horaires/ui.js" defer></script>
+  <script src="../assets/js/module-horaires/hydrate.js" defer></script>
 
-<!-- 📦 Modules UMD, dans cet ordre -->
-<script src="../assets/js/module-horaires/utils.js" defer></script>       <!-- ✅ window.joursSemaine -->
-<script src="../assets/js/module-horaires/plages.js" defer></script>      <!-- ✅ window.makePlage -->
-<script src="../assets/js/module-horaires/ui.js" defer></script>          <!-- ✅ window.injectUI -->
-<script src="../assets/js/module-horaires/hydrate.js" defer></script>     <!-- ✅ window.hydrate -->
-<script src="../assets/js/module-horaires/collect.js" defer></script>     <!-- ✅ window.enregistrerHoraires -->
-<script src="../assets/js/module-horaires/index.js" defer></script>       <!-- ✅ point d’entrée -->
+  <!-- 4. Collecte et sauvegarde -->
+  <script src="../assets/js/module-horaires/collect.js" defer></script>
 
+  <!-- 5. Point d’entrée -->
+  <script src="../assets/js/module-horaires/index.js" defer></script>
 </head>
-
 <body>
-  <div id="app" data-page="horaires" style="display: none;">
-
-    <!-- component:Header -->
-    <header>
-      <h1>
-        <a href="../index.html" style="color: inherit; text-decoration: none;">
-          <strong>NEXUM</strong>PHARMA
-        </a>
-      </h1>
-    </header>
-
-    <!-- component:Status -->
-    <div id="status-container" class="status-container">
-      <div id="status">Chargement...</div>
-      <button id="logoutBtn" class="logoutBtn">Se déconnecter</button>
-    </div>
-
-    <!-- component:Main -->
-    <main>
-  <div style="max-width: 700px; margin: 0 auto;">
-    <h2>Horaires d'ouverture</h2>
-    <div id="module-horaires"></div>
-
-    <div class="button-container">
-      <button id="prevBtn" type="button">Précédent</button>
-      <button id="nextBtn" type="button">Suivant</button>
-    </div>
-
-    <!-- ✅ Message confirmation -->
-    <div id="save-status" style="text-align: center; margin-top: 1rem; color: green; display: none;">
-      ✅ Enregistré avec succès
-    </div>
-  </div>
-</main>
-
-
-    <!-- component:Footer -->
-    <footer>
-      <p style="text-align: center; font-size: 0.9em; color: #888;">© Nexum Pharma 2025</p>
-    </footer>
-  </div>
-
-
+  <div id="module-horaires-container"></div>
 </body>
 </html>
