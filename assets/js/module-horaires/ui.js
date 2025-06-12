@@ -1,14 +1,16 @@
-// Utilisation en mode UMD
-const makePlage = window.makePlage;
-const joursSemaine = window.joursSemaine;
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.makePlage || !window.joursSemaine) {
+    console.error("❌ makePlage ou joursSemaine non définis. Vérifie l'ordre des scripts.");
+    return;
+  }
+
+  const makePlage = window.makePlage;
+  const joursSemaine = window.joursSemaine;
 
 // Flatpickr global (via <script> non-ESM)
 if (window.flatpickr && window.flatpickr.l10ns) {
   window.flatpickr.localize(window.flatpickr.l10ns.fr);
 }
-
-
-
 
 function injectHorairesStyles() {
   const style = document.createElement('style');
@@ -258,3 +260,4 @@ function creerBlocJour(jour, parentContainer, isException = false) {
 if (!window.injectUI) window.injectUI = injectUI;
 if (!window.creerBlocJour) window.creerBlocJour = creerBlocJour;
 
+});
