@@ -7,8 +7,6 @@ if (window.flatpickr && window.flatpickr.l10ns) {
   window.flatpickr.localize(window.flatpickr.l10ns.fr);
 }
 
-const French = window.flatpickr.l10ns.fr;
-flatpickr.localize(French);
 
 
 
@@ -101,8 +99,10 @@ async function injectUI() {
     creerBlocJour(jour, container, false);
   });
 
-  flatpickr("#exception-start", { dateFormat: "d/m/Y" });
-  flatpickr("#exception-end", { dateFormat: "d/m/Y" });
+if (window.flatpickr) {
+  window.flatpickr("#exception-start", { dateFormat: "d/m/Y" });
+  window.flatpickr("#exception-end", { dateFormat: "d/m/Y" });
+}
 }
 
 function creerBlocJour(jour, parentContainer, isException = false) {
