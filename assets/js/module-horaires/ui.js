@@ -1,10 +1,5 @@
 import { makePlage } from './plages.js';
-import { joursSemaine } from './utils.js'; // ["Lundi", "Mardi", ...]
-import flatpickr from "flatpickr";
-import "flatpickr/dist/flatpickr.css";
-import { French } from "flatpickr/dist/l10n/fr.js";
-
-flatpickr.localize(French);
+import { joursSemaine } from './utils.js';
 
 export async function injectUI() {
   const container = document.getElementById("module-horaires");
@@ -47,7 +42,9 @@ export async function injectUI() {
     creerBlocJour(jour, container, false);
   });
 
-  // Init Flatpickr pour les exceptions
+  const flatpickr = window.flatpickr;
+  flatpickr.localize(flatpickr.l10ns.fr);
+
   flatpickr("#exception-start", {
     dateFormat: "d/m/Y",
     allowInput: true,
@@ -70,8 +67,6 @@ export function attendreModulePret() {
     document.addEventListener("moduleHorairesReady", resolve, { once: true });
   });
 }
-
-// ↓↓↓ Tu vas compléter ou extraire ça dans un fichier à part (ex: blocs.js)
 
 function creerBlocJour(jour, parentContainer, isException = false) {
   const container = document.createElement("div");
@@ -103,7 +98,6 @@ function creerBlocJour(jour, parentContainer, isException = false) {
   });
 
   actions.appendChild(addBtn);
-
   container.append(title, status, plages, actions);
   parentContainer.appendChild(container);
 }
