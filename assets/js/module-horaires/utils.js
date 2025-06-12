@@ -1,5 +1,3 @@
-const joursSemaine = [
+window.joursSemaine = [
   "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
 ];
-
-window.joursSemaine = joursSemaine;
