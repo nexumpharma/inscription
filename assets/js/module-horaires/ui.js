@@ -1,7 +1,7 @@
 import { makePlage } from './plages.js';
 import { joursSemaine } from './utils.js'; // ["Lundi", "Mardi", ...]
-import flatpickr from "flatpickr";
-import { French } from "flatpickr/dist/l10n/fr.js";
+import flatpickr from "https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/esm/index.js";
+import { French } from "https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/esm/l10n/fr.js";
 
 flatpickr.localize(French);
 
