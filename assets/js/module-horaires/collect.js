@@ -6,42 +6,43 @@ async function getAuthToken() {
 function collectHoraires() {
   const result = { habituels: {}, exceptionnels: [] };
 
-  // ➕ Horaires habituels
+  // HABITUELS
   document.querySelectorAll("#horaires-habituels .jour-container").forEach(container => {
     const jour = container.dataset.jour;
     const ouvert24h = container.querySelector("input.ouvert24hCheck")?.checked || false;
-    const frequence = container.querySelector("select.frequence")?.value || "toutes";
-
+    const freq = container.querySelector("select.frequence")?.value || "toutes";
     const plages = [];
+
     container.querySelectorAll(".plage").forEach(plage => {
-      const [debutInput, finInput] = plage.querySelectorAll("input.heure");
-      plages.push({ debut: debutInput.value, fin: finInput.value });
+      const inputs = plage.querySelectorAll("input.heure");
+      if (inputs.length === 2) {
+        plages.push({ debut: inputs[0].value, fin: inputs[1].value });
+      }
     });
 
     const ouvert = ouvert24h || plages.length > 0;
-    result.habituels[jour] = {
-      ...(ouvert ? { plages } : {}),
-      ouvert_24h: ouvert24h,
-      frequence
-    };
+    result.habituels[jour] = { ouvert_24h: ouvert24h, plages, frequence: freq, ouvert };
   });
 
-  // ➕ Horaires exceptionnels
+  // EXCEPTIONNELS
   document.querySelectorAll("#exceptions-list .exception-container").forEach(container => {
     const titre = container.querySelector("strong")?.textContent || "";
     const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
     if (!match) return;
-    const [_, debut, fin] = match;
+    const debut = match[1];
+    const fin = match[2];
 
     const jours = {};
     container.querySelectorAll(".jour-container").forEach(jourContainer => {
       const jour = jourContainer.dataset.jour;
       const ouvert24h = jourContainer.querySelector("input.ouvert24hCheck")?.checked || false;
-
       const plages = [];
+
       jourContainer.querySelectorAll(".plage").forEach(plage => {
-        const [debutInput, finInput] = plage.querySelectorAll("input.heure");
-        plages.push({ debut: debutInput.value, fin: finInput.value });
+        const inputs = plage.querySelectorAll("input.heure");
+        if (inputs.length === 2) {
+          plages.push({ debut: inputs[0].value, fin: inputs[1].value });
+        }
       });
 
       jours[jour] = { ouvert_24h: ouvert24h, plages };
@@ -52,6 +53,7 @@ function collectHoraires() {
 
   return result;
 }
+
 
 async function enregistrerHoraires(pharmacieId) {
   const data = collectHoraires();
