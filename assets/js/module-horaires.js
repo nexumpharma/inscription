@@ -1,6 +1,6 @@
 // module-horaires.js
 
-const DEBUG = false;
+const DEBUG = true;
 function debug(...args) { if (DEBUG) console.log(...args); }
 
 // Inject styles
