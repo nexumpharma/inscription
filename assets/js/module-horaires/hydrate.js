@@ -1,105 +1,111 @@
-(function (global) {
-  const ajouterPlage = global.ajouterPlage;
+const ajouterPlage = window.ajouterPlage;
 
-  function hydrate(data) {
-    const { habituels = {}, exceptionnels = [] } = data;
+function hydrate(data) {
+  const { habituels = {}, exceptionnels = [] } = data;
 
-    console.log("📥 Hydratation - horaires habituels :", habituels);
-    console.log("📥 Hydratation - horaires exceptionnels :", exceptionnels);
+  console.log("📥 Hydratation - horaires habituels :", habituels);
+  console.log("📥 Hydratation - horaires exceptionnels :", exceptionnels);
 
-    hydrateHorairesHabituels(habituels);
-    hydrateHorairesExceptionnels(exceptionnels);
-  }
+  hydrateHorairesHabituels(habituels);
+  hydrateHorairesExceptionnels(exceptionnels);
+}
 
-  function hydrateHorairesHabituels(habituels) {
-    Object.entries(habituels).forEach(([jour, info]) => {
-      const container = document.querySelector(`.jour-container[data-jour="${jour}"]`);
-      if (!container) return;
+function hydrateHorairesHabituels(habituels) {
+  Object.entries(habituels).forEach(([jour, info]) => {
+    const container = document.querySelector(`.jour-container[data-jour="${jour}"]`);
+    if (!container) return;
 
-      const check24h = container.querySelector(".ouvert24hCheck");
-      if (check24h) {
-        check24h.checked = !!info.ouvert_24h;
-        check24h.dispatchEvent(new Event("change"));
+    const check24h = container.querySelector(".ouvert24hCheck");
+    if (check24h) {
+      check24h.checked = !!info.ouvert_24h;
+      check24h.dispatchEvent(new Event("change"));
+    }
+
+    const selectFreq = container.querySelector("select.frequence");
+    if (selectFreq && info.frequence) {
+      selectFreq.value = info.frequence;
+    }
+
+    if (Array.isArray(info.plages)) {
+      const initBtn = container.querySelector(".init-ajouter");
+      if (initBtn) initBtn.remove();
+
+      const status = container.querySelector(".ferme");
+      if (status) status.remove();
+
+      const plagesContainer = container.querySelector(".plages");
+      const actionsContainer = container.querySelector(".actions");
+
+      info.plages.forEach(({ debut, fin }) => {
+        ajouterPlage(jour, debut, fin, container);
+      });
+
+      plagesContainer.style.display = "block";
+      actionsContainer.style.display = "flex";
+
+      const advanced = container.querySelector("details");
+      if (advanced) {
+        advanced.style.display = "block";
+        advanced.open = false;
       }
+    }
+  });
+}
 
-      const selectFreq = container.querySelector("select.frequence");
-      if (selectFreq && info.frequence) {
-        selectFreq.value = info.frequence;
-      }
+function hydrateHorairesExceptionnels(exceptionnels) {
+  exceptionnels.forEach(item => {
+    const { debut, fin, jours } = item;
 
-      if (Array.isArray(info.plages)) {
-        const initBtn = container.querySelector(".init-ajouter");
-        if (initBtn) initBtn.remove();
+    const startInput = document.getElementById("exception-start");
+    const endInput = document.getElementById("exception-end");
+    const addBtn = document.getElementById("ajouter-exception");
 
-        const status = container.querySelector(".ferme");
-        if (status) status.remove();
+    if (!startInput || !endInput || !addBtn) return;
 
-        const plagesContainer = container.querySelector(".plages");
-        const actionsContainer = container.querySelector(".actions");
+    startInput.value = debut;
+    endInput.value = fin;
+    addBtn.click();
 
-        info.plages.forEach(({ debut, fin }) => {
-          ajouterPlage(jour, debut, fin, container);
-        });
+    setTimeout(() => {
+      const containers = document.querySelectorAll("#exceptions-list .exception-container");
 
-        plagesContainer.style.display = "block";
-        actionsContainer.style.display = "flex";
+      containers.forEach(container => {
+        const titre = container.querySelector("strong")?.textContent || "";
+        const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
+        if (!match || match[1] !== debut || match[2] !== fin) return;
 
-        const advanced = container.querySelector("details");
-        if (advanced) {
-          advanced.style.display = "block";
-          advanced.open = false;
-        }
-      }
-    });
-  }
+        Object.entries(jours).forEach(([jourComplet, jourData]) => {
+          const jourKey = jourComplet.trim();
+          const jourContainer = container.querySelector(`.jour-container[data-jour="${jourKey}"]`);
+          if (!jourContainer) return;
 
-  function hydrateHorairesExceptionnels(exceptionnels) {
-    exceptionnels.forEach(item => {
-      const { debut, fin, jours } = item;
+          const checkbox = jourContainer.querySelector(".ouvert24hCheck");
+          if (checkbox) {
+            checkbox.checked = !!jourData.ouvert_24h;
+            checkbox.dispatchEvent(new Event("change"));
+          }
 
-      const startInput = document.getElementById("exception-start");
-      const endInput = document.getElementById("exception-end");
-      const addBtn = document.getElementById("ajouter-exception");
+          const plagesContainer = jourContainer.querySelector(".plages");
+          if (plagesContainer) plagesContainer.innerHTML = "";
 
-      if (!startInput || !endInput || !addBtn) return;
-
-      startInput.value = debut;
-      endInput.value = fin;
-      addBtn.click();
-
-      setTimeout(() => {
-        const containers = document.querySelectorAll("#exceptions-list .exception-container");
-
-        containers.forEach(container => {
-          const titre = container.querySelector("strong")?.textContent || "";
-          const match = titre.match(/du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
-          if (!match || match[1] !== debut || match[2] !== fin) return;
-
-          Object.entries(jours).forEach(([jourComplet, jourData]) => {
-            const jourKey = jourComplet.trim();
-            const jourContainer = container.querySelector(`.jour-container[data-jour="${jourKey}"]`);
-            if (!jourContainer) return;
-
-            const checkbox = jourContainer.querySelector(".ouvert24hCheck");
-            if (checkbox) {
-              checkbox.checked = !!jourData.ouvert_24h;
-              checkbox.dispatchEvent(new Event("change"));
-            }
-
-            const plagesContainer = jourContainer.querySelector(".plages");
-            if (plagesContainer) plagesContainer.innerHTML = "";
-
-            (jourData.plages || []).forEach(({ debut, fin }) => {
-              ajouterPlage(jourKey, debut, fin, jourContainer);
-            });
+          (jourData.plages || []).forEach(({ debut, fin }) => {
+            ajouterPlage(jourKey, debut, fin, jourContainer);
           });
         });
-      }, 250);
-    });
-  }
+      });
+    }, 250);
+  });
+}
 
-  global.hydrate = hydrate;
-})(window);
-
-window.attendreModulePret = attendreModulePret;
+// ✅ Expose proprement sur window (UMD style)
 window.hydrate = hydrate;
+window.attendreModulePret = () =>
+  new Promise(resolve => {
+    const interval = setInterval(() => {
+      const module = document.getElementById("module-horaires");
+      if (module && module.querySelector(".jour-container")) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 50);
+  });
