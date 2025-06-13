@@ -839,7 +839,7 @@ function enregistrerHoraires() {
   const data = collectHoraires();
   console.log("➡️ Données à enregistrer :", data);
   // Retourne la promesse pour permettre d'attendre la fin de l'enregistrement
-  return sauvegarderDansAirtable(data, true); // true = affichage du message "Enregistrement réussi"
+  return sauvegarderDansAirtable(data, true); // true = affichage d'un message en cas d'erreur
 }
 
 
@@ -874,7 +874,6 @@ async function sauvegarderDansAirtable(data, afficherMessage = false) {
     if (json.error) {
       console.error("❌ Erreur retournée par Supabase :", json.error);
     }
-    if (afficherMessage) alert("✅ Enregistrement effectué !");
   } catch (err) {
     console.error(err);
     if (afficherMessage) alert("❌ Erreur lors de l'enregistrement");
