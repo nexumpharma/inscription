@@ -109,3 +109,16 @@ window.attendreModulePret = () =>
       }
     }, 50);
   });
+
+window.attendreModulePretEtHydrater = function (horaires) {
+  console.log("⏳ Attente module prêt pour hydratation...");
+  const checkInterval = setInterval(() => {
+    const module = document.getElementById("module-horaires");
+    if (module && typeof window.hydrate === "function") {
+      clearInterval(checkInterval);
+      console.log("✅ Module prêt, lancement de l'hydratation");
+      window.hydrate(horaires);
+    }
+  }, 200);
+};
+
