@@ -35,3 +35,39 @@ async function getPharmacie() {
 
 window.getAuthToken = getAuthToken;
 window.getPharmacie = getPharmacie;
+
+
+async function getPharmacie() {
+  const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
+  if (sessionError) {
+    console.error("❌ Erreur récupération session :", sessionError);
+    return null;
+  }
+
+  const email = sessionData?.session?.user?.email;
+  if (!email) {
+    console.warn("⚠️ Aucun email utilisateur trouvé.");
+    return null;
+  }
+
+  const { data, error } = await window.supabase
+    .from("pharmacies")
+    .select("id, horaires")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (error) {
+    console.error("❌ Erreur récupération pharmacie :", error);
+    return null;
+  }
+
+  if (!data) {
+    console.warn("❌ Aucune pharmacie trouvée pour :", email);
+    return null;
+  }
+
+  return data;
+}
+
+window.getPharmacie = getPharmacie;
+
