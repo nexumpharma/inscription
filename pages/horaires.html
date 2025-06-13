@@ -3,26 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <title>Horaires</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
-<script src="../assets/js/config.js" defer></script>
-<script src="../assets/js/auth.js" defer></script>
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css" />
 
-<!-- Flatpickr -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.js" defer></script>
 
-<!-- 📦 Modules UMD, dans cet ordre -->
-<script src="../assets/js/module-horaires/utils.js" defer></script>       <!-- ✅ window.joursSemaine -->
-<script src="../assets/js/module-horaires/plages.js" defer></script>      <!-- ✅ window.makePlage -->
-<script src="../assets/js/module-horaires/ui.js" defer></script>          <!-- ✅ window.injectUI -->
-<script src="../assets/js/module-horaires/hydrate.js" defer></script>     <!-- ✅ window.hydrate -->
-<script src="../assets/js/module-horaires/collect.js" defer></script>     <!-- ✅ window.enregistrerHoraires -->
-<script src="../assets/js/module-horaires/index.js" defer></script>       <!-- ✅ point d’entrée -->
+  <!-- Flatpickr -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js" defer></script>
 
+  <!-- Config + Auth -->
+  <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/auth.js" defer></script>
+  <script src="../assets/js/module-horaires.js" defer></script>
 </head>
-
 <body>
   <div id="app" data-page="horaires" style="display: none;">
 
